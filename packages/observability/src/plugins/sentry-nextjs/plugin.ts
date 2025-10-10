@@ -2,9 +2,9 @@
  * Next.js-specific Sentry plugin with enhanced configuration
  */
 
-import type { ObservabilityContext } from '../../core/types';
-import type { SentryPluginConfig } from '../sentry/plugin';
-import { SentryPlugin } from '../sentry/plugin';
+import type { ObservabilityContext } from "../../core/types";
+import type { SentryPluginConfig } from "../sentry/plugin";
+import { SentryPlugin } from "../sentry/plugin";
 
 /**
  * Next.js-specific Sentry client interface extending the base interface
@@ -45,7 +45,11 @@ interface SentryNextJSClient {
 
   // Next.js specific methods
   captureRouterTransitionStart?(name: string): void;
-  withServerActionInstrumentation?<T>(name: string, options: any, fn: () => Promise<T>): Promise<T>;
+  withServerActionInstrumentation?<T>(
+    name: string,
+    options: any,
+    fn: () => Promise<T>,
+  ): Promise<T>;
   captureRequestError?(...args: any[]): void;
   getTraceData?(): Record<string, string>;
 }
@@ -114,7 +118,7 @@ export interface SentryNextJSPluginConfig extends SentryPluginConfig {
    * Feedback widget configuration
    */
   feedbackOptions?: {
-    colorScheme?: 'light' | 'dark' | 'system';
+    colorScheme?: "light" | "dark" | "system";
     autoInject?: boolean;
     [key: string]: any;
   };
@@ -123,7 +127,7 @@ export interface SentryNextJSPluginConfig extends SentryPluginConfig {
    * Canvas recording options
    */
   canvasRecordingOptions?: {
-    quality?: 'low' | 'medium' | 'high';
+    quality?: "low" | "medium" | "high";
     [key: string]: any;
   };
 
@@ -227,7 +231,7 @@ export interface SentryNextJSPluginConfig extends SentryPluginConfig {
    * Feature flags configuration
    */
   featureFlags?: {
-    provider?: 'launchdarkly' | 'unleash' | 'custom';
+    provider?: "launchdarkly" | "unleash" | "custom";
     launchDarkly?: {
       clientId: string;
       options?: any;
@@ -249,7 +253,7 @@ export interface SentryNextJSPluginConfig extends SentryPluginConfig {
  * Next.js-specific Sentry plugin with auto-configured integrations
  */
 export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
-  name = 'sentry-nextjs';
+  name = "sentry-nextjs";
   private nextjsConfig: SentryNextJSPluginConfig;
 
   constructor(config: SentryNextJSPluginConfig = {}) {
@@ -262,9 +266,11 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
   /**
    * Prepare configuration with Next.js-specific defaults
    */
-  private static prepareConfig(config: SentryNextJSPluginConfig): SentryNextJSPluginConfig {
-    const isProduction = process.env.NODE_ENV === 'production';
-    const isClient = typeof window !== 'undefined';
+  private static prepareConfig(
+    config: SentryNextJSPluginConfig,
+  ): SentryNextJSPluginConfig {
+    const isProduction = process.env.NODE_ENV === "production";
+    const isClient = typeof window !== "undefined";
 
     return {
       ...config,
@@ -273,7 +279,8 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
       // Set default sampling rates
       tracesSampleRate: config.tracesSampleRate ?? (isProduction ? 0.1 : 1.0),
       // Set replay rates
-      replaysSessionSampleRate: config.replaysSessionSampleRate ?? (isProduction ? 0.1 : 0),
+      replaysSessionSampleRate:
+        config.replaysSessionSampleRate ?? (isProduction ? 0.1 : 0),
       replaysOnErrorSampleRate: config.replaysOnErrorSampleRate ?? 1.0,
       // Set profiling rate (server-side only)
       profilesSampleRate: config.profilesSampleRate ?? 0,
@@ -316,9 +323,11 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
   /**
    * Build Next.js-specific integrations
    */
-  private async buildIntegrations(config: SentryNextJSPluginConfig): Promise<any[]> {
+  private async buildIntegrations(
+    config: SentryNextJSPluginConfig,
+  ): Promise<any[]> {
     const integrations = [...(config.integrations || [])];
-    const isClient = typeof window !== 'undefined';
+    const isClient = typeof window !== "undefined";
     const isServer = !isClient;
 
     if (!this.client) return integrations;
@@ -332,7 +341,9 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
           : undefined;
 
         try {
-          integrations.push(this.client.browserTracingIntegration(tracingOptions));
+          integrations.push(
+            this.client.browserTracingIntegration(tracingOptions),
+          );
         } catch (_error) {
           integrations.push(this.client.browserTracingIntegration());
         }
@@ -349,12 +360,18 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
 
       // Canvas recording for replay
       if (config.enableCanvasRecording && this.client.replayCanvasIntegration) {
-        integrations.push(this.client.replayCanvasIntegration(config.canvasRecordingOptions || {}));
+        integrations.push(
+          this.client.replayCanvasIntegration(
+            config.canvasRecordingOptions || {},
+          ),
+        );
       }
 
       // User feedback widget
       if (config.enableFeedback && this.client.feedbackIntegration) {
-        integrations.push(this.client.feedbackIntegration(config.feedbackOptions || {}));
+        integrations.push(
+          this.client.feedbackIntegration(config.feedbackOptions || {}),
+        );
       }
 
       // HTTP client integration
@@ -363,7 +380,10 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
       }
 
       // Reporting observer integration
-      if (config.enableReportingObserver && this.client.reportingObserverIntegration) {
+      if (
+        config.enableReportingObserver &&
+        this.client.reportingObserverIntegration
+      ) {
         integrations.push(this.client.reportingObserverIntegration());
       }
     }
@@ -384,17 +404,27 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
     // Integrations for both client and server
     // Capture console integration
     if (config.enableCaptureConsole && this.client.captureConsoleIntegration) {
-      integrations.push(this.client.captureConsoleIntegration(config.captureConsoleOptions || {}));
+      integrations.push(
+        this.client.captureConsoleIntegration(
+          config.captureConsoleOptions || {},
+        ),
+      );
     }
 
     // Extra error data integration
     if (config.enableExtraErrorData && this.client.extraErrorDataIntegration) {
-      integrations.push(this.client.extraErrorDataIntegration(config.extraErrorDataOptions || {}));
+      integrations.push(
+        this.client.extraErrorDataIntegration(
+          config.extraErrorDataOptions || {},
+        ),
+      );
     }
 
     // Rewrite frames integration
     if (config.enableRewriteFrames && this.client.rewriteFramesIntegration) {
-      integrations.push(this.client.rewriteFramesIntegration(config.rewriteFramesOptions || {}));
+      integrations.push(
+        this.client.rewriteFramesIntegration(config.rewriteFramesOptions || {}),
+      );
     }
 
     // Session timing integration
@@ -404,21 +434,31 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
 
     // Debug integration
     if (config.enableDebug && this.client.debugIntegration) {
-      integrations.push(this.client.debugIntegration(config.debugOptions || {}));
+      integrations.push(
+        this.client.debugIntegration(config.debugOptions || {}),
+      );
     }
 
     // Feature flag integrations
     if (config.featureFlags) {
       const { provider, launchDarkly, unleash, custom } = config.featureFlags;
 
-      if (provider === 'launchdarkly' && launchDarkly && this.client.launchDarklyIntegration) {
+      if (
+        provider === "launchdarkly" &&
+        launchDarkly &&
+        this.client.launchDarklyIntegration
+      ) {
         integrations.push(this.client.launchDarklyIntegration());
-      } else if (provider === 'unleash' && unleash && this.client.unleashIntegration) {
+      } else if (
+        provider === "unleash" &&
+        unleash &&
+        this.client.unleashIntegration
+      ) {
         const unleashOptions = unleash.featureFlagClientClass
           ? { featureFlagClientClass: unleash.featureFlagClientClass }
           : { unleashClientClass: unleash.featureFlagClientClass }; // Support both old and new API
         integrations.push(this.client.unleashIntegration(unleashOptions));
-      } else if (provider === 'custom' && custom) {
+      } else if (provider === "custom" && custom) {
         integrations.push(custom.integration);
       }
 
@@ -434,13 +474,16 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
   /**
    * Capture exception with Next.js context
    */
-  captureException(error: Error | unknown, context?: ObservabilityContext): void {
+  captureException(
+    error: Error | unknown,
+    context?: ObservabilityContext,
+  ): void {
     // Enhance context with Next.js-specific information
     const enhancedContext = {
       ...context,
-      runtime: process.env.NEXT_RUNTIME || 'unknown',
-      isEdge: process.env.NEXT_RUNTIME === 'edge',
-      isClient: typeof window !== 'undefined',
+      runtime: process.env.NEXT_RUNTIME || "unknown",
+      isEdge: process.env.NEXT_RUNTIME === "edge",
+      isClient: typeof window !== "undefined",
     };
 
     super.captureException(error, enhancedContext);
@@ -450,7 +493,7 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
    * Get router transition capture function for client-side
    */
   getCaptureRouterTransitionStart(): ((name: string) => void) | undefined {
-    if (typeof window === 'undefined' || !this.client) return undefined;
+    if (typeof window === "undefined" || !this.client) return undefined;
 
     // Return the Sentry function if available
     return this.client.captureRouterTransitionStart;
@@ -491,7 +534,9 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
    */
   captureRequestError(...args: any[]): void {
     if (!this.client || !this.client.captureRequestError) {
-      console.warn('captureRequestError not available in current Sentry client');
+      console.warn(
+        "captureRequestError not available in current Sentry client",
+      );
       return;
     }
     this.client.captureRequestError(...args);
@@ -506,9 +551,9 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
       enabled: this.enabled,
       initialized: (this as any).initialized,
       sentryPackage: (this as any).sentryPackage,
-      runtime: process.env.NEXT_RUNTIME || 'unknown',
-      isEdge: process.env.NEXT_RUNTIME === 'edge',
-      isClient: typeof window !== 'undefined',
+      runtime: process.env.NEXT_RUNTIME || "unknown",
+      isEdge: process.env.NEXT_RUNTIME === "edge",
+      isClient: typeof window !== "undefined",
       enableTracing: this.nextjsConfig.enableTracing,
       enableReplay: this.nextjsConfig.enableReplay,
       enableFeedback: this.nextjsConfig.enableFeedback,
@@ -523,6 +568,8 @@ export class SentryNextJSPlugin extends SentryPlugin<SentryNextJSClient> {
 /**
  * Factory function to create a Next.js Sentry plugin
  */
-export const createSentryNextJSPlugin = (config?: SentryNextJSPluginConfig): SentryNextJSPlugin => {
+export const createSentryNextJSPlugin = (
+  config?: SentryNextJSPluginConfig,
+): SentryNextJSPlugin => {
   return new SentryNextJSPlugin(config);
 };

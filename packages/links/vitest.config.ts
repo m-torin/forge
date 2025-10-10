@@ -1,14 +1,14 @@
-import { createReactPackageConfig } from '@repo/qa/vitest/configs';
-import tsconfigPaths from 'vite-tsconfig-paths';
-import { defineConfig } from 'vitest/config';
+import { createReactPackageConfig } from "@repo/qa/vitest/configs";
+import tsconfigPaths from "vite-tsconfig-paths";
+import { defineConfig } from "vitest/config";
 
 const baseConfig = createReactPackageConfig({
-  setupFiles: ['./test-setup.ts', './__tests__/setup.ts'],
+  setupFiles: ["./test-setup.ts", "./__tests__/setup.ts"],
   overrides: {
     test: {
       include: [
-        'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-        '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+        "src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
+        "__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
       ],
     },
   },

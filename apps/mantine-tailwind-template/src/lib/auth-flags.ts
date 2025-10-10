@@ -4,38 +4,38 @@
  * Helper functions for evaluating feature flags based on authentication state
  */
 
-import type { AuthContext } from '#/lib/auth-context';
+import type { AuthContext } from "#/lib/auth-context";
 import {
   adminDashboardFeatures,
   enhancedAuthAnalytics,
   personalizedExperience,
   premiumFeaturePreview,
-} from '#/lib/flags';
+} from "#/lib/flags";
 
 /**
  * Context for auth-aware flag evaluation
  */
-export interface AuthFlagContext {
+interface AuthFlagContext {
   authContext: AuthContext;
 }
 
 /**
  * Evaluate auth-specific feature flags based on user context
  */
-export async function evaluateAuthFlags(context: AuthFlagContext) {
+async function evaluateAuthFlags(context: AuthFlagContext) {
   const { authContext } = context;
 
   // Base flag evaluations
   let adminFeatures = false;
   let enhancedAnalytics = false;
   let personalizedExp = false;
-  let premiumPreview = 'none';
+  let premiumPreview = "none";
 
   if (authContext.isAuthenticated && authContext.user) {
     const { user } = authContext;
 
     // Admin features - only evaluate for admin users
-    if (user.role === 'admin') {
+    if (user.role === "admin") {
       adminFeatures = await adminDashboardFeatures();
     }
 
@@ -49,9 +49,9 @@ export async function evaluateAuthFlags(context: AuthFlagContext) {
     const premiumFlags = await premiumFeaturePreview();
 
     // Bias premium features based on user role
-    if (user.role === 'admin') {
+    if (user.role === "admin") {
       // Admins get higher chance of advanced features
-      premiumPreview = premiumFlags === 'none' ? 'basic' : premiumFlags;
+      premiumPreview = premiumFlags === "none" ? "basic" : premiumFlags;
     } else {
       premiumPreview = premiumFlags;
     }
@@ -70,8 +70,12 @@ export async function evaluateAuthFlags(context: AuthFlagContext) {
  */
 export async function getAllFlagResults(authContext: AuthContext) {
   // Import the base flags dynamically to avoid circular dependencies
-  const { showLanguageSwitcher, welcomeMessageVariant, enhancedFeatureCards, showBetaBanner } =
-    await import('#/lib/flags');
+  const {
+    showLanguageSwitcher,
+    welcomeMessageVariant,
+    enhancedFeatureCards,
+    showBetaBanner,
+  } = await import("#/lib/flags");
 
   // Evaluate base flags
   const baseFlags = {
@@ -95,16 +99,19 @@ export async function getAllFlagResults(authContext: AuthContext) {
 /**
  * Check if user should see premium features based on flag and role
  */
-export function shouldShowPremiumFeatures(premiumPreview: string, userRole?: string): boolean {
+function _shouldShowPremiumFeatures(
+  premiumPreview: string,
+  userRole?: string,
+): boolean {
   if (!userRole) return false;
 
   switch (premiumPreview) {
-    case 'full':
+    case "full":
       return true;
-    case 'advanced':
-      return userRole === 'admin' || Math.random() > 0.5;
-    case 'basic':
-      return userRole === 'admin' || Math.random() > 0.7;
+    case "advanced":
+      return userRole === "admin" || Math.random() > 0.5;
+    case "basic":
+      return userRole === "admin" || Math.random() > 0.7;
     default:
       return false;
   }
@@ -113,7 +120,10 @@ export function shouldShowPremiumFeatures(premiumPreview: string, userRole?: str
 /**
  * Get analytics configuration based on auth and flags
  */
-export function getAnalyticsConfig(enhancedAnalytics: boolean, authContext: AuthContext) {
+function _getAnalyticsConfig(
+  enhancedAnalytics: boolean,
+  authContext: AuthContext,
+) {
   const baseConfig = {
     trackPageViews: true,
     trackClicks: true,

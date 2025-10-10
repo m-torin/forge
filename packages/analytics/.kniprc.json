@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignore": [
+    "env.ts",
+    "__tests__/test-utils/**",
+    "src/client/next.ts",
+    "src/examples/**",
+    "src/next/**",
+    "src/server/next.ts",
+    "src/shared/index.ts",
+    "src/shared/node22-features.ts",
+    "src/shared/providers/console-provider.ts"
+  ],
+  "ignoreDependencies": ["@types/*"]
+}

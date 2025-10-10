@@ -1,11 +1,11 @@
-'use server';
+"use server";
 
 /**
  * AI SDK v5 RSC - Server Actions
  * Extracted server actions for AI context implementation
  */
 
-import { logError, logInfo } from '@repo/observability/server/next';
+import { logError, logInfo } from "@repo/observability/server/next";
 
 /**
  * Chat context server actions
@@ -19,8 +19,8 @@ export async function getChatUIState() {
 
 export async function setChatAIState({ state }: { state: any }) {
   // Implement AI state persistence
-  logInfo('RSC: Setting chat AI state', {
-    operation: 'rsc_set_chat_state',
+  logInfo("RSC: Setting chat AI state", {
+    operation: "rsc_set_chat_state",
     metadata: { messageCount: state.messages?.length || 0 },
   });
 }
@@ -35,7 +35,7 @@ export async function validateField(
 ) {
   if (validationRules?.[name]) {
     const result = validationRules[name](value);
-    if (typeof result === 'string') {
+    if (typeof result === "string") {
       return { valid: false, error: result };
     }
     return { valid: result, error: null };
@@ -53,10 +53,10 @@ export async function submitForm(
   if (validationRules) {
     for (const [name, validator] of Object.entries(validationRules)) {
       const result = validator(values[name]);
-      if (typeof result === 'string') {
+      if (typeof result === "string") {
         errors[name] = result;
       } else if (!result) {
-        errors[name] = 'Invalid value';
+        errors[name] = "Invalid value";
       }
     }
   }
@@ -95,7 +95,7 @@ export async function getPersistedUIState(
     set: (key: string, value: any) => Promise<void>;
     remove: (key: string) => Promise<void>;
   },
-  storageKey: string = 'ai-state',
+  storageKey: string = "ai-state",
   initialUIState?: any,
 ) {
   // Load state from storage
@@ -106,8 +106,8 @@ export async function getPersistedUIState(
         return savedState;
       }
     } catch (error) {
-      logError('RSC: Failed to get persisted UI state', {
-        operation: 'rsc_get_persisted_state',
+      logError("RSC: Failed to get persisted UI state", {
+        operation: "rsc_get_persisted_state",
         error: error instanceof Error ? error : new Error(String(error)),
       });
     }
@@ -123,16 +123,20 @@ export async function setPersistedAIState(
     set: (key: string, value: any) => Promise<void>;
     remove: (key: string) => Promise<void>;
   },
-  storageKey: string = 'ai-state',
-  originalHandler?: (params: { state: any; done: boolean; key?: string }) => Promise<void>,
+  storageKey: string = "ai-state",
+  originalHandler?: (params: {
+    state: any;
+    done: boolean;
+    key?: string;
+  }) => Promise<void>,
 ) {
   // Save state to storage
   if (storage) {
     try {
       await storage.set(storageKey, state);
     } catch (error) {
-      logError('RSC: Failed to set persisted AI state', {
-        operation: 'rsc_set_persisted_state',
+      logError("RSC: Failed to set persisted AI state", {
+        operation: "rsc_set_persisted_state",
         error: error instanceof Error ? error : new Error(String(error)),
       });
     }

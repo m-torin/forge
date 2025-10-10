@@ -57,7 +57,7 @@ export function validateURL(url: string): boolean {
   });
 }
 
-export function sanitizeURL(url: string): string | null {
+function _sanitizeURL(url: string): string | null {
   if (!url || typeof url !== 'string') return null;
 
   // Trim and normalize
@@ -87,7 +87,7 @@ export function sanitizeURL(url: string): string | null {
   }
 }
 
-export function isExternalURL(url: string): boolean {
+function isExternalURL(url: string): boolean {
   if (!url) return false;
 
   try {
@@ -100,7 +100,7 @@ export function isExternalURL(url: string): boolean {
   }
 }
 
-export function addSecurityAttributes(url: string): Record<string, string> {
+function _addSecurityAttributes(url: string): Record<string, string> {
   const attrs: Record<string, string> = {};
 
   if (isExternalURL(url)) {

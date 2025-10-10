@@ -428,14 +428,14 @@ export class PuppeteerProvider implements ScrapingProvider {
 /**
  * Factory function to create a Puppeteer provider
  */
-export function createPuppeteerProvider(_config?: ProviderConfig): PuppeteerProvider {
+function _createPuppeteerProvider(_config?: ProviderConfig): PuppeteerProvider {
   return new PuppeteerProvider();
 }
 
 /**
  * Legacy compatibility: Create Puppeteer scraper (maintains old API)
  */
-export function createPuppeteerScraper(config?: any): PuppeteerProvider {
+function createPuppeteerScraper(config?: any): PuppeteerProvider {
   const provider = new PuppeteerProvider();
   if (config) {
     provider.initialize({ options: config });
@@ -446,7 +446,7 @@ export function createPuppeteerScraper(config?: any): PuppeteerProvider {
 /**
  * Legacy compatibility: Scrape with Puppeteer (maintains old API)
  */
-export async function scrapePuppeteer(options: any, config?: any): Promise<any> {
+async function _scrapePuppeteer(options: any, config?: any): Promise<any> {
   const provider = createPuppeteerScraper(config);
 
   try {

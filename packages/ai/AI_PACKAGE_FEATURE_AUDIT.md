@@ -760,7 +760,7 @@ implementation
      const { image } = await generateImage({
        model: openai.image("dall-e-3"),
        prompt: "A sunset over mountains",
-       size: "1024x1024"
+       size: "1024x1024",
      });
      ```
 
@@ -1649,7 +1649,7 @@ implementation
      const webSearchTool = anthropic.tools.webSearch_20250305({
        maxUses: 3,
        allowedDomains: ["techcrunch.com", "wired.com"],
-       userLocation: { country: "US", region: "California" }
+       userLocation: { country: "US", region: "California" },
      });
      ```
 
@@ -1663,8 +1663,8 @@ implementation
        {
          type: "file",
          data: fs.readFileSync("./doc.pdf"),
-         mediaType: "application/pdf"
-       }
+         mediaType: "application/pdf",
+       },
      ];
      ```
 

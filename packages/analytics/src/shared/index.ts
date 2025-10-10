@@ -79,6 +79,14 @@ export {
 
 export type { ConfigBuilder, ConfigRequirements } from './utils/config';
 
+// Export Node 22+ enhanced features
+export {
+  AdvancedEventBatcher,
+  Node22AnalyticsManager,
+  createNode22AnalyticsManager,
+  node22Analytics,
+} from './node22-features';
+
 export {
   debugConfig,
   // Validation

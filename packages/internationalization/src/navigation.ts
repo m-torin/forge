@@ -3,8 +3,8 @@
  * These wrappers around Next.js navigation automatically handle locale prefixes
  */
 
-import { createNavigation } from 'next-intl/navigation';
-import { routing } from './routing';
+import { createNavigation } from "next-intl/navigation";
+import { routing } from "./routing";
 
 // Create navigation utilities
 const navigation = createNavigation(routing);

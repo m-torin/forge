@@ -1,4 +1,4 @@
-import { expect, type BrowserContext, type Page } from '@playwright/test';
+import { expect, type BrowserContext, type Page } from "@playwright/test";
 
 export interface TestUser {
   email: string;
@@ -35,7 +35,7 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
     return {
       name: userData.name || `Test User ${timestamp}`,
       email: userData.email || `test-${timestamp}@example.com`,
-      password: userData.password || 'TestPassword123!',
+      password: userData.password || "TestPassword123!",
     };
   }
 
@@ -44,10 +44,12 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
    */
   async signIn(page: Page, user: TestUser): Promise<void> {
     // Navigate to sign-in page
-    await page.goto('/sign-in');
+    await page.goto("/sign-in");
 
     // Wait for the sign-in form to be visible
-    await expect(page.locator('form, [data-testid="sign-in-form"]')).toBeVisible({
+    await expect(
+      page.locator('form, [data-testid="sign-in-form"]'),
+    ).toBeVisible({
       timeout: 10000,
     });
 
@@ -97,7 +99,7 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
     }
 
     // Wait for redirect to sign-in or home page
-    await page.waitForURL('**/sign-in', { timeout: 5000 }).catch(() => {
+    await page.waitForURL("**/sign-in", { timeout: 5000 }).catch(() => {
       // Sign-out might redirect to home page instead
     });
   }
@@ -107,15 +109,19 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
    */
   async signUp(page: Page, user: TestUser): Promise<void> {
     // Navigate to sign-up page
-    await page.goto('/sign-up');
+    await page.goto("/sign-up");
 
     // Wait for the sign-up form to be visible
-    await expect(page.locator('form, [data-testid="sign-up-form"]')).toBeVisible({
+    await expect(
+      page.locator('form, [data-testid="sign-up-form"]'),
+    ).toBeVisible({
       timeout: 10000,
     });
 
     // Fill in user details
-    const nameInput = page.locator('input[name="name"], input[placeholder*="name" i]');
+    const nameInput = page.locator(
+      'input[name="name"], input[placeholder*="name" i]',
+    );
     if ((await nameInput.count()) > 0) {
       await nameInput.fill(user.name);
     }
@@ -127,7 +133,9 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
     await emailInput.fill(user.email);
 
     const passwordInput = page
-      .locator('input[type="password"], input[name="password"], input[placeholder*="password" i]')
+      .locator(
+        'input[type="password"], input[name="password"], input[placeholder*="password" i]',
+      )
       .first();
     await passwordInput.waitFor();
     await passwordInput.fill(user.password);
@@ -161,7 +169,7 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
         'button:has-text("Sign out")',
         'a[href*="dashboard"]',
         'a[href*="profile"]',
-        '.user-avatar',
+        ".user-avatar",
         '[data-testid="authenticated"]',
       ];
 
@@ -173,17 +181,19 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
 
       // Check if we're on a protected page
       const currentUrl = page.url();
-      const protectedPages = ['/dashboard', '/profile', '/settings', '/admin'];
-      const isOnProtectedPage = protectedPages.some(path => currentUrl.includes(path));
+      const protectedPages = ["/dashboard", "/profile", "/settings", "/admin"];
+      const isOnProtectedPage = protectedPages.some((path) =>
+        currentUrl.includes(path),
+      );
 
       if (isOnProtectedPage) {
         // If we're on a protected page and not redirected to sign-in, we're authenticated
-        return !currentUrl.includes('/sign-in');
+        return !currentUrl.includes("/sign-in");
       }
 
       return false;
     } catch (error) {
-      console.warn('Error checking auth status:', error);
+      console.warn("Error checking auth status:", error);
       return false;
     }
   }
@@ -198,9 +208,9 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
       // Look for Better Auth session cookies
       const sessionCookies = cookies.filter(
         (cookie: any) =>
-          cookie.name.includes('session') ||
-          cookie.name.includes('auth') ||
-          cookie.name.includes('better-auth'),
+          cookie.name.includes("session") ||
+          cookie.name.includes("auth") ||
+          cookie.name.includes("better-auth"),
       );
 
       if (sessionCookies.length === 0) {
@@ -210,7 +220,7 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
       // Return the session cookie data
       return sessionCookies[0];
     } catch (error) {
-      console.warn('Error getting session from cookies:', error);
+      console.warn("Error getting session from cookies:", error);
       return null;
     }
   }
@@ -224,24 +234,27 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
       await Promise.race([
         // Wait for authenticated indicators
         page
-          .locator('[data-testid="user-menu"], button:has-text("Sign out"), .user-avatar')
-          .waitFor({ state: 'visible', timeout: 10000 }),
+          .locator(
+            '[data-testid="user-menu"], button:has-text("Sign out"), .user-avatar',
+          )
+          .waitFor({ state: "visible", timeout: 10000 }),
         // Or wait for redirect away from auth pages
         page.waitForURL(
-          (url: URL) => !url.href.includes('/sign-in') && !url.href.includes('/sign-up'),
+          (url: URL) =>
+            !url.href.includes("/sign-in") && !url.href.includes("/sign-up"),
           { timeout: 10000 },
         ),
         // Or wait for dashboard/protected page
-        page.waitForURL('**/dashboard', { timeout: 10000 }),
+        page.waitForURL("**/dashboard", { timeout: 10000 }),
       ]);
 
       // Additional wait for page to stabilize using waitFor instead of expect
       await page
         .locator('[data-testid="user-menu"], .dashboard, .main-content')
         .first()
-        .waitFor({ state: 'visible', timeout: 10000 });
+        .waitFor({ state: "visible", timeout: 10000 });
     } catch (error) {
-      console.warn('Auth wait timeout, continuing with test: ', error);
+      console.warn("Auth wait timeout, continuing with test: ", error);
     }
   }
 
@@ -252,12 +265,15 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
   async bypassAuth(page: Page, user: TestUser): Promise<void> {
     try {
       // Create a session by calling the auth API directly
-      const response = await page.request.post(`${this.baseURL}/api/auth/sign-in`, {
-        data: {
-          email: user.email,
-          password: user.password,
+      const response = await page.request.post(
+        `${this.baseURL}/api/auth/sign-in`,
+        {
+          data: {
+            email: user.email,
+            password: user.password,
+          },
         },
-      });
+      );
 
       if (!response.ok()) {
         throw new Error(`Failed to create session: ${response.status()}`);
@@ -265,10 +281,10 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
 
       // The cookies should be automatically set by the browser
       // Navigate to a protected page to verify
-      await page.goto('/dashboard');
+      await page.goto("/dashboard");
       await this.waitForAuth(page);
     } catch (error) {
-      console.warn('Bypass auth failed, falling back to UI sign-in:', error);
+      console.warn("Bypass auth failed, falling back to UI sign-in:", error);
       await this.signIn(page, user);
     }
   }
@@ -278,19 +294,22 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
    */
   async createUserViaAPI(page: Page, user: TestUser): Promise<void> {
     try {
-      const response = await page.request.post(`${this.baseURL}/api/auth/sign-up`, {
-        data: {
-          name: user.name,
-          email: user.email,
-          password: user.password,
+      const response = await page.request.post(
+        `${this.baseURL}/api/auth/sign-up`,
+        {
+          data: {
+            name: user.name,
+            email: user.email,
+            password: user.password,
+          },
         },
-      });
+      );
 
       if (!response.ok()) {
         throw new Error(`Failed to create user: ${response.status()}`);
       }
     } catch (error) {
-      console.warn('API user creation failed:', error);
+      console.warn("API user creation failed:", error);
       throw error;
     }
   }
@@ -306,19 +325,25 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
         await this.signOut(page);
       }
     } catch (error) {
-      console.warn('User cleanup failed: ', error);
+      console.warn("User cleanup failed: ", error);
     }
   }
 
   /**
    * Test social authentication (if enabled)
    */
-  async signInWithSocial(page: Page, provider: 'google' | 'github'): Promise<void> {
-    await page.goto('/sign-in');
+  async signInWithSocial(
+    page: Page,
+    provider: "google" | "github",
+  ): Promise<void> {
+    await page.goto("/sign-in");
 
-    const socialButton = page.locator(`button:has-text("${provider}"), a:has-text("${provider}")`, {
-      hasText: provider.charAt(0).toUpperCase() + provider.slice(1),
-    });
+    const socialButton = page.locator(
+      `button:has-text("${provider}"), a:has-text("${provider}")`,
+      {
+        hasText: provider.charAt(0).toUpperCase() + provider.slice(1),
+      },
+    );
 
     if ((await socialButton.count()) > 0) {
       await socialButton.click();
@@ -342,7 +367,9 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
       await orgSwitcher.click();
       await page.locator(`text=${orgName}`).click();
       // Wait for org switch to complete (e.g., dashboard or org name visible)
-      await expect(page.locator('.dashboard, [data-testid="org-name"]')).toBeVisible({
+      await expect(
+        page.locator('.dashboard, [data-testid="org-name"]'),
+      ).toBeVisible({
         timeout: 10000,
       });
     }

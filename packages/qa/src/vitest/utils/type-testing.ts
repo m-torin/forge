@@ -818,11 +818,10 @@ export const typeTestHelpers = {
 };
 
 // Export all utilities
-export const typeTestingUtils = {
+const typeTestingUtils = {
   typeTestUtils,
   typeTestPatterns,
   typeTestHelpers,
 };
 
 // Export default
-export default typeTestingUtils;

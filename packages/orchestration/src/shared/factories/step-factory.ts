@@ -209,15 +209,38 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
   }
 
   /**
-   * Get step definition (deep clone for immutability)
+   * Get step definition (deep clone for immutability using Node 22+ structuredClone)
    */
   getDefinition(): WorkflowStepDefinition<TInput, TOutput> {
-    // Create a deep copy of the definition without the execute function
-    const definitionCopy = {
-      ...this.#definition,
-      execute: this.#definition.execute, // Keep the original function reference
-    };
-    return definitionCopy;
+    try {
+      // Use Node 22's native structured clone for deep copying
+      const cloned = structuredClone(this.#definition);
+
+      // Re-attach function references that can't be cloned
+      cloned.execute = this.#definition.execute;
+      if (this.#definition.cleanup) {
+        cloned.cleanup = this.#definition.cleanup;
+      }
+      if (this.#definition.condition) {
+        cloned.condition = this.#definition.condition;
+      }
+      if (this.#definition.validationConfig) {
+        cloned.validationConfig = this.#definition.validationConfig;
+      }
+
+      return cloned;
+    } catch (error) {
+      // Fallback to manual shallow copying for non-cloneable data
+
+      console.warn('structuredClone failed, falling back to shallow copy:', error);
+      return {
+        ...this.#definition,
+        execute: this.#definition.execute,
+        cleanup: this.#definition.cleanup,
+        condition: this.#definition.condition,
+        validationConfig: this.#definition.validationConfig,
+      };
+    }
   }
 
   /**
@@ -874,7 +897,7 @@ export const defaultStepFactory = new StepFactory();
 /**
  * Pattern matching for error handling
  */
-export const matchError = (error: WorkflowError) => ({
+const matchError = (error: WorkflowError) => ({
   default: (handler: (error: WorkflowError) => void) => handler(error),
   execution: (handler: (error: WorkflowError) => void) =>
     error.code?.includes('EXECUTION') ? handler(error) : undefined,
@@ -887,7 +910,7 @@ export const matchError = (error: WorkflowError) => ({
 /**
  * Conditional step execution helper
  */
-export const when = <TInput, TOutput>(
+const when = <TInput, TOutput>(
   condition: (input: TInput) => boolean | Promise<boolean>,
   trueStep: WorkflowStepDefinition<TInput, TOutput>,
   falseStep?: WorkflowStepDefinition<TInput, TOutput>,
@@ -973,7 +996,7 @@ export function toSimpleStep<TInput = unknown, TOutput = unknown>(
 /**
  * Compose functions - different from the enhancer compose
  */
-export function compose<T>(...functions: Array<(input: T) => Promise<T> | T>) {
+function compose<T>(...functions: Array<(input: T) => Promise<T> | T>) {
   return async function (input: T): Promise<T> {
     let result = input;
     for (const fn of functions) {
@@ -987,7 +1010,7 @@ export function compose<T>(...functions: Array<(input: T) => Promise<T> | T>) {
  * Function-based enhancers for direct function enhancement (not SimpleWorkflowStep)
  */
 
-export function withStepRetry<TInput, TOutput>(
+function withStepRetry<TInput, TOutput>(
   stepFunction: (input: TInput) => Promise<TOutput> | TOutput,
   options: { maxAttempts?: number; delay?: number } = {},
 ): (input: TInput) => Promise<TOutput> {
@@ -1018,7 +1041,7 @@ export function withStepRetry<TInput, TOutput>(
   };
 }
 
-export function withStepCircuitBreaker<TInput, TOutput>(
+function withStepCircuitBreaker<TInput, TOutput>(
   stepFunction: (input: TInput) => Promise<TOutput> | TOutput,
   options: { failureThreshold?: number; resetTimeout?: number } = {},
 ): (input: TInput) => Promise<TOutput> {
@@ -1062,7 +1085,7 @@ export function withStepCircuitBreaker<TInput, TOutput>(
   };
 }
 
-export function withStepTimeout<TInput, TOutput>(
+function withStepTimeout<TInput, TOutput>(
   stepFunction: (input: TInput) => Promise<TOutput> | TOutput,
   timeoutMs: number,
 ): (input: TInput) => Promise<TOutput> {
@@ -1077,7 +1100,7 @@ export function withStepTimeout<TInput, TOutput>(
   };
 }
 
-export function withStepMonitoring<TInput, TOutput>(
+function withStepMonitoring<TInput, TOutput>(
   stepFunction: (input: TInput) => Promise<TOutput> | TOutput,
   options: { enableMetrics?: boolean; enableLogging?: boolean } = {},
 ): (input: TInput) => Promise<TOutput> {

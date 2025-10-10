@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 /**
  * Centralized @repo/observability mocks
@@ -15,7 +15,9 @@ const createObservabilityMock = () => ({
   setContext: vi.fn(),
   addBreadcrumb: vi.fn(),
   close: vi.fn().mockResolvedValue(true),
-  withScope: vi.fn(callback => callback({ setTag: vi.fn(), setUser: vi.fn() })),
+  withScope: vi.fn((callback) =>
+    callback({ setTag: vi.fn(), setUser: vi.fn() }),
+  ),
   identify: vi.fn(),
   reset: vi.fn(),
   group: vi.fn(),
@@ -51,40 +53,52 @@ const createObservabilityMock = () => ({
  */
 export function setupObservabilityMocks(
   options: {
-    entryPoints?: ('server' | 'server/next' | 'server/edge' | 'client' | 'client/next')[];
+    entryPoints?: (
+      | "server"
+      | "server/next"
+      | "server/edge"
+      | "client"
+      | "client/next"
+    )[];
     mockImplementation?: Partial<ReturnType<typeof createObservabilityMock>>;
   } = {},
 ) {
   const {
-    entryPoints = ['server', 'server/next', 'server/edge', 'client', 'client/next'],
+    entryPoints = [
+      "server",
+      "server/next",
+      "server/edge",
+      "client",
+      "client/next",
+    ],
     mockImplementation = {},
   } = options;
 
   const baseMock = { ...createObservabilityMock(), ...mockImplementation };
 
   // Mock all common entry points
-  if (entryPoints.includes('server')) {
-    vi.mock('@repo/observability/server', () => baseMock);
+  if (entryPoints.includes("server")) {
+    vi.mock("@repo/observability/server", () => baseMock);
   }
 
-  if (entryPoints.includes('server/next')) {
-    vi.mock('@repo/observability/server/next', () => baseMock);
+  if (entryPoints.includes("server/next")) {
+    vi.mock("@repo/observability/server/next", () => baseMock);
   }
 
-  if (entryPoints.includes('server/edge')) {
-    vi.mock('@repo/observability/server/edge', () => baseMock);
+  if (entryPoints.includes("server/edge")) {
+    vi.mock("@repo/observability/server/edge", () => baseMock);
   }
 
-  if (entryPoints.includes('client')) {
-    vi.mock('@repo/observability/client', () => baseMock);
+  if (entryPoints.includes("client")) {
+    vi.mock("@repo/observability/client", () => baseMock);
   }
 
-  if (entryPoints.includes('client/next')) {
-    vi.mock('@repo/observability/client/next', () => baseMock);
+  if (entryPoints.includes("client/next")) {
+    vi.mock("@repo/observability/client/next", () => baseMock);
   }
 
   // Mock the base package
-  vi.mock('@repo/observability', () => baseMock);
+  vi.mock("@repo/observability", () => baseMock);
 
   return baseMock;
 }
@@ -99,8 +113,8 @@ export const observabilityScenarios = {
   working: (baseMock = createObservabilityMock()) => ({
     ...baseMock,
     track: vi.fn().mockResolvedValue(true),
-    capture: vi.fn().mockResolvedValue('event-id'),
-    captureException: vi.fn().mockResolvedValue('error-id'),
+    capture: vi.fn().mockResolvedValue("event-id"),
+    captureException: vi.fn().mockResolvedValue("error-id"),
     flush: vi.fn().mockResolvedValue(true),
   }),
 
@@ -109,10 +123,12 @@ export const observabilityScenarios = {
    */
   failing: (baseMock = createObservabilityMock()) => ({
     ...baseMock,
-    track: vi.fn().mockRejectedValue(new Error('Observability service down')),
-    capture: vi.fn().mockRejectedValue(new Error('Failed to capture')),
-    captureException: vi.fn().mockRejectedValue(new Error('Failed to capture exception')),
-    flush: vi.fn().mockRejectedValue(new Error('Failed to flush')),
+    track: vi.fn().mockRejectedValue(new Error("Observability service down")),
+    capture: vi.fn().mockRejectedValue(new Error("Failed to capture")),
+    captureException: vi
+      .fn()
+      .mockRejectedValue(new Error("Failed to capture exception")),
+    flush: vi.fn().mockRejectedValue(new Error("Failed to flush")),
   }),
 
   /**
@@ -134,14 +150,20 @@ export const observabilityScenarios = {
     startTransaction: vi.fn(() => ({
       finish: vi.fn(),
       setStatus: vi.fn(),
-      setData: vi.fn((key, value) => console.log(`Transaction data: ${key} = ${value}`)),
-      setTag: vi.fn((key, value) => console.log(`Transaction tag: ${key} = ${value}`)),
+      setData: vi.fn((key, value) =>
+        console.log(`Transaction data: ${key} = ${value}`),
+      ),
+      setTag: vi.fn((key, value) =>
+        console.log(`Transaction tag: ${key} = ${value}`),
+      ),
     })),
     measure: vi.fn((name, startMark, endMark) => {
-      console.log(`Performance measure: ${name} from ${startMark} to ${endMark}`);
+      console.log(
+        `Performance measure: ${name} from ${startMark} to ${endMark}`,
+      );
       return { duration: 100 };
     }),
-    mark: vi.fn(name => console.log(`Performance mark: ${name}`)),
+    mark: vi.fn((name) => console.log(`Performance mark: ${name}`)),
   }),
 };
 
@@ -149,7 +171,7 @@ export const observabilityScenarios = {
  * Helper to create observability mock with specific behavior
  */
 export function createObservabilityMockWithBehavior(
-  scenario: keyof typeof observabilityScenarios = 'working',
+  scenario: keyof typeof observabilityScenarios = "working",
 ) {
   return observabilityScenarios[scenario]();
 }

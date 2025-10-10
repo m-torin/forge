@@ -3,27 +3,30 @@
  * Allows creation of anonymous sessions for guest users
  */
 
-import { useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
+import { useState, useTransition } from "react";
+import { useFormState } from "react-dom";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
 
 // Placeholder server actions - these would be implemented in the actions file
-const createAnonymousSessionAction = async (__prevState: any, formData: FormData) => {
-  const sessionName = formData.get('sessionName') as string;
-  const _allowDataCollection = formData.get('allowDataCollection') === 'true';
+const createAnonymousSessionAction = async (
+  __prevState: any,
+  formData: FormData,
+) => {
+  const sessionName = formData.get("sessionName") as string;
+  const _allowDataCollection = formData.get("allowDataCollection") === "true";
 
   // console.log('Creating anonymous session:', { sessionName, allowDataCollection });
 
   // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   return {
     success: true,
-    error: '',
-    sessionId: 'anon_' + Math.random().toString(36).substr(2, 9),
+    error: "",
+    sessionId: "anon_" + Math.random().toString(36).substr(2, 9),
     sessionName,
     createdAt: new Date().toISOString(),
   };
@@ -38,7 +41,7 @@ interface AnonymousSessionCreatorProps {
   className?: string;
 }
 
-const initialFormState = { success: false, error: '' };
+const initialFormState = { success: false, error: "" };
 
 export function AnonymousSessionCreator({
   onSessionCreated: _onSessionCreated,
@@ -46,27 +49,30 @@ export function AnonymousSessionCreator({
   allowCustomization = true,
   showDataOptions = true,
   autoRedirect: _autoRedirect = true,
-  className = '',
+  className = "",
 }: AnonymousSessionCreatorProps) {
   const [isPending, startTransition] = useTransition();
-  const [sessionName, setSessionName] = useState('');
+  const [sessionName, setSessionName] = useState("");
   const [allowDataCollection, setAllowDataCollection] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [customizeSession, setCustomizeSession] = useState(false);
 
-  const [createState, createAction] = useFormState(createAnonymousSessionAction, initialFormState);
+  const [createState, createAction] = useFormState(
+    createAnonymousSessionAction,
+    initialFormState,
+  );
 
   const handleCreateSession = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!agreedToTerms) {
-      alert('Please accept the terms and conditions to continue.');
+      alert("Please accept the terms and conditions to continue.");
       return;
     }
 
     const formData = new FormData();
-    formData.append('sessionName', sessionName || generateSessionName());
-    formData.append('allowDataCollection', allowDataCollection.toString());
+    formData.append("sessionName", sessionName || generateSessionName());
+    formData.append("allowDataCollection", allowDataCollection.toString());
 
     startTransition(() => {
       createAction(formData);
@@ -75,8 +81,15 @@ export function AnonymousSessionCreator({
   };
 
   const generateSessionName = () => {
-    const adjectives = ['Curious', 'Explorer', 'Visitor', 'Guest', 'Wanderer', 'Browser'];
-    const nouns = ['Panda', 'Fox', 'Owl', 'Dolphin', 'Eagle', 'Wolf'];
+    const adjectives = [
+      "Curious",
+      "Explorer",
+      "Visitor",
+      "Guest",
+      "Wanderer",
+      "Browser",
+    ];
+    const nouns = ["Panda", "Fox", "Owl", "Dolphin", "Eagle", "Wolf"];
     const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
     const noun = nouns[Math.floor(Math.random() * nouns.length)];
     return `${adj} ${noun}`;
@@ -84,13 +97,13 @@ export function AnonymousSessionCreator({
 
   const handleQuickStart = () => {
     if (!agreedToTerms) {
-      alert('Please accept the terms and conditions to continue.');
+      alert("Please accept the terms and conditions to continue.");
       return;
     }
 
     const formData = new FormData();
-    formData.append('sessionName', generateSessionName());
-    formData.append('allowDataCollection', 'false');
+    formData.append("sessionName", generateSessionName());
+    formData.append("allowDataCollection", "false");
 
     startTransition(() => {
       createAction(formData);
@@ -104,14 +117,18 @@ export function AnonymousSessionCreator({
         <CardHeader>
           <div className="text-center">
             <div className="mb-3 text-4xl">👤</div>
-            <h2 className="text-2xl font-bold text-gray-900">Continue as Guest</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Continue as Guest
+            </h2>
             <p className="mt-2 text-sm text-gray-600">
               Start exploring without creating an account
             </p>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {createState.error && <Alert variant="destructive">{createState.error}</Alert>}
+          {createState.error && (
+            <Alert variant="destructive">{createState.error}</Alert>
+          )}
 
           {createState.success && (
             <Alert variant="default">
@@ -119,7 +136,9 @@ export function AnonymousSessionCreator({
                 <span className="mr-3 text-lg text-green-600">✅</span>
                 <div>
                   <h4 className="font-medium">Anonymous Session Created!</h4>
-                  <p className="text-sm">You can now explore the platform as a guest.</p>
+                  <p className="text-sm">
+                    You can now explore the platform as a guest.
+                  </p>
                 </div>
               </div>
             </Alert>
@@ -131,15 +150,15 @@ export function AnonymousSessionCreator({
                 type="checkbox"
                 id="terms"
                 checked={agreedToTerms}
-                onChange={e => setAgreedToTerms(e.target.checked)}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
                 className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="terms" className="text-sm text-gray-700">
-                I agree to the{' '}
+                I agree to the{" "}
                 <button className="text-blue-600 underline hover:text-blue-800">
                   Terms of Service
-                </button>{' '}
-                and{' '}
+                </button>{" "}
+                and{" "}
                 <button className="text-blue-600 underline hover:text-blue-800">
                   Privacy Policy
                 </button>
@@ -153,7 +172,7 @@ export function AnonymousSessionCreator({
               disabled={!agreedToTerms || isPending}
               className="w-full"
             >
-              {isPending ? 'Creating Session...' : 'Quick Start'}
+              {isPending ? "Creating Session..." : "Quick Start"}
             </Button>
 
             {allowCustomization && (
@@ -163,7 +182,7 @@ export function AnonymousSessionCreator({
                   onClick={() => setCustomizeSession(!customizeSession)}
                   className="text-sm text-blue-600 underline hover:text-blue-800"
                 >
-                  {customizeSession ? 'Hide options' : 'Customize session'}
+                  {customizeSession ? "Hide options" : "Customize session"}
                 </button>
               </div>
             )}
@@ -182,12 +201,13 @@ export function AnonymousSessionCreator({
                   id="sessionName"
                   type="text"
                   value={sessionName}
-                  onChange={e => setSessionName(e.target.value)}
+                  onChange={(e) => setSessionName(e.target.value)}
                   placeholder={generateSessionName()}
                   className="w-full"
                 />
                 <p className="mt-1 text-xs text-gray-500">
-                  Choose a name to identify your session, or leave blank for a random name
+                  Choose a name to identify your session, or leave blank for a
+                  random name
                 </p>
               </div>
 
@@ -198,18 +218,26 @@ export function AnonymousSessionCreator({
                       type="checkbox"
                       id="dataCollection"
                       checked={allowDataCollection}
-                      onChange={e => setAllowDataCollection(e.target.checked)}
+                      onChange={(e) => setAllowDataCollection(e.target.checked)}
                       className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <label htmlFor="dataCollection" className="text-sm text-gray-700">
-                      Allow anonymous usage analytics to help improve the platform
+                    <label
+                      htmlFor="dataCollection"
+                      className="text-sm text-gray-700"
+                    >
+                      Allow anonymous usage analytics to help improve the
+                      platform
                     </label>
                   </div>
                 </div>
               )}
 
-              <Button type="submit" disabled={!agreedToTerms || isPending} className="w-full">
-                {isPending ? 'Creating Session...' : 'Create Custom Session'}
+              <Button
+                type="submit"
+                disabled={!agreedToTerms || isPending}
+                className="w-full"
+              >
+                {isPending ? "Creating Session..." : "Create Custom Session"}
               </Button>
             </form>
           )}
@@ -248,7 +276,9 @@ export function AnonymousSessionCreator({
 
           <div className="space-y-3 text-center">
             <div className="border-t border-gray-200 pt-4">
-              <p className="mb-3 text-sm text-gray-600">Want the full experience?</p>
+              <p className="mb-3 text-sm text-gray-600">
+                Want the full experience?
+              </p>
               <div className="space-y-2">
                 <Button variant="outline" className="w-full">
                   Create Free Account
@@ -275,7 +305,9 @@ export function AnonymousSessionCreator({
       </Card>
 
       <div className="mt-4 text-center">
-        <p className="text-xs text-gray-500">🔒 Anonymous sessions are secure and temporary</p>
+        <p className="text-xs text-gray-500">
+          🔒 Anonymous sessions are secure and temporary
+        </p>
       </div>
     </div>
   );

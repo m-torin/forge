@@ -27,15 +27,25 @@ import type {
   WhereCondition,
 } from './types';
 
-import { logError, logInfo, logWarn } from '@repo/observability/server';
+const formatLogMessage = (message: string, args: any[]): string => {
+  if (args.length === 0) return message;
+  const suffix = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ');
+  return `${message} ${suffix}`;
+};
 
 /**
- * Default logger using observability
+ * Default logger that writes directly to stdout/stderr to avoid console usage.
  */
 const defaultLogger: Logger = {
-  info: (message: string, ...args: any[]) => logInfo(message, { args }),
-  warn: (message: string, ...args: any[]) => logWarn(message, { args }),
-  error: (message: string, ...args: any[]) => logError(message, { args }),
+  info: (message: string, ...args: any[]) => {
+    process.stdout.write(`${formatLogMessage(message, args)}\n`);
+  },
+  warn: (message: string, ...args: any[]) => {
+    process.stderr.write(`WARN ${formatLogMessage(message, args)}\n`);
+  },
+  error: (message: string, ...args: any[]) => {
+    process.stderr.write(`ERROR ${formatLogMessage(message, args)}\n`);
+  },
 };
 
 /**
@@ -280,7 +290,7 @@ export function createMemoryAdapter(options: MemoryAdapterOptions = {}) {
       if (eagerInit && demoUsers.length > 0) {
         logger.info(`[${adapterName}] Starting eager initialization`);
 
-        (async () => {
+        void (async () => {
           try {
             await initializeDemoUsers();
             logger.info(`[${adapterName}] Eager initialization completed`);

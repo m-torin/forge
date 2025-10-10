@@ -356,19 +356,14 @@ export default {
     // Build context from results
     const context = results.matches
       .map((match) => match.metadata.text)
-      .join("
-
-");
+      .join("\n\n");
 
     // Generate response using context
     const response = await env.AI.run("@cf/meta/llama-2-7b-chat-int8", {
       messages: [
         {
           role: "system",
-          content: `${env.SYSTEM_PROMPT}
-
-Context:
-${context}`
+          content: `${env.SYSTEM_PROMPT}\n\nContext:\n${context}`
         },
         {
           role: "user",

@@ -3,9 +3,9 @@
  * This bypasses the need for signup endpoints
  */
 
-import { prisma } from '@repo/database/prisma';
 import { logError, logInfo } from '@repo/observability';
 import { createUserAction } from '../server/admin-management';
+import { prisma } from '../shared/prisma';
 
 interface UserToCreate {
   email: string;
@@ -73,37 +73,9 @@ async function createUsersDirectly() {
 
       logInfo(`  ✅ User created successfully`);
 
-      // Add to default organization
-      const user = await prisma.user.findUnique({
-        where: { email: userData.email },
-      });
-
-      const defaultOrg = await prisma.organization.findFirst({
-        where: { slug: 'default-org' },
-      });
-
-      if (user && defaultOrg) {
-        const existingMember = await prisma.member.findFirst({
-          where: {
-            organizationId: defaultOrg.id,
-            userId: user.id,
-          },
-        });
-
-        if (!existingMember) {
-          await prisma.member.create({
-            data: {
-              createdAt: new Date(),
-              id: crypto.randomUUID(),
-              organizationId: defaultOrg.id,
-              role: 'owner',
-              userId: user.id,
-            },
-          });
-
-          logInfo(`  ✅ Added to default organization`);
-        }
-      }
+      // TODO: Add organization management once org/member models are available
+      // Note: Organization/member models not available in current database schema
+      logInfo(`  ✅ User created (organization assignment skipped)`);
     } catch (error: any) {
       logError(`  ❌ Error creating ${userData.email}: `, error.message || error);
     }

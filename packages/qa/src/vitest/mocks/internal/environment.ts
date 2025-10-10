@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 // Mock for @t3-oss/env-nextjs pattern used throughout the codebase
-export const createEnvMock = (overrides = {}) => {
+const createEnvMock = (overrides = {}) => {
   const defaultEnv = {
     // Server variables
     DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
@@ -51,7 +51,7 @@ export const createEnvMock = (overrides = {}) => {
 };
 
 // Mock the env module pattern
-export const mockEnvModule = (modulePath: string, overrides = {}) => {
+const mockEnvModule = (modulePath: string, overrides = {}) => {
   const mock = createEnvMock(overrides);
 
   vi.doMock(modulePath, () => ({

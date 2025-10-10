@@ -19,5 +19,3 @@ export function createReactConfig(options: ReactConfigOptions = {}): UserConfig 
     plugins: [...(config.plugins || []), react(reactOptions)],
   };
 }
-
-export default createReactConfig();

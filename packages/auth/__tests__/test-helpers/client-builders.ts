@@ -45,9 +45,30 @@ export const createClientMethodTestSuite = (config: ClientMethodTestConfig) => {
   return describe(`${methodName} Method`, () => {
     let mockAuthClient: ReturnType<typeof createMockAuthClient>;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       mockAuthClient = createMockAuthClient();
+      // Clearing mocks in shared builders can also wipe module-level stubs
+      // (e.g., vi.mock("#/client/methods")) set in individual suites.
+      // Clear first, then re-hydrate the default resolved values for the
+      // client methods module if it is mocked.
       vi.clearAllMocks();
+
+      try {
+        // Dynamically import to access the mocked module instance
+        const methods = (await import('#/client/methods')) as any;
+        const ensureResolved = (fnName: string) => {
+          const fn = methods?.[fnName];
+          if (typeof fn === 'function' && 'mockResolvedValue' in fn) {
+            // @ts-ignore vitest mock api
+            fn.mockResolvedValue({ success: true });
+          }
+        };
+        ensureResolved('signIn');
+        ensureResolved('signUp');
+        ensureResolved('signOut');
+      } catch {
+        // If the module isn't mocked in a given suite, safely ignore.
+      }
     });
 
     test(`should handle ${methodName.toLowerCase()} successfully`, async () => {
@@ -87,9 +108,42 @@ export const createClientMethodsTestSuite = (methodsModule: any) => {
   return describe('client Methods', () => {
     let mockAuthClient: ReturnType<typeof createMockAuthClient>;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       mockAuthClient = createMockAuthClient();
       vi.clearAllMocks();
+      // Provide sensible defaults for passed-in stubs so structure tests don't fail
+      if (methodsModule && typeof methodsModule === 'object') {
+        const ensureResolved = (fnName: string) => {
+          const fn = methodsModule[fnName];
+          if (typeof fn === 'function' && 'mockResolvedValue' in fn) {
+            // @ts-ignore
+            fn.mockResolvedValue({ success: true });
+          }
+        };
+        ensureResolved('signIn');
+        ensureResolved('signUp');
+        ensureResolved('signOut');
+      }
+
+      // Also rehydrate the shared mocked module if present
+      try {
+        const methods = (await import('#/client/methods')) as any;
+        const setDefault = (fnName: string, impl: any) => {
+          const fn = methods?.[fnName];
+          if (typeof fn === 'function' && 'mockResolvedValue' in fn) {
+            // Avoid overriding test-specific overrides; set only if no mock implementation
+            // Vitest does not expose a direct way to check implementation presence reliably,
+            // so we just set a sane default after clearAllMocks.
+            // @ts-ignore vitest mock api
+            fn.mockResolvedValue(impl);
+          }
+        };
+        setDefault('signIn', { success: true });
+        setDefault('signUp', { success: true });
+        setDefault('signOut', { success: true });
+      } catch {
+        // module not mocked in this context; ignore
+      }
     });
 
     describe('authentication Methods', () => {

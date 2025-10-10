@@ -14,25 +14,19 @@ import { PlaywrightProvider } from './playwright-provider';
 import { PuppeteerProvider } from './puppeteer-provider';
 
 export { ConsoleProvider } from '../../shared/providers/console-provider';
-export { CheerioProvider, createCheerioProvider } from './cheerio-provider';
-export { createHeroProvider, HeroProvider } from './hero-provider';
+export { CheerioProvider } from './cheerio-provider';
+export { HeroProvider } from './hero-provider';
 export { NodeFetchProvider } from './node-fetch-provider';
 export { PlaywrightProvider } from './playwright-provider';
-export { createPuppeteerProvider, PuppeteerProvider } from './puppeteer-provider';
+export { PuppeteerProvider } from './puppeteer-provider';
 
-// Provider types and interfaces
-export type {
-  ProviderConfig,
-  ScrapeOptions,
-  ScrapeResult,
-  ScrapingProvider,
-} from '../../shared/types/scraping-types';
+// Provider types and interfaces;
 
 /**
  * Default server provider registry
  * Maps provider names to factory functions
  */
-export const defaultServerProviders: ProviderRegistry = {
+const defaultServerProviders: ProviderRegistry = {
   // Browser automation providers
   puppeteer: (_config: any) => new PuppeteerProvider(),
   playwright: (_config: any) => new PlaywrightProvider(),
@@ -51,7 +45,7 @@ export const defaultServerProviders: ProviderRegistry = {
 /**
  * Get a provider by name with dynamic loading
  */
-export async function getProvider(name: string, config?: any) {
+async function _getProvider(name: string, config?: any) {
   const factory = defaultServerProviders[name];
   if (!factory) {
     throw new Error(`Provider "${name}" not found`);
@@ -68,21 +62,21 @@ export async function getProvider(name: string, config?: any) {
 /**
  * Get all available provider names
  */
-export function getAvailableProviders(): string[] {
+function _getAvailableProviders(): string[] {
   return Object.keys(defaultServerProviders);
 }
 
 /**
  * Check if a provider is available
  */
-export function hasProvider(name: string): boolean {
+function _hasProvider(name: string): boolean {
   return name in defaultServerProviders;
 }
 
 /**
  * Register a custom provider
  */
-export function registerProvider(
+function _registerProvider(
   name: string,
   factory: (config?: any) => any,
   aliases: string[] = [],
@@ -102,7 +96,3 @@ export function registerProvider(
  */
 
 // Legacy factory functions (maintain old API)
-export { scrapeWithCheerio } from './cheerio-provider';
-export { createHeroScraper, scrapeHero } from './hero-provider';
-export { quickScrape, scrapeMultiple, scrapeWithPagination } from './playwright-provider';
-export { createPuppeteerScraper, scrapePuppeteer } from './puppeteer-provider';

@@ -122,7 +122,7 @@ export function setCachedBootstrapData(distinctId: string, data: BootstrapData):
 /**
  * Merge multiple bootstrap data objects (useful for combining providers)
  */
-export function mergeBootstrapData(...bootstrapData: BootstrapData[]): BootstrapData {
+function _mergeBootstrapData(...bootstrapData: BootstrapData[]): BootstrapData {
   const merged: BootstrapData = {
     distinctID: '',
   };
@@ -147,7 +147,7 @@ export function validateBootstrapData(data: any): data is BootstrapData {
 /**
  * Serialize bootstrap data for client transmission
  */
-export function serializeBootstrapData(data: BootstrapData): string {
+function _serializeBootstrapData(data: BootstrapData): string {
   try {
     return JSON.stringify(data);
   } catch (_error) {
@@ -159,7 +159,7 @@ export function serializeBootstrapData(data: BootstrapData): string {
 /**
  * Deserialize bootstrap data from client
  */
-export function deserializeBootstrapData(serialized: string): BootstrapData | null {
+function _deserializeBootstrapData(serialized: string): BootstrapData | null {
   try {
     const data = JSON.parse(serialized);
     return validateBootstrapData(data) ? data : null;

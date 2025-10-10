@@ -3,8 +3,8 @@
  * Displays all users with search, filtering, and management actions
  */
 
-import { useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
+import { useState, useTransition } from "react";
+import { useFormState } from "react-dom";
 import {
   adminDeleteUserAction,
   banUserAction,
@@ -12,11 +12,11 @@ import {
   revokeUserSessionsAction,
   setUserRoleAction,
   unbanUserAction,
-} from '../actions';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
+} from "../actions";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
 
 interface User {
   id: string;
@@ -50,22 +50,22 @@ interface AdminUsersListProps {
   className?: string;
 }
 
-const initialFormState = { success: false, error: '' };
+const initialFormState = { success: false, error: "" };
 
 export function AdminUsersList({
   users,
   totalCount,
   currentPage,
   pageSize,
-  searchQuery = '',
-  roleFilter = '',
-  statusFilter = '',
+  searchQuery = "",
+  roleFilter = "",
+  statusFilter = "",
   onPageChange,
   onSearch,
   onFilterRole,
   onFilterStatus,
   onRefresh,
-  className = '',
+  className = "",
 }: AdminUsersListProps) {
   const [isPending, startTransition] = useTransition();
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -74,7 +74,10 @@ export function AdminUsersList({
 
   // Form states for different actions
   const [banState, banAction] = useFormState(banUserAction, initialFormState);
-  const [unbanState, unbanAction] = useFormState(unbanUserAction, initialFormState);
+  const [unbanState, unbanAction] = useFormState(
+    unbanUserAction,
+    initialFormState,
+  );
   const [roleState, setRoleState] = useState(initialFormState);
   const [deleteState, setDeleteState] = useState(initialFormState);
   const [impersonateState, impersonateAction] = useFormState(
@@ -93,12 +96,13 @@ export function AdminUsersList({
     startTransition(async () => {
       try {
         await setUserRoleAction(userId, newRole);
-        setRoleState({ success: true, error: '' });
+        setRoleState({ success: true, error: "" });
         onRefresh();
       } catch (error) {
         setRoleState({
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to update role',
+          error:
+            error instanceof Error ? error.message : "Failed to update role",
         });
       }
     });
@@ -108,12 +112,13 @@ export function AdminUsersList({
     startTransition(async () => {
       try {
         await adminDeleteUserAction(userId);
-        setDeleteState({ success: true, error: '' });
+        setDeleteState({ success: true, error: "" });
         onRefresh();
       } catch (error) {
         setDeleteState({
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to delete user',
+          error:
+            error instanceof Error ? error.message : "Failed to delete user",
         });
       }
     });
@@ -125,17 +130,25 @@ export function AdminUsersList({
     startTransition(async () => {
       try {
         switch (action) {
-          case 'ban':
-            await Promise.all(selectedUsers.map(userId => banUserAction(userId)));
+          case "ban":
+            await Promise.all(
+              selectedUsers.map((userId) => banUserAction(userId)),
+            );
             break;
-          case 'unban':
-            await Promise.all(selectedUsers.map(userId => unbanUserAction(userId)));
+          case "unban":
+            await Promise.all(
+              selectedUsers.map((userId) => unbanUserAction(userId)),
+            );
             break;
-          case 'delete':
-            await Promise.all(selectedUsers.map(userId => adminDeleteUserAction(userId)));
+          case "delete":
+            await Promise.all(
+              selectedUsers.map((userId) => adminDeleteUserAction(userId)),
+            );
             break;
-          case 'revoke-sessions':
-            await Promise.all(selectedUsers.map(userId => revokeUserSessionsAction(userId)));
+          case "revoke-sessions":
+            await Promise.all(
+              selectedUsers.map((userId) => revokeUserSessionsAction(userId)),
+            );
             break;
         }
         setSelectedUsers([]);
@@ -147,8 +160,10 @@ export function AdminUsersList({
   };
 
   const toggleUserSelection = (userId: string) => {
-    setSelectedUsers(prev =>
-      prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId],
+    setSelectedUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
     );
   };
 
@@ -156,65 +171,70 @@ export function AdminUsersList({
     if (selectedUsers.length === users.length) {
       setSelectedUsers([]);
     } else {
-      setSelectedUsers(users.map(user => user.id));
+      setSelectedUsers(users.map((user) => user.id));
     }
   };
 
   const getRoleColor = (role?: string) => {
     switch (role?.toLowerCase()) {
-      case 'admin':
-        return 'text-red-600 bg-red-50';
-      case 'moderator':
-        return 'text-orange-600 bg-orange-50';
-      case 'user':
-        return 'text-green-600 bg-green-50';
+      case "admin":
+        return "text-red-600 bg-red-50";
+      case "moderator":
+        return "text-orange-600 bg-orange-50";
+      case "user":
+        return "text-green-600 bg-green-50";
       default:
-        return 'text-gray-600 bg-gray-50';
+        return "text-gray-600 bg-gray-50";
     }
   };
 
   const getStatusColor = (user: User) => {
-    if (user.banned) return 'text-red-600 bg-red-50';
-    if (!user.emailVerified) return 'text-yellow-600 bg-yellow-50';
-    return 'text-green-600 bg-green-50';
+    if (user.banned) return "text-red-600 bg-red-50";
+    if (!user.emailVerified) return "text-yellow-600 bg-yellow-50";
+    return "text-green-600 bg-green-50";
   };
 
   const getStatusText = (user: User) => {
-    if (user.banned) return 'Banned';
-    if (!user.emailVerified) return 'Unverified';
-    return 'Active';
+    if (user.banned) return "Banned";
+    if (!user.emailVerified) return "Unverified";
+    return "Active";
   };
 
   return (
     <div className={`space-y-6 ${className}`}>
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">Users Management</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Users Management
+          </h2>
           <p className="mt-1 text-sm text-gray-600">
             {totalCount} total users • Page {currentPage} of {totalPages}
           </p>
         </div>
         <Button onClick={onRefresh} disabled={isPending}>
-          {isPending ? 'Refreshing...' : 'Refresh'}
+          {isPending ? "Refreshing..." : "Refresh"}
         </Button>
       </div>
 
       <Card>
         <CardContent className="p-4">
-          <form onSubmit={handleSearchSubmit} className="flex flex-col gap-4 sm:flex-row">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex flex-col gap-4 sm:flex-row"
+          >
             <div className="flex-1">
               <Input
                 type="search"
                 placeholder="Search by email, name, or ID..."
                 value={localSearch}
-                onChange={e => setLocalSearch(e.target.value)}
+                onChange={(e) => setLocalSearch(e.target.value)}
                 className="w-full"
               />
             </div>
             <div className="flex gap-2">
               <select
                 value={roleFilter}
-                onChange={e => onFilterRole(e.target.value)}
+                onChange={(e) => onFilterRole(e.target.value)}
                 className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Roles</option>
@@ -224,7 +244,7 @@ export function AdminUsersList({
               </select>
               <select
                 value={statusFilter}
-                onChange={e => onFilterStatus(e.target.value)}
+                onChange={(e) => onFilterStatus(e.target.value)}
                 className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Status</option>
@@ -243,13 +263,14 @@ export function AdminUsersList({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">
-                {selectedUsers.length} user{selectedUsers.length !== 1 ? 's' : ''} selected
+                {selectedUsers.length} user
+                {selectedUsers.length !== 1 ? "s" : ""} selected
               </span>
               <div className="flex gap-2">
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleBulkAction('revoke-sessions')}
+                  onClick={() => handleBulkAction("revoke-sessions")}
                   disabled={isPending}
                 >
                   Revoke Sessions
@@ -257,7 +278,7 @@ export function AdminUsersList({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleBulkAction('ban')}
+                  onClick={() => handleBulkAction("ban")}
                   disabled={isPending}
                 >
                   Ban Users
@@ -265,7 +286,7 @@ export function AdminUsersList({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleBulkAction('unban')}
+                  onClick={() => handleBulkAction("unban")}
                   disabled={isPending}
                 >
                   Unban Users
@@ -273,7 +294,7 @@ export function AdminUsersList({
                 <Button
                   size="sm"
                   variant="destructive"
-                  onClick={() => handleBulkAction('delete')}
+                  onClick={() => handleBulkAction("delete")}
                   disabled={isPending}
                 >
                   Delete Users
@@ -303,11 +324,15 @@ export function AdminUsersList({
           <div className="flex items-center gap-4">
             <input
               type="checkbox"
-              checked={selectedUsers.length === users.length && users.length > 0}
+              checked={
+                selectedUsers.length === users.length && users.length > 0
+              }
               onChange={selectAllUsers}
               className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-sm font-medium text-gray-700">Select All</span>
+            <span className="text-sm font-medium text-gray-700">
+              Select All
+            </span>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -336,11 +361,11 @@ export function AdminUsersList({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {users.map(user =>
+                {users.map((user) =>
                   [
                     <tr
                       key={user.id}
-                      className={`hover:bg-gray-50 ${selectedUsers.includes(user.id) ? 'bg-blue-50' : ''}`}
+                      className={`hover:bg-gray-50 ${selectedUsers.includes(user.id) ? "bg-blue-50" : ""}`}
                     >
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="flex items-center">
@@ -352,19 +377,26 @@ export function AdminUsersList({
                           />
                           <div className="flex items-center">
                             {user.image ? (
-                              <img className="h-8 w-8 rounded-full" src={user.image} alt="" />
+                              <img
+                                className="h-8 w-8 rounded-full"
+                                src={user.image}
+                                alt=""
+                              />
                             ) : (
                               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300">
                                 <span className="text-xs font-medium text-gray-700">
-                                  {user.name?.[0] || user.email[0].toUpperCase()}
+                                  {user.name?.[0] ||
+                                    user.email[0].toUpperCase()}
                                 </span>
                               </div>
                             )}
                             <div className="ml-3">
                               <div className="text-sm font-medium text-gray-900">
-                                {user.name || 'No name'}
+                                {user.name || "No name"}
                               </div>
-                              <div className="text-sm text-gray-500">{user.email}</div>
+                              <div className="text-sm text-gray-500">
+                                {user.email}
+                              </div>
                               <div className="text-xs text-gray-400">
                                 ID: {user.id.slice(0, 8)}...
                               </div>
@@ -376,7 +408,7 @@ export function AdminUsersList({
                         <span
                           className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getRoleColor(user.role)}`}
                         >
-                          {user.role || 'user'}
+                          {user.role || "user"}
                         </span>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
@@ -398,20 +430,35 @@ export function AdminUsersList({
                             size="sm"
                             variant="outline"
                             onClick={() =>
-                              setExpandedUser(expandedUser === user.id ? null : user.id)
+                              setExpandedUser(
+                                expandedUser === user.id ? null : user.id,
+                              )
                             }
                           >
-                            {expandedUser === user.id ? 'Less' : 'More'}
+                            {expandedUser === user.id ? "Less" : "More"}
                           </Button>
                           <form action={impersonateAction} className="inline">
-                            <input type="hidden" name="userId" value={user.id} />
-                            <Button size="sm" variant="outline" type="submit" disabled={isPending}>
+                            <input
+                              type="hidden"
+                              name="userId"
+                              value={user.id}
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              type="submit"
+                              disabled={isPending}
+                            >
                               Impersonate
                             </Button>
                           </form>
                           {user.banned ? (
                             <form action={unbanAction} className="inline">
-                              <input type="hidden" name="userId" value={user.id} />
+                              <input
+                                type="hidden"
+                                name="userId"
+                                value={user.id}
+                              />
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -423,7 +470,11 @@ export function AdminUsersList({
                             </form>
                           ) : (
                             <form action={banAction} className="inline">
-                              <input type="hidden" name="userId" value={user.id} />
+                              <input
+                                type="hidden"
+                                name="userId"
+                                value={user.id}
+                              />
                               <Button
                                 size="sm"
                                 variant="destructive"
@@ -443,22 +494,38 @@ export function AdminUsersList({
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                               <div>
-                                <span className="font-medium text-gray-700">Email Verified:</span>
-                                <span className="ml-2">{user.emailVerified ? 'Yes' : 'No'}</span>
-                              </div>
-                              <div>
-                                <span className="font-medium text-gray-700">Accounts:</span>
-                                <span className="ml-2">{user._count?.accounts || 0}</span>
-                              </div>
-                              <div>
-                                <span className="font-medium text-gray-700">Last Updated:</span>
+                                <span className="font-medium text-gray-700">
+                                  Email Verified:
+                                </span>
                                 <span className="ml-2">
-                                  {new Date(user.updatedAt).toLocaleDateString()}
+                                  {user.emailVerified ? "Yes" : "No"}
                                 </span>
                               </div>
                               <div>
-                                <span className="font-medium text-gray-700">Full ID:</span>
-                                <span className="ml-2 font-mono text-xs">{user.id}</span>
+                                <span className="font-medium text-gray-700">
+                                  Accounts:
+                                </span>
+                                <span className="ml-2">
+                                  {user._count?.accounts || 0}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-700">
+                                  Last Updated:
+                                </span>
+                                <span className="ml-2">
+                                  {new Date(
+                                    user.updatedAt,
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-700">
+                                  Full ID:
+                                </span>
+                                <span className="ml-2 font-mono text-xs">
+                                  {user.id}
+                                </span>
                               </div>
                             </div>
 
@@ -466,9 +533,11 @@ export function AdminUsersList({
                               <div className="flex items-center gap-2">
                                 <select
                                   name="role"
-                                  defaultValue={user.role || 'user'}
+                                  defaultValue={user.role || "user"}
                                   className="rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                  onChange={e => handleRoleChange(user.id, e.target.value)}
+                                  onChange={(e) =>
+                                    handleRoleChange(user.id, e.target.value)
+                                  }
                                 >
                                   <option value="user">User</option>
                                   <option value="moderator">Moderator</option>
@@ -479,7 +548,9 @@ export function AdminUsersList({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => revokeUserSessionsAction(user.id)}
+                                onClick={() =>
+                                  revokeUserSessionsAction(user.id)
+                                }
                                 disabled={isPending}
                               >
                                 Revoke All Sessions
@@ -518,7 +589,10 @@ export function AdminUsersList({
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="flex flex-1 justify-between sm:hidden">
-            <Button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage <= 1}>
+            <Button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
               Previous
             </Button>
             <Button
@@ -531,8 +605,14 @@ export function AdminUsersList({
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Showing <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to{' '}
-                <span className="font-medium">{Math.min(currentPage * pageSize, totalCount)}</span>{' '}
+                Showing{" "}
+                <span className="font-medium">
+                  {(currentPage - 1) * pageSize + 1}
+                </span>{" "}
+                to{" "}
+                <span className="font-medium">
+                  {Math.min(currentPage * pageSize, totalCount)}
+                </span>{" "}
                 of <span className="font-medium">{totalCount}</span> results
               </p>
             </div>
@@ -553,8 +633,8 @@ export function AdminUsersList({
                       onClick={() => onPageChange(page)}
                       className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium ${
                         page === currentPage
-                          ? 'z-10 border-blue-500 bg-blue-50 text-blue-600'
-                          : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50'
+                          ? "z-10 border-blue-500 bg-blue-50 text-blue-600"
+                          : "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
                       }`}
                     >
                       {page}
@@ -587,11 +667,13 @@ export function AdminUsersList({
                 />
               </svg>
             </div>
-            <h3 className="mb-1 text-lg font-medium text-gray-900">No users found</h3>
+            <h3 className="mb-1 text-lg font-medium text-gray-900">
+              No users found
+            </h3>
             <p className="text-gray-500">
               {searchQuery || roleFilter || statusFilter
-                ? 'Try adjusting your search criteria or filters.'
-                : 'No users have been created yet.'}
+                ? "Try adjusting your search criteria or filters."
+                : "No users have been created yet."}
             </p>
           </CardContent>
         </Card>

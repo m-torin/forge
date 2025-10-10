@@ -3,18 +3,18 @@
  * 100% React Server Component for requesting user data exports
  */
 
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
 
 import {
   cancelExportRequestAction,
   downloadExportAction,
   requestDataExportAction,
-} from './actions';
+} from "./actions";
 
 interface ExportFormat {
   id: string;
@@ -27,7 +27,7 @@ interface ExportFormat {
 interface ExportRequest {
   id: string;
   format: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'expired';
+  status: "pending" | "processing" | "completed" | "failed" | "expired";
   requestedAt: string;
   completedAt?: string;
   downloadUrl?: string;
@@ -63,13 +63,13 @@ export function DataExportRequest({
   availableFormats,
   dataCategories,
   recentExports,
-  title = 'Export Your Data',
-  subtitle = 'Download a copy of your personal data',
+  title = "Export Your Data",
+  subtitle = "Download a copy of your personal data",
   maxConcurrentExports = 3,
   retentionDays = 7,
   onExportRequested: _onExportRequested,
   onExportDownloaded,
-  className = '',
+  className = "",
 }: DataExportRequestProps) {
   const [requestState, requestAction] = useFormState(
     requestDataExportAction,
@@ -85,30 +85,36 @@ export function DataExportRequest({
   );
 
   const pendingExports = recentExports.filter(
-    exp => exp.status === 'pending' || exp.status === 'processing',
+    (exp) => exp.status === "pending" || exp.status === "processing",
   );
-  const _completedExports = recentExports.filter(exp => exp.status === 'completed');
+  const _completedExports = recentExports.filter(
+    (exp) => exp.status === "completed",
+  );
 
-  const getStatusColor = (status: ExportRequest['status']) => {
+  const getStatusColor = (status: ExportRequest["status"]) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'processing':
-        return 'bg-blue-100 text-blue-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'failed':
-        return 'bg-red-100 text-red-800';
-      case 'expired':
-        return 'bg-gray-100 text-gray-800';
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "processing":
+        return "bg-blue-100 text-blue-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "failed":
+        return "bg-red-100 text-red-800";
+      case "expired":
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getStatusIcon = (status: ExportRequest['status']) => {
+  const getStatusIcon = (status: ExportRequest["status"]) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return (
-          <svg className="h-4 w-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg
+            className="h-4 w-4 text-yellow-600"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
@@ -116,9 +122,13 @@ export function DataExportRequest({
             />
           </svg>
         );
-      case 'processing':
+      case "processing":
         return (
-          <svg className="h-4 w-4 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
+          <svg
+            className="h-4 w-4 animate-spin text-blue-600"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
             <circle
               className="opacity-25"
               cx="12"
@@ -134,9 +144,13 @@ export function DataExportRequest({
             />
           </svg>
         );
-      case 'completed':
+      case "completed":
         return (
-          <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg
+            className="h-4 w-4 text-green-600"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -144,9 +158,13 @@ export function DataExportRequest({
             />
           </svg>
         );
-      case 'failed':
+      case "failed":
         return (
-          <svg className="h-4 w-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg
+            className="h-4 w-4 text-red-600"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -154,9 +172,13 @@ export function DataExportRequest({
             />
           </svg>
         );
-      case 'expired':
+      case "expired":
         return (
-          <svg className="h-4 w-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg
+            className="h-4 w-4 text-gray-600"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
@@ -197,16 +219,22 @@ export function DataExportRequest({
         </Alert>
       )}
 
-      {(requestState?.success || cancelState?.success || downloadState?.success) && (
+      {(requestState?.success ||
+        cancelState?.success ||
+        downloadState?.success) && (
         <Alert variant="success">
-          {requestState?.message || cancelState?.message || downloadState?.message}
+          {requestState?.message ||
+            cancelState?.message ||
+            downloadState?.message}
         </Alert>
       )}
 
       {canRequestExport && (
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-medium text-gray-900">Request New Export</h2>
+            <h2 className="text-lg font-medium text-gray-900">
+              Request New Export
+            </h2>
           </CardHeader>
           <CardContent>
             <form action={requestAction} className="space-y-6">
@@ -215,7 +243,7 @@ export function DataExportRequest({
                   Export Format
                 </label>
                 <div className="grid gap-3">
-                  {availableFormats.map(format => (
+                  {availableFormats.map((format) => (
                     <label
                       key={format.id}
                       className="flex cursor-pointer items-start space-x-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50"
@@ -233,16 +261,22 @@ export function DataExportRequest({
                             {format.name} (.{format.fileExtension})
                           </h3>
                           {format.size && (
-                            <span className="text-xs text-gray-500">~{format.size}</span>
+                            <span className="text-xs text-gray-500">
+                              ~{format.size}
+                            </span>
                           )}
                         </div>
-                        <p className="mt-1 text-sm text-gray-600">{format.description}</p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          {format.description}
+                        </p>
                       </div>
                     </label>
                   ))}
                 </div>
                 {requestState?.errors?.format && (
-                  <p className="mt-1 text-sm text-red-600">{requestState.errors.format[0]}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {requestState.errors.format[0]}
+                  </p>
                 )}
               </div>
 
@@ -251,7 +285,7 @@ export function DataExportRequest({
                   Data Categories
                 </label>
                 <div className="grid gap-2">
-                  {dataCategories.map(category => (
+                  {dataCategories.map((category) => (
                     <label
                       key={category.id}
                       className="flex cursor-pointer items-start space-x-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50"
@@ -268,26 +302,35 @@ export function DataExportRequest({
                         <div className="flex items-center justify-between">
                           <h3 className="text-sm font-medium text-gray-900">
                             {category.name}
-                            {category.required && <span className="ml-1 text-red-600">*</span>}
+                            {category.required && (
+                              <span className="ml-1 text-red-600">*</span>
+                            )}
                           </h3>
                           {category.estimatedRecords && (
                             <span className="text-xs text-gray-500">
-                              ~{category.estimatedRecords.toLocaleString()} records
+                              ~{category.estimatedRecords.toLocaleString()}{" "}
+                              records
                             </span>
                           )}
                         </div>
-                        <p className="mt-1 text-sm text-gray-600">{category.description}</p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          {category.description}
+                        </p>
                       </div>
                     </label>
                   ))}
                 </div>
                 {requestState?.errors?.categories && (
-                  <p className="mt-1 text-sm text-red-600">{requestState.errors.categories[0]}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {requestState.errors.categories[0]}
+                  </p>
                 )}
               </div>
 
               <div className="border-t border-gray-200 pt-4">
-                <h3 className="mb-3 text-sm font-medium text-gray-700">Additional Options</h3>
+                <h3 className="mb-3 text-sm font-medium text-gray-700">
+                  Additional Options
+                </h3>
                 <div className="space-y-3">
                   <label className="flex items-start space-x-3">
                     <input
@@ -341,11 +384,22 @@ export function DataExportRequest({
                   <div className="text-sm text-blue-800">
                     <h4 className="mb-2 font-medium">Export Information</h4>
                     <ul className="list-inside list-disc space-y-1">
-                      <li>Processing may take several hours for large datasets</li>
+                      <li>
+                        Processing may take several hours for large datasets
+                      </li>
                       <li>You'll receive an email when your export is ready</li>
-                      <li>Downloads are available for {retentionDays} days after completion</li>
-                      <li>You can have up to {maxConcurrentExports} active export requests</li>
-                      <li>All exports are encrypted and require authentication to download</li>
+                      <li>
+                        Downloads are available for {retentionDays} days after
+                        completion
+                      </li>
+                      <li>
+                        You can have up to {maxConcurrentExports} active export
+                        requests
+                      </li>
+                      <li>
+                        All exports are encrypted and require authentication to
+                        download
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -357,7 +411,9 @@ export function DataExportRequest({
                 className="w-full"
                 disabled={requestState === undefined}
               >
-                {requestState === undefined ? 'Processing Request...' : 'Request Data Export'}
+                {requestState === undefined
+                  ? "Processing Request..."
+                  : "Request Data Export"}
               </Button>
             </form>
           </CardContent>
@@ -382,8 +438,9 @@ export function DataExportRequest({
               <div className="text-sm text-yellow-800">
                 <h4 className="mb-1 font-medium">Export Limit Reached</h4>
                 <p>
-                  You have reached the maximum of {maxConcurrentExports} concurrent export requests.
-                  Please wait for existing exports to complete before requesting new ones.
+                  You have reached the maximum of {maxConcurrentExports}{" "}
+                  concurrent export requests. Please wait for existing exports
+                  to complete before requesting new ones.
                 </p>
               </div>
             </div>
@@ -394,17 +451,21 @@ export function DataExportRequest({
       {recentExports.length > 0 && (
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-medium text-gray-900">Recent Exports</h2>
+            <h2 className="text-lg font-medium text-gray-900">
+              Recent Exports
+            </h2>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentExports.map(exportReq => (
+              {recentExports.map((exportReq) => (
                 <div
                   key={exportReq.id}
                   className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
                 >
                   <div className="flex items-start space-x-4">
-                    <div className="mt-1 flex-shrink-0">{getStatusIcon(exportReq.status)}</div>
+                    <div className="mt-1 flex-shrink-0">
+                      {getStatusIcon(exportReq.status)}
+                    </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         <h3 className="text-sm font-medium text-gray-900">
@@ -413,46 +474,65 @@ export function DataExportRequest({
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(exportReq.status)}`}
                         >
-                          {exportReq.status.charAt(0).toUpperCase() + exportReq.status.slice(1)}
+                          {exportReq.status.charAt(0).toUpperCase() +
+                            exportReq.status.slice(1)}
                         </span>
                       </div>
                       <div className="space-y-1 text-sm text-gray-600">
-                        <p>Requested: {new Date(exportReq.requestedAt).toLocaleString()}</p>
+                        <p>
+                          Requested:{" "}
+                          {new Date(exportReq.requestedAt).toLocaleString()}
+                        </p>
                         {exportReq.completedAt && (
-                          <p>Completed: {new Date(exportReq.completedAt).toLocaleString()}</p>
-                        )}
-                        {exportReq.fileSize && <p>Size: {exportReq.fileSize}</p>}
-                        {exportReq.expiresAt && exportReq.status === 'completed' && (
-                          <p className="text-orange-600">
-                            Expires: {new Date(exportReq.expiresAt).toLocaleString()}
+                          <p>
+                            Completed:{" "}
+                            {new Date(exportReq.completedAt).toLocaleString()}
                           </p>
                         )}
+                        {exportReq.fileSize && (
+                          <p>Size: {exportReq.fileSize}</p>
+                        )}
+                        {exportReq.expiresAt &&
+                          exportReq.status === "completed" && (
+                            <p className="text-orange-600">
+                              Expires:{" "}
+                              {new Date(exportReq.expiresAt).toLocaleString()}
+                            </p>
+                          )}
                         {exportReq.error && (
-                          <p className="text-red-600">Error: {exportReq.error}</p>
+                          <p className="text-red-600">
+                            Error: {exportReq.error}
+                          </p>
                         )}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    {exportReq.status === 'completed' && exportReq.downloadUrl && (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => {
-                          window.open(exportReq.downloadUrl, '_blank');
-                          if (onExportDownloaded) {
-                            onExportDownloaded(exportReq.id);
-                          }
-                        }}
-                      >
-                        Download
-                      </Button>
-                    )}
+                    {exportReq.status === "completed" &&
+                      exportReq.downloadUrl && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => {
+                            window.open(exportReq.downloadUrl, "_blank");
+                            if (onExportDownloaded) {
+                              onExportDownloaded(exportReq.id);
+                            }
+                          }}
+                        >
+                          Download
+                        </Button>
+                      )}
 
-                    {(exportReq.status === 'pending' || exportReq.status === 'processing') && (
+                    {(exportReq.status === "pending" ||
+                      exportReq.status === "processing") && (
                       <form action={cancelAction} className="inline">
-                        <input type="hidden" name="exportId" value={exportReq.id} />
+                        <input
+                          type="hidden"
+                          name="exportId"
+                          value={exportReq.id}
+                        />
                         <Button
                           type="submit"
                           variant="outline"
@@ -464,7 +544,7 @@ export function DataExportRequest({
                       </form>
                     )}
 
-                    {exportReq.status === 'failed' && (
+                    {exportReq.status === "failed" && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -486,10 +566,17 @@ export function DataExportRequest({
 
       <Card className="bg-gray-50">
         <CardContent className="p-4">
-          <h4 className="mb-2 text-sm font-medium text-gray-900">About Data Exports</h4>
+          <h4 className="mb-2 text-sm font-medium text-gray-900">
+            About Data Exports
+          </h4>
           <div className="space-y-1 text-xs text-gray-600">
-            <p>• Data exports include all personal information stored in your account</p>
-            <p>• Exports are provided in machine-readable formats for portability</p>
+            <p>
+              • Data exports include all personal information stored in your
+              account
+            </p>
+            <p>
+              • Exports are provided in machine-readable formats for portability
+            </p>
             <p>• Processing time varies based on data volume and system load</p>
             <p>• Download links are secure and expire automatically</p>
             <p>• Contact support if you need assistance with your export</p>

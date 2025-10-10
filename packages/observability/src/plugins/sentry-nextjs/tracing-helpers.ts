@@ -3,10 +3,13 @@
  * Provides utilities for instrumenting various Next.js features
  */
 
-import * as Sentry from '@sentry/nextjs';
-import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
-import type { NextRequest } from 'next/server';
-import { continueTraceInServerComponent, extractTraceHeaders } from './distributed-tracing';
+import * as Sentry from "@sentry/nextjs";
+import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
+import type { NextRequest } from "next/server";
+import {
+  continueTraceInServerComponent,
+  extractTraceHeaders,
+} from "./distributed-tracing";
 
 /**
  * Wrap a server component with tracing
@@ -21,7 +24,12 @@ export function withServerComponentTracing<T>(
     data?: Record<string, any>;
   },
 ): T | Promise<T> {
-  const { op = 'server.component', description: _description, tags, data } = options || {};
+  const {
+    op = "server.component",
+    description: _description,
+    tags,
+    data,
+  } = options || {};
 
   // Start a new span for this component
   return Sentry.startSpan(
@@ -31,7 +39,7 @@ export function withServerComponentTracing<T>(
       attributes: {
         ...tags,
         ...data,
-        'component.type': 'server',
+        "component.type": "server",
       },
     },
     () => fn(),
@@ -49,7 +57,11 @@ export function withApiRouteTracing(
     includeResponse?: boolean;
   },
 ): NextApiHandler {
-  const { parameterize = true, includeRequest = true, includeResponse = false } = options || {};
+  const {
+    parameterize = true,
+    includeRequest = true,
+    includeResponse = false,
+  } = options || {};
 
   return async (req: NextApiRequest, res: NextApiResponse) => {
     const { method, url, headers } = req;
@@ -62,7 +74,7 @@ export function withApiRouteTracing(
     if (parameterize && req.query) {
       // Replace dynamic segments with placeholders
       Object.entries(req.query).forEach(([key, value]) => {
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
           transactionName = transactionName.replace(value, `[${key}]`);
         }
       });
@@ -72,18 +84,21 @@ export function withApiRouteTracing(
     return Sentry.startSpan(
       {
         name: transactionName,
-        op: 'http.server',
+        op: "http.server",
         attributes: {
           method,
           url,
           ...(includeRequest && {
-            'http.query': JSON.stringify(req.query),
-            'http.body': typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
+            "http.query": JSON.stringify(req.query),
+            "http.body":
+              typeof req.body === "string"
+                ? req.body
+                : JSON.stringify(req.body),
           }),
           ...traceData,
         },
       },
-      async span => {
+      async (span) => {
         try {
           // Intercept response to capture status
           const originalJson = res.json;
@@ -93,15 +108,15 @@ export function withApiRouteTracing(
           res.json = function (data: any) {
             span.setStatus?.({ code: res.statusCode < 400 ? 1 : 2 });
             if (includeResponse) {
-              span.setAttribute('response.data', JSON.stringify(data));
+              span.setAttribute("response.data", JSON.stringify(data));
             }
             return originalJson.call(this, data);
           };
 
           res.send = function (data: any) {
             span.setStatus?.({ code: res.statusCode < 400 ? 1 : 2 });
-            if (includeResponse && typeof data === 'object') {
-              span.setAttribute('response.data', JSON.stringify(data));
+            if (includeResponse && typeof data === "object") {
+              span.setAttribute("response.data", JSON.stringify(data));
             }
             return originalSend.call(this, data);
           };
@@ -114,7 +129,7 @@ export function withApiRouteTracing(
           // Execute handler
           await handler(req, res);
         } catch (error) {
-          span.setStatus?.({ code: 2, message: 'internal error' });
+          span.setStatus?.({ code: 2, message: "internal error" });
           throw error;
         }
       },
@@ -142,31 +157,37 @@ export async function withServerActionTracing<T>(
   return Sentry.startSpan(
     {
       name,
-      op: 'server.action',
+      op: "server.action",
       attributes: {
-        ...(traceData.traceId && { 'trace.traceId': traceData.traceId }),
-        ...(traceData.parentSpanId && { 'trace.parentSpanId': traceData.parentSpanId }),
-        ...(traceData.parentSampled !== undefined && {
-          'trace.parentSampled': traceData.parentSampled,
+        ...(traceData.traceId && { "trace.traceId": traceData.traceId }),
+        ...(traceData.parentSpanId && {
+          "trace.parentSpanId": traceData.parentSpanId,
         }),
-        ...(traceData.baggage && { 'trace.baggage': JSON.stringify(traceData.baggage) }),
+        ...(traceData.parentSampled !== undefined && {
+          "trace.parentSampled": traceData.parentSampled,
+        }),
+        ...(traceData.baggage && {
+          "trace.baggage": JSON.stringify(traceData.baggage),
+        }),
         ...(formData && {
-          'server.action.formData': JSON.stringify(Object.fromEntries(formData.entries())),
+          "server.action.formData": JSON.stringify(
+            Object.fromEntries(formData.entries()),
+          ),
         }),
       },
     },
-    async span => {
+    async (span) => {
       try {
         const result = await fn();
 
         if (recordResponse) {
-          span.setAttribute('response.data', JSON.stringify(result));
+          span.setAttribute("response.data", JSON.stringify(result));
         }
 
         span.setStatus?.({ code: 1 });
         return result;
       } catch (error) {
-        span.setStatus?.({ code: 2, message: 'internal error' });
+        span.setStatus?.({ code: 2, message: "internal error" });
         throw error;
       }
     },
@@ -186,7 +207,10 @@ export function withRouteHandlerTracing<T extends (...args: any[]) => any>(
   const { route, parameterize = true } = options || {};
 
   return (async (...args: Parameters<T>) => {
-    const [request, ...restArgs] = args as unknown as [NextRequest, ...unknown[]];
+    const [request, ...restArgs] = args as unknown as [
+      NextRequest,
+      ...unknown[],
+    ];
     const { method, url, headers } = request;
 
     // Extract trace headers
@@ -197,27 +221,34 @@ export function withRouteHandlerTracing<T extends (...args: any[]) => any>(
     if (parameterize) {
       // Replace UUIDs and common dynamic segments
       transactionName = transactionName
-        .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '[id]')
-        .replace(/\b\d+\b/g, '[id]');
+        .replace(
+          /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+          "[id]",
+        )
+        .replace(/\b\d+\b/g, "[id]");
     }
 
     return Sentry.startSpan(
       {
         name: transactionName,
-        op: 'http.server',
+        op: "http.server",
         attributes: {
           method,
           url,
           route,
-          ...(traceData.traceId && { 'trace.traceId': traceData.traceId }),
-          ...(traceData.parentSpanId && { 'trace.parentSpanId': traceData.parentSpanId }),
-          ...(traceData.parentSampled !== undefined && {
-            'trace.parentSampled': traceData.parentSampled,
+          ...(traceData.traceId && { "trace.traceId": traceData.traceId }),
+          ...(traceData.parentSpanId && {
+            "trace.parentSpanId": traceData.parentSpanId,
           }),
-          ...(traceData.baggage && { 'trace.baggage': JSON.stringify(traceData.baggage) }),
+          ...(traceData.parentSampled !== undefined && {
+            "trace.parentSampled": traceData.parentSampled,
+          }),
+          ...(traceData.baggage && {
+            "trace.baggage": JSON.stringify(traceData.baggage),
+          }),
         },
       },
-      async span => {
+      async (span) => {
         try {
           const response = await handler(request, ...restArgs);
 
@@ -228,7 +259,7 @@ export function withRouteHandlerTracing<T extends (...args: any[]) => any>(
 
           return response;
         } catch (error) {
-          span.setStatus?.({ code: 2, message: 'internal error' });
+          span.setStatus?.({ code: 2, message: "internal error" });
           throw error;
         }
       },
@@ -253,11 +284,11 @@ export async function withDatabaseSpan<T>(
   return Sentry.startSpan(
     {
       name: `db.${operation}`,
-      op: 'db',
+      op: "db",
       attributes: {
-        'db.system': db || 'unknown',
-        ...(table && { 'db.table': table }),
-        ...(query && { 'db.statement': query }),
+        "db.system": db || "unknown",
+        ...(table && { "db.table": table }),
+        ...(query && { "db.statement": query }),
       },
     },
     () => fn(),
@@ -275,18 +306,18 @@ export async function withHttpSpan<T>(
     statusCode?: number;
   },
 ): Promise<T> {
-  const { method = 'GET', statusCode } = options || {};
+  const { method = "GET", statusCode } = options || {};
   const urlObj = new URL(url);
 
   return Sentry.startSpan(
     {
       name: `${method} ${urlObj.hostname}${urlObj.pathname}`,
-      op: 'http.client',
+      op: "http.client",
       attributes: {
-        'http.method': method,
-        'http.url': url,
-        'http.host': urlObj.hostname,
-        ...(statusCode && { 'http.status_code': statusCode }),
+        "http.method": method,
+        "http.url": url,
+        "http.host": urlObj.hostname,
+        ...(statusCode && { "http.status_code": statusCode }),
       },
     },
     () => fn(),
@@ -297,7 +328,7 @@ export async function withHttpSpan<T>(
  * Create a span for cache operations
  */
 export async function withCacheSpan<T>(
-  operation: 'get' | 'set' | 'delete' | 'revalidate',
+  operation: "get" | "set" | "delete" | "revalidate",
   key: string,
   fn: () => Promise<T>,
   options?: {
@@ -310,12 +341,12 @@ export async function withCacheSpan<T>(
   return Sentry.startSpan(
     {
       name: `cache.${operation}`,
-      op: 'cache',
+      op: "cache",
       attributes: {
-        'cache.key': key,
-        'cache.operation': operation,
-        ...(hit !== undefined && { 'cache.hit': hit }),
-        ...(ttl !== undefined && { 'cache.ttl': ttl }),
+        "cache.key": key,
+        "cache.operation": operation,
+        ...(hit !== undefined && { "cache.hit": hit }),
+        ...(ttl !== undefined && { "cache.ttl": ttl }),
       },
     },
     () => fn(),
@@ -333,7 +364,7 @@ export function recordWebVital(
     vital?: boolean;
   },
 ): void {
-  const { unit = 'millisecond', vital = true } = options || {};
+  const { unit = "millisecond", vital = true } = options || {};
 
   const span = Sentry.getActiveSpan();
   if (span) {
@@ -342,7 +373,7 @@ export function recordWebVital(
     span.setAttribute(`${name}.unit`, unit);
 
     if (vital) {
-      span.setAttribute(`vital.${name}`, value > 0 ? 'good' : 'poor');
+      span.setAttribute(`vital.${name}`, value > 0 ? "good" : "poor");
     }
   }
 }
@@ -350,14 +381,17 @@ export function recordWebVital(
 /**
  * Helper to parameterize dynamic route segments
  */
-export function parameterizePath(path: string, params?: Record<string, string | string[]>): string {
+export function parameterizePath(
+  path: string,
+  params?: Record<string, string | string[]>,
+): string {
   let parameterized = path;
 
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         // Replace catch-all segments - use safe string replacement
-        const searchValue = `/${value.join('/')}`;
+        const searchValue = `/${value.join("/")}`;
         parameterized = parameterized.replace(searchValue, `/[...${key}]`);
       } else {
         // Replace single segments - use indexOf and replace
@@ -375,11 +409,14 @@ export function parameterizePath(path: string, params?: Record<string, string | 
   // Replace common patterns
   parameterized = parameterized
     // UUIDs
-    .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '[id]')
+    .replace(
+      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+      "[id]",
+    )
     // Numbers
-    .replace(/\/\d+/g, '/[id]')
+    .replace(/\/\d+/g, "/[id]")
     // Hashes
-    .replace(/\/[0-9a-f]{32,}/g, '/[hash]');
+    .replace(/\/[0-9a-f]{32,}/g, "/[hash]");
 
   return parameterized;
 }

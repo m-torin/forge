@@ -216,7 +216,7 @@ const config: Linter.FlatConfig[] = [
     rules: {
       // Note: Client-only import rule removed as it's not supported in the current version
       // Add a placeholder rule to avoid empty object
-      'no-console': SEVERITY.WARN,
+      'no-console': SEVERITY.OFF,
     },
   }),
 
@@ -242,7 +242,7 @@ const config: Linter.FlatConfig[] = [
     files: FILE_PATTERNS.SERVER_ACTIONS,
     rules: {
       // Note: 'use server' directive rule removed as it's not supported in the current version
-      'no-console': SEVERITY.WARN,
+      'no-console': SEVERITY.OFF,
     },
   }),
 

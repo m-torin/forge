@@ -1,0 +1,11 @@
+{
+  "extends": "@repo/config/typescript/react-library.json",
+  "compilerOptions": {
+    "paths": {
+      "@repo/core-utils": ["./src"],
+      "@repo/core-utils/shared/*": ["./src/shared/*"],
+      "@repo/core-utils/server/*": ["./src/server/*"]
+    }
+  },
+  "include": ["src", "__tests__"]
+}

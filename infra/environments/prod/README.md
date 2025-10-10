@@ -18,7 +18,7 @@ Production uses S3 backend for state storage with DynamoDB for state locking:
 
 ```hcl
 backend "s3" {
-  bucket         = "letsfindmy-forge-terraform-state"
+  bucket         = "forge-forge-terraform-state"
   key            = "prod/terraform.tfstate"
   region         = "us-east-1"
   encrypt        = true

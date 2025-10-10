@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import { clsx } from 'clsx';
-import { AnimatePresence, motion, useDragControls, useMotionValue } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
-import { useMobileDetection } from '../hooks/use-mobile-detection';
+import { clsx } from "clsx";
+import {
+  AnimatePresence,
+  motion,
+  useDragControls,
+  useMotionValue,
+} from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { useMobileDetection } from "../hooks/use-mobile-detection";
 
 // Create cn utility function for this package
-const cn = (...classes: (string | undefined | null | boolean)[]) => clsx(classes);
+const cn = (...classes: (string | undefined | null | boolean)[]) =>
+  clsx(classes);
 
 // Simple icon components as placeholders - can be overridden via UI components
 const CrossIcon = ({ size = 16 }: { size?: number }) => (
@@ -38,34 +44,39 @@ const ChevronDownIcon = ({ size = 16 }: { size?: number }) => (
 
 // Simple Button component
 const Button = ({
-  variant = 'default',
-  size = 'default',
-  className = '',
+  variant = "default",
+  size = "default",
+  className = "",
   children,
   onClick,
   ...props
 }: {
-  variant?: 'default' | 'ghost';
-  size?: 'default' | 'sm';
+  variant?: "default" | "ghost";
+  size?: "default" | "sm";
   className?: string;
   children: React.ReactNode;
   onClick?: () => void;
   [key: string]: any;
 }) => {
   const baseClasses =
-    'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+    "inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
   const variantClasses = {
-    default: 'bg-blue-600 text-white hover:bg-blue-700',
-    ghost: 'hover:bg-gray-100 text-gray-900',
+    default: "bg-blue-600 text-white hover:bg-blue-700",
+    ghost: "hover:bg-gray-100 text-gray-900",
   };
   const sizeClasses = {
-    default: 'h-10 px-4 py-2',
-    sm: 'h-8 px-3 py-1 text-sm',
+    default: "h-10 px-4 py-2",
+    sm: "h-8 px-3 py-1 text-sm",
   };
 
   return (
     <button
-      className={cn(baseClasses, variantClasses[variant], sizeClasses[size], className)}
+      className={cn(
+        baseClasses,
+        variantClasses[variant],
+        sizeClasses[size],
+        className,
+      )}
       onClick={onClick}
       {...props}
     >
@@ -149,10 +160,10 @@ export function MobileDrawer({
           <motion.div
             className="bg-background fixed inset-x-0 bottom-0 z-50 rounded-t-xl shadow-xl"
             style={{ y }}
-            initial={{ y: '100%' }}
+            initial={{ y: "100%" }}
             animate={{ y: `${(1 - snapPoint) * 100}%` }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
             drag="y"
             dragControls={dragControls}
             dragConstraints={{ top: 0 }}
@@ -172,7 +183,10 @@ export function MobileDrawer({
               </div>
             )}
 
-            <div className="overflow-y-auto" style={{ height: `${snapPoint * 80}vh` }}>
+            <div
+              className="overflow-y-auto"
+              style={{ height: `${snapPoint * 80}vh` }}
+            >
               {children}
             </div>
           </motion.div>
@@ -196,7 +210,7 @@ export function MobileOptimizedInput({
   value,
   onChange,
   onSubmit,
-  placeholder = 'Type a message...',
+  placeholder = "Type a message...",
   disabled = false,
   className,
 }: MobileInputProps) {
@@ -208,13 +222,13 @@ export function MobileOptimizedInput({
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = 'auto';
+      textarea.style.height = "auto";
       textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
   }, [value]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey && !isMobile) {
+    if (e.key === "Enter" && !e.shiftKey && !isMobile) {
       e.preventDefault();
       onSubmit();
     }
@@ -223,15 +237,15 @@ export function MobileOptimizedInput({
   return (
     <div
       className={cn(
-        'bg-background relative flex items-end gap-2 rounded-xl border p-3',
-        isFocused && 'ring-primary ring-2 ring-opacity-50',
+        "bg-background relative flex items-end gap-2 rounded-xl border p-3",
+        isFocused && "ring-primary ring-2 ring-opacity-50",
         className,
       )}
     >
       <textarea
         ref={textareaRef}
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         onKeyPress={handleKeyPress}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
@@ -239,24 +253,24 @@ export function MobileOptimizedInput({
         disabled={disabled}
         rows={1}
         className={cn(
-          'flex-1 resize-none border-0 bg-transparent outline-none',
-          'placeholder:text-muted-foreground',
-          isTouchDevice && 'text-16px', // Prevent zoom on iOS
+          "flex-1 resize-none border-0 bg-transparent outline-none",
+          "placeholder:text-muted-foreground",
+          isTouchDevice && "text-16px", // Prevent zoom on iOS
         )}
         style={{
-          fontSize: isTouchDevice ? '16px' : '14px', // Prevent zoom on iOS
-          lineHeight: '1.5',
-          maxHeight: '120px',
+          fontSize: isTouchDevice ? "16px" : "14px", // Prevent zoom on iOS
+          lineHeight: "1.5",
+          maxHeight: "120px",
         }}
       />
 
       <Button
         onClick={onSubmit}
         disabled={disabled || !value.trim()}
-        size={isMobile ? 'default' : 'sm'}
+        size={isMobile ? "default" : "sm"}
         className={cn(
-          'shrink-0',
-          isMobile && 'min-h-[44px] min-w-[44px]', // Better touch target
+          "shrink-0",
+          isMobile && "min-h-[44px] min-w-[44px]", // Better touch target
         )}
       >
         <svg
@@ -284,7 +298,11 @@ interface PullToRefreshProps {
   threshold?: number;
 }
 
-export function PullToRefresh({ onRefresh, children, threshold = 100 }: PullToRefreshProps) {
+export function PullToRefresh({
+  onRefresh,
+  children,
+  threshold = 100,
+}: PullToRefreshProps) {
   const [isPulling, setIsPulling] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
@@ -351,17 +369,19 @@ export function PullToRefresh({ onRefresh, children, threshold = 100 }: PullToRe
                   scale: shouldRefresh ? 1.1 : 1,
                 }}
                 transition={{
-                  rotate: isRefreshing ? { repeat: Infinity, duration: 1 } : undefined,
+                  rotate: isRefreshing
+                    ? { repeat: Infinity, duration: 1 }
+                    : undefined,
                 }}
               >
                 <ChevronDownIcon size={16} />
               </motion.div>
               <span>
                 {isRefreshing
-                  ? 'Refreshing...'
+                  ? "Refreshing..."
                   : shouldRefresh
-                    ? 'Release to refresh'
-                    : 'Pull to refresh'}
+                    ? "Release to refresh"
+                    : "Pull to refresh"}
               </span>
             </div>
           </motion.div>
@@ -375,8 +395,10 @@ export function PullToRefresh({ onRefresh, children, threshold = 100 }: PullToRe
 
 // Haptic feedback hook
 export function useHapticFeedback() {
-  const triggerHaptic = (type: 'light' | 'medium' | 'heavy' | 'selection' = 'light') => {
-    if ('vibrate' in navigator) {
+  const triggerHaptic = (
+    type: "light" | "medium" | "heavy" | "selection" = "light",
+  ) => {
+    if ("vibrate" in navigator) {
       const patterns = {
         light: [10],
         medium: [20],
@@ -403,15 +425,15 @@ export function MobileScrollArea({
   return (
     <div
       className={cn(
-        'overscroll-behavior-contain overflow-auto',
-        'scrollbar-thin scrollbar-track-transparent',
-        !showScrollbar && 'scrollbar-none',
+        "overscroll-behavior-contain overflow-auto",
+        "scrollbar-thin scrollbar-track-transparent",
+        !showScrollbar && "scrollbar-none",
         // iOS momentum scrolling
-        'webkit-overflow-scrolling-touch',
+        "webkit-overflow-scrolling-touch",
         className,
       )}
       style={{
-        WebkitOverflowScrolling: 'touch',
+        WebkitOverflowScrolling: "touch",
       }}
     >
       {children}
@@ -425,27 +447,43 @@ export function SafeAreaProvider({ children }: { children: React.ReactNode }) {
     // Set CSS custom properties for safe area insets
     const updateSafeArea = () => {
       const safeAreaTop =
-        getComputedStyle(document.documentElement).getPropertyValue('--sat') || '0px';
+        getComputedStyle(document.documentElement).getPropertyValue("--sat") ||
+        "0px";
       const safeAreaBottom =
-        getComputedStyle(document.documentElement).getPropertyValue('--sab') || '0px';
+        getComputedStyle(document.documentElement).getPropertyValue("--sab") ||
+        "0px";
       const safeAreaLeft =
-        getComputedStyle(document.documentElement).getPropertyValue('--sal') || '0px';
+        getComputedStyle(document.documentElement).getPropertyValue("--sal") ||
+        "0px";
       const safeAreaRight =
-        getComputedStyle(document.documentElement).getPropertyValue('--sar') || '0px';
+        getComputedStyle(document.documentElement).getPropertyValue("--sar") ||
+        "0px";
 
-      document.documentElement.style.setProperty('--safe-area-inset-top', safeAreaTop);
-      document.documentElement.style.setProperty('--safe-area-inset-bottom', safeAreaBottom);
-      document.documentElement.style.setProperty('--safe-area-inset-left', safeAreaLeft);
-      document.documentElement.style.setProperty('--safe-area-inset-right', safeAreaRight);
+      document.documentElement.style.setProperty(
+        "--safe-area-inset-top",
+        safeAreaTop,
+      );
+      document.documentElement.style.setProperty(
+        "--safe-area-inset-bottom",
+        safeAreaBottom,
+      );
+      document.documentElement.style.setProperty(
+        "--safe-area-inset-left",
+        safeAreaLeft,
+      );
+      document.documentElement.style.setProperty(
+        "--safe-area-inset-right",
+        safeAreaRight,
+      );
     };
 
     updateSafeArea();
-    window.addEventListener('resize', updateSafeArea);
-    window.addEventListener('orientationchange', updateSafeArea);
+    window.addEventListener("resize", updateSafeArea);
+    window.addEventListener("orientationchange", updateSafeArea);
 
     return () => {
-      window.removeEventListener('resize', updateSafeArea);
-      window.removeEventListener('orientationchange', updateSafeArea);
+      window.removeEventListener("resize", updateSafeArea);
+      window.removeEventListener("orientationchange", updateSafeArea);
     };
   }, []);
 
@@ -453,10 +491,10 @@ export function SafeAreaProvider({ children }: { children: React.ReactNode }) {
     <div
       className="safe-area-provider"
       style={{
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingLeft: 'env(safe-area-inset-left)',
-        paddingRight: 'env(safe-area-inset-right)',
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+        paddingLeft: "env(safe-area-inset-left)",
+        paddingRight: "env(safe-area-inset-right)",
       }}
     >
       {children}

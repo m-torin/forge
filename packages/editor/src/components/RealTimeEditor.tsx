@@ -1,16 +1,21 @@
-'use client';
+"use client";
 
-import { EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { useEffect, useState } from 'react';
-import { useCollaborativeEditing } from '../hooks/use-collaborative-editing';
-import { EditorCollaborationProps } from '../types/editor';
-import { CollaboratorAvatar } from './CollaboratorAvatar';
-import { PresenceIndicator } from './PresenceIndicator';
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { useEffect, useState } from "react";
+import { useCollaborativeEditing } from "../hooks/use-collaborative-editing";
+import { EditorCollaborationProps } from "../types/editor";
+import { CollaboratorAvatar } from "./CollaboratorAvatar";
+import { PresenceIndicator } from "./PresenceIndicator";
 
 // Simple SVG icons for toolbar
 const BoldIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -27,7 +32,12 @@ const BoldIcon = () => (
 );
 
 const ItalicIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -38,13 +48,28 @@ const ItalicIcon = () => (
 );
 
 const StrikeIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18m-9-9v18" />
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M3 12h18m-9-9v18"
+    />
   </svg>
 );
 
 const CodeIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -55,7 +80,12 @@ const CodeIcon = () => (
 );
 
 const BulletListIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -66,7 +96,12 @@ const BulletListIcon = () => (
 );
 
 const OrderedListIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -77,7 +112,12 @@ const OrderedListIcon = () => (
 );
 
 const QuoteIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -88,7 +128,12 @@ const QuoteIcon = () => (
 );
 
 const UndoIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -99,7 +144,12 @@ const UndoIcon = () => (
 );
 
 const RedoIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -132,9 +182,9 @@ function ToolbarButton({
       title={title}
       className={`rounded border p-2 transition-colors ${
         isActive
-          ? 'border-blue-300 bg-blue-100 text-blue-700'
-          : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
-      } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+          ? "border-blue-300 bg-blue-100 text-blue-700"
+          : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
+      } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
     >
       {children}
     </button>
@@ -143,16 +193,16 @@ function ToolbarButton({
 
 // Notification component
 interface NotificationProps {
-  type: 'success' | 'error' | 'warning';
+  type: "success" | "error" | "warning";
   message: string;
   onClose: () => void;
 }
 
 function Notification({ type, message, onClose }: NotificationProps) {
   const colors = {
-    success: 'bg-green-100 border-green-300 text-green-800',
-    error: 'bg-red-100 border-red-300 text-red-800',
-    warning: 'bg-yellow-100 border-yellow-300 text-yellow-800',
+    success: "bg-green-100 border-green-300 text-green-800",
+    error: "bg-red-100 border-red-300 text-red-800",
+    warning: "bg-yellow-100 border-yellow-300 text-yellow-800",
   };
 
   useEffect(() => {
@@ -161,7 +211,9 @@ function Notification({ type, message, onClose }: NotificationProps) {
   }, [onClose]);
 
   return (
-    <div className={`fixed right-4 top-4 rounded border p-3 ${colors[type]} z-50 shadow-lg`}>
+    <div
+      className={`fixed right-4 top-4 rounded border p-3 ${colors[type]} z-50 shadow-lg`}
+    >
       <div className="flex items-center justify-between">
         <span className="text-sm">{message}</span>
         <button onClick={onClose} className="ml-2 text-lg leading-none">
@@ -174,7 +226,7 @@ function Notification({ type, message, onClose }: NotificationProps) {
 
 export function RealTimeEditor({
   documentId,
-  initialContent = '',
+  initialContent = "",
   onContentChange,
   readOnly = false,
   showCollaborators = true,
@@ -182,7 +234,7 @@ export function RealTimeEditor({
 }: EditorCollaborationProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [notification, setNotification] = useState<{
-    type: 'success' | 'error' | 'warning';
+    type: "success" | "error" | "warning";
     message: string;
   } | null>(null);
 
@@ -194,7 +246,7 @@ export function RealTimeEditor({
     disconnect,
   } = useCollaborativeEditing({
     documentId,
-    userId: 'current-user', // This should come from auth context
+    userId: "current-user", // This should come from auth context
     enablePresence: showPresence,
     enableCursors: true,
     autoSave: true,
@@ -214,11 +266,11 @@ export function RealTimeEditor({
 
       // Send collaboration event
       sendEvent({
-        type: 'edit',
-        userId: 'current-user', // This should come from auth context
+        type: "edit",
+        userId: "current-user", // This should come from auth context
         data: {
           content: html,
-          operation: 'update',
+          operation: "update",
         },
       });
     },
@@ -227,13 +279,13 @@ export function RealTimeEditor({
   useEffect(() => {
     if (!isConnected) {
       setNotification({
-        type: 'warning',
-        message: 'Connection lost. Trying to reconnect...',
+        type: "warning",
+        message: "Connection lost. Trying to reconnect...",
       });
     } else {
       setNotification({
-        type: 'success',
-        message: 'Real-time collaboration active',
+        type: "success",
+        message: "Real-time collaboration active",
       });
     }
   }, [isConnected]);
@@ -274,8 +326,11 @@ export function RealTimeEditor({
       {showCollaborators && (
         <div className="flex items-center gap-3 border-b p-4">
           <div className="flex gap-2">
-            {collaborators.map(collaborator => (
-              <CollaboratorAvatar key={collaborator.id} collaborator={collaborator} />
+            {collaborators.map((collaborator) => (
+              <CollaboratorAvatar
+                key={collaborator.id}
+                collaborator={collaborator}
+              />
             ))}
           </div>
           {showPresence && <PresenceIndicator isConnected={isConnected} />}
@@ -287,28 +342,28 @@ export function RealTimeEditor({
           <div className="flex gap-1">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBold().run()}
-              isActive={editor.isActive('bold')}
+              isActive={editor.isActive("bold")}
               title="Bold (Ctrl+B)"
             >
               <BoldIcon />
             </ToolbarButton>
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              isActive={editor.isActive('italic')}
+              isActive={editor.isActive("italic")}
               title="Italic (Ctrl+I)"
             >
               <ItalicIcon />
             </ToolbarButton>
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleStrike().run()}
-              isActive={editor.isActive('strike')}
+              isActive={editor.isActive("strike")}
               title="Strikethrough"
             >
               <StrikeIcon />
             </ToolbarButton>
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleCode().run()}
-              isActive={editor.isActive('code')}
+              isActive={editor.isActive("code")}
               title="Inline Code"
             >
               <CodeIcon />
@@ -319,22 +374,28 @@ export function RealTimeEditor({
 
           <div className="flex gap-1">
             <ToolbarButton
-              onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-              isActive={editor.isActive('heading', { level: 1 })}
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 1 }).run()
+              }
+              isActive={editor.isActive("heading", { level: 1 })}
               title="Heading 1"
             >
               <span className="text-lg font-bold">H1</span>
             </ToolbarButton>
             <ToolbarButton
-              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-              isActive={editor.isActive('heading', { level: 2 })}
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 2 }).run()
+              }
+              isActive={editor.isActive("heading", { level: 2 })}
               title="Heading 2"
             >
               <span className="text-base font-bold">H2</span>
             </ToolbarButton>
             <ToolbarButton
-              onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-              isActive={editor.isActive('heading', { level: 3 })}
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 3 }).run()
+              }
+              isActive={editor.isActive("heading", { level: 3 })}
               title="Heading 3"
             >
               <span className="text-sm font-bold">H3</span>
@@ -346,14 +407,14 @@ export function RealTimeEditor({
           <div className="flex gap-1">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBulletList().run()}
-              isActive={editor.isActive('bulletList')}
+              isActive={editor.isActive("bulletList")}
               title="Bullet List"
             >
               <BulletListIcon />
             </ToolbarButton>
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              isActive={editor.isActive('orderedList')}
+              isActive={editor.isActive("orderedList")}
               title="Numbered List"
             >
               <OrderedListIcon />
@@ -365,7 +426,7 @@ export function RealTimeEditor({
           <div className="flex gap-1">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBlockquote().run()}
-              isActive={editor.isActive('blockquote')}
+              isActive={editor.isActive("blockquote")}
               title="Blockquote"
             >
               <QuoteIcon />

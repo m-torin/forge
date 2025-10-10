@@ -19,6 +19,14 @@ const baseConfig = createReactPackageConfig({
           '**/setup.*',
           '**/mocks/**',
           'src/examples/**',
+          // Exclude environment-specific integration surfaces and pure type modules
+          'src/next/**',
+          'src/client/next/**',
+          'src/server/next.ts',
+          'src/providers/**/server.ts',
+          'src/providers/**/types.ts',
+          'src/shared/types/**',
+          'src/types/**',
         ],
         // Analytics is a complex multi-provider package with conditional code paths
         // Setting thresholds appropriate for complex packages (per CLAUDE.md guidelines)

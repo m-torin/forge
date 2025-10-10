@@ -9,13 +9,13 @@ import { logError, logWarn } from '@repo/observability/server';
 import languine from '../../languine.json';
 import type en from '../dictionaries/en.json';
 
-export const locales = [languine.locale.source, ...languine.locale.targets] as const;
+const locales = [languine.locale.source, ...languine.locale.targets] as const;
 
 export type Locale = (typeof locales)[number];
 export type Dictionary = typeof en;
 
 // Type-safe error for dictionary loading
-export interface DictionaryLoadError {
+interface _DictionaryLoadError {
   locale: string;
   message: string;
   originalError: unknown;

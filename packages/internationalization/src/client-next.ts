@@ -17,16 +17,22 @@ export {
   useNow,
   useTimeZone,
   useTranslations,
-} from 'next-intl';
+} from "next-intl";
 
 // Re-export navigation components from our navigation module
-export { Link, permanentRedirect, redirect, usePathname, useRouter } from './navigation';
+export {
+  Link,
+  permanentRedirect,
+  redirect,
+  usePathname,
+  useRouter,
+} from "./navigation";
 
 // Re-export types
-export type { Locale } from './routing';
+export type { Locale } from "./routing";
 
 // Provide a compatibility hook for locale switching
-export { useRouter as useChangeLocale } from './navigation';
+export { useRouter as useChangeLocale } from "./navigation";
 
 // Export useLocale as useCurrentLocale for compatibility
-export { useLocale as useCurrentLocale } from 'next-intl';
+export { useLocale as useCurrentLocale } from "next-intl";

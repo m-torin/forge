@@ -3,6 +3,8 @@
  * Workflow mocking, testing utilities, and development server capabilities
  */
 
+import { randomUUID } from 'crypto';
+
 import { createServerObservability } from '@repo/observability/server/next';
 import {
   WorkflowDefinition,
@@ -15,7 +17,7 @@ import {
 
 import { ExecutionHistory } from './monitoring';
 
-export interface MockWorkflowConfig {
+interface MockWorkflowConfig {
   /** Mock execution behavior */
   behavior: 'custom' | 'failure' | 'success' | 'timeout';
   /** Execution delay in milliseconds */
@@ -35,7 +37,7 @@ export interface MockWorkflowConfig {
   }[];
 }
 
-export interface TestExecutionResult {
+interface TestExecutionResult {
   /** Actual output */
   actualOutput?: unknown;
   /** Assertion results */
@@ -60,7 +62,7 @@ export interface TestExecutionResult {
   status: 'failed' | 'passed' | 'skipped' | 'timeout';
 }
 
-export interface TestScenario {
+interface TestScenario {
   /** Test assertions */
   assertions?: {
     condition: unknown;
@@ -83,7 +85,7 @@ export interface TestScenario {
   timeout?: number;
 }
 
-export interface TestSuiteResult {
+interface TestSuiteResult {
   /** Total duration */
   duration: number;
   /** Suite-level error */
@@ -104,7 +106,7 @@ export interface TestSuiteResult {
   suiteName: string;
 }
 
-export interface WorkflowTestSuite {
+interface WorkflowTestSuite {
   /** Test configuration */
   config?: {
     /** Parallel execution */
@@ -296,7 +298,7 @@ export class MockWorkflowProvider implements WorkflowProvider {
   // Mock execution simulation
 
   private generateExecutionId(): string {
-    return `test_exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `test_exec_${Date.now()}_${randomUUID()}`;
   }
 
   private async getWorkflowDefinition(
@@ -497,7 +499,7 @@ export class MockWorkflowProvider implements WorkflowProvider {
 /**
  * Development server for workflow testing
  */
-export class WorkflowDevServer {
+class WorkflowDevServer {
   private isRunning = false;
   private provider: WorkflowProvider;
   private testRunner: WorkflowTestRunner;
@@ -560,7 +562,7 @@ export class WorkflowDevServer {
   }
 }
 
-export class WorkflowTestRunner {
+class WorkflowTestRunner {
   private mockProvider?: MockWorkflowProvider;
   private provider: WorkflowProvider;
 
@@ -832,7 +834,7 @@ export class WorkflowTestRunner {
 /**
  * Workflow debugging utilities
  */
-export const WorkflowDebugUtils = {
+const WorkflowDebugUtils = {
   /**
    * Create execution trace for debugging
    */
@@ -950,21 +952,21 @@ export const WorkflowDebugUtils = {
 /**
  * Create mock workflow provider
  */
-export function createMockWorkflowProvider(): MockWorkflowProvider {
+function createMockWorkflowProvider(): MockWorkflowProvider {
   return new MockWorkflowProvider();
 }
 
 /**
  * Create workflow development server
  */
-export function createWorkflowDevServer(provider: WorkflowProvider): WorkflowDevServer {
+function createWorkflowDevServer(provider: WorkflowProvider): WorkflowDevServer {
   return new WorkflowDevServer(provider);
 }
 
 /**
  * Create workflow test runner
  */
-export function createWorkflowTestRunner(
+function createWorkflowTestRunner(
   provider: WorkflowProvider,
   useMockProvider = false,
 ): WorkflowTestRunner {

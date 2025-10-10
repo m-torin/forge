@@ -75,4 +75,4 @@ export function hasUpstashConfig(): boolean {
 }
 
 // Export type for better DX
-export type Env = typeof env;
+export type SecurityEnv = typeof env;

@@ -489,7 +489,7 @@ export const edgeCaseTestData = {
 /**
  * Creates test data with specific patterns
  */
-export const createTestData = {
+const createTestData = {
   /**
    * Creates a user with specific characteristics
    */

@@ -3,6 +3,8 @@
  * Advanced cron scheduling with timezone handling and schedule management
  */
 
+import { randomUUID } from 'crypto';
+
 import { createServerObservability } from '@repo/observability/server/next';
 import { WorkflowDefinition, WorkflowProvider } from '../types/workflow';
 
@@ -23,7 +25,7 @@ export interface EnhancedScheduleConfig {
   timezone?: string;
 }
 
-export interface ScheduleExecution {
+interface ScheduleExecution {
   /** Execution completion time */
   completedAt?: Date;
   /** Error details if failed */
@@ -44,7 +46,7 @@ export interface ScheduleExecution {
   workflowExecutionId: string;
 }
 
-export interface ScheduleHealthCheck {
+interface ScheduleHealthCheck {
   /** Issues found during health check */
   issues: string[];
   /** Last check timestamp */
@@ -86,7 +88,7 @@ export interface ScheduleStatus {
   workflowId: string;
 }
 
-export class AdvancedScheduler {
+class AdvancedScheduler {
   private provider: WorkflowProvider;
   private schedules = new Map<string, ScheduleStatus>();
   private timers = new Map<string, NodeJS.Timeout>();
@@ -133,14 +135,16 @@ export class AdvancedScheduler {
     const id = scheduleId || this.generateScheduleId();
 
     // Convert ScheduleConfig to EnhancedScheduleConfig if needed
-    const enhancedConfig: EnhancedScheduleConfig =
-      'workflowId' in config
-        ? {
-            cron: config.cron || '0 * * * *',
-            metadata: config.metadata,
-            timezone: config.timezone,
-          }
-        : config;
+    const enhancedConfig: EnhancedScheduleConfig = Object.hasOwn(config, 'workflowId')
+      ? {
+          cron: (config as any).cron || '0 * * * *',
+          metadata: (config as any).metadata,
+          timezone: (config as any).timezone,
+        }
+      : {
+          ...(config as EnhancedScheduleConfig),
+          cron: (config as EnhancedScheduleConfig).cron || '0 * * * *', // Ensure cron is defined
+        };
 
     // Validate cron expression
     this.validateCronExpression(enhancedConfig.cron);
@@ -469,7 +473,7 @@ export class AdvancedScheduler {
   }
 
   private generateScheduleId(): string {
-    return `schedule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `schedule_${Date.now()}_${randomUUID()}`;
   }
 
   private getExpectedExecutionGap(_cron: string): number {
@@ -546,14 +550,14 @@ export class AdvancedScheduler {
 /**
  * Create a new advanced scheduler instance
  */
-export function createAdvancedScheduler(provider: WorkflowProvider): AdvancedScheduler {
+function createAdvancedScheduler(provider: WorkflowProvider): AdvancedScheduler {
   return new AdvancedScheduler(provider);
 }
 
 /**
  * Utility functions for working with schedules
  */
-export const ScheduleUtils = {
+const ScheduleUtils = {
   /**
    * Check if a time matches a cron expression
    */

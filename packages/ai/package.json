@@ -1,123 +1,100 @@
 {
   "name": "@repo/ai",
   "private": true,
+  "sideEffects": [
+    "./src/examples/**/*",
+    "./src/**/*.css",
+    "./src/ui/react/use-chat.ts"
+  ],
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/shared.ts",
-      "default": "./src/shared.ts"
-    },
-    "./client": {
-      "types": "./src/client.ts",
-      "default": "./src/client.ts"
-    },
-    "./server": {
-      "types": "./src/server.ts",
-      "default": "./src/server.ts"
-    },
-    "./client/next": {
-      "types": "./src/client-next.ts",
-      "default": "./src/client-next.ts"
-    },
-    "./server/next": {
-      "types": "./src/server-next.ts",
-      "default": "./src/server-next.ts"
-    },
-    "./server/edge": {
-      "types": "./src/server-edge.ts",
-      "default": "./src/server-edge.ts"
-    },
-    "./shared": {
-      "types": "./src/shared.ts",
-      "default": "./src/shared.ts"
-    },
-    "./server/rag": {
-      "types": "./src/server/rag/index.ts",
-      "default": "./src/server/rag/index.ts"
-    },
-    "./server/mcp": {
-      "types": "./src/server/mcp/index.ts",
-      "default": "./src/server/mcp/index.ts"
-    },
-    "./server/agents": {
-      "types": "./src/server/agents/index.ts",
-      "default": "./src/server/agents/index.ts"
-    },
-    "./models": {
-      "types": "./src/shared/models/index.ts",
-      "default": "./src/shared/models/index.ts"
-    },
-    "./rsc": {
-      "types": "./src/rsc/index.ts",
-      "default": "./src/rsc/index.ts"
-    },
-    "./env": {
-      "types": "./env.ts",
-      "default": "./env.ts"
-    }
+    ".": "./src/index.ts",
+    "./client": "./src/client/index.ts",
+    "./server": "./src/server/index.ts",
+    "./client/next": "./src/client/next.ts",
+    "./server/next": "./src/server/next.ts",
+    "./core": "./src/core/index.ts",
+    "./providers": "./src/providers/index.ts",
+    "./providers/vercel-ai-gateway": "./src/providers/vercel-ai-gateway.ts",
+    "./generation": "./src/generation/index.ts",
+    "./tools": "./src/tools/index.ts",
+    "./ui": "./src/ui/index.ts",
+    "./ui/react": "./src/ui/react/index.ts",
+    "./ui/server": "./src/ui/server/index.ts",
+    "./middleware": "./src/middleware/index.ts",
+    "./testing": "./src/testing/index.ts",
+    "./server/rag": "./src/rag/index.ts",
+    "./server/mcp": "./src/mcp/index.ts",
+    "./models": "./src/models/index.ts",
+    "./env": "./env.ts"
   },
   "scripts": {
     "circular": "madge --circular --extensions ts,tsx,js,jsx .",
-    "coverage:collect": "vitest run --coverage --reporter=json",
-    "knip": "knip --fix --reporter json",
-    "lint": "eslint . --fix",
+    "knip": "knip --reporter json --exclude unlisted,unresolved,exports,dependencies,files,binaries,types,duplicates",
+    "lint": "eslint . --fix --cache",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:coverage:json": "vitest run --coverage --reporter=json",
-    "test:integration": "INTEGRATION_TEST=true vitest run --config vitest.integration.config.ts",
-    "test:integration:all": "INTEGRATION_TEST=true vitest run --grep=\"upgraded|Integration\"",
-    "test:integration:mock": "vitest run --config vitest.integration.config.ts",
-    "test:mock:all": "vitest run --grep=\"upgraded|Mock\"",
-    "test:ui": "[ \"$CI\" = \"true\" ] && vitest run || vitest --ui --no-open",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "catalog:",
-    "@ai-sdk/deepinfra": "catalog:",
-    "@ai-sdk/google": "catalog:",
-    "@ai-sdk/openai": "catalog:",
-    "@ai-sdk/openai-compatible": "catalog:",
-    "@ai-sdk/perplexity": "catalog:",
+    "@ai-sdk/anthropic": "^2.0.9",
+    "@ai-sdk/deepinfra": "^1.0.13",
+    "@ai-sdk/gateway": "catalog:",
+    "@ai-sdk/google": "^2.0.11",
+    "@ai-sdk/openai": "^2.0.23",
+    "@ai-sdk/openai-compatible": "^1.0.13",
+    "@ai-sdk/perplexity": "^2.0.7",
     "@ai-sdk/provider": "catalog:",
-    "@ai-sdk/provider-utils": "catalog:",
     "@ai-sdk/react": "catalog:",
-    "@ai-sdk/rsc": "catalog:",
+    "@ai-sdk/rsc": "^1.0.29",
     "@ai-sdk/xai": "catalog:",
-    "@anthropic-ai/sdk": "^0.57.0",
     "@babel/parser": "^7.28.0",
     "@babel/traverse": "^7.28.0",
-    "@mantine/core": "catalog:",
-    "@modelcontextprotocol/sdk": "^1.17.0",
-    "@repo/database": "workspace:*",
-    "@repo/mcp-utils": "workspace:*",
-    "@repo/observability": "workspace:*",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-collapsible": "^1.1.12",
+    "@radix-ui/react-hover-card": "^1.1.6",
+    "@radix-ui/react-scroll-area": "^1.2.3",
+    "@radix-ui/react-select": "^2.2.3",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tooltip": "^1.1.9",
+    "@radix-ui/react-use-controllable-state": "^1.1.4",
+    "@repo/mcp-server": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
-    "@tabler/icons-react": "catalog:",
     "@upstash/vector": "^1.2.2",
     "ai": "catalog:",
-    "exa-js": "^1.8.23",
+    "ai-gateway-provider": "^2.0.0",
+    "ai-sdk-provider-claude-code": "^1.0.0-beta",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "catalog:",
+    "embla-carousel-react": "^8.5.3",
+    "exa-js": "^1.0.17",
     "glob": "^11.0.3",
+    "lru-cache": "catalog:",
+    "lucide-react": "^0.542.0",
     "next": "catalog:",
-    "openai": "^5.10.2",
     "react": "catalog:",
-    "react-markdown": "^10.1.0",
-    "resumable-stream": "^2.2.1",
+    "react-syntax-highlighter": "^15.6.6",
     "server-only": "^0.0.1",
+    "streamdown": "^1.1.6",
+    "use-stick-to-bottom": "^1.1.1",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@amplitude/analytics-node": "^1.4.4",
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@repo/observability": "workspace:*",
     "@repo/qa": "workspace:*",
+    "@testing-library/react": "catalog:",
     "@types/babel__traverse": "^7.28.0",
-    "@vitest/ui": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "@vitejs/plugin-react": "catalog:",
     "eslint": "catalog:",
+    "knip": "catalog:",
     "madge": "catalog:",
-    "mixpanel": "^0.18.1",
-    "posthog-node": "^5.6.0",
-    "vite-tsconfig-paths": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {

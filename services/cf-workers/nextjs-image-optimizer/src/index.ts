@@ -16,6 +16,20 @@ interface NextImageParams {
   fit?: string;
 }
 
+interface TransformOptions {
+  width: number;
+  quality: number;
+  fit: string;
+  format: string;
+}
+
+// CORS headers
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
 export default {
   async fetch(
     request: Request,
@@ -33,13 +47,6 @@ export default {
       headers: corsHeaders,
     });
   },
-};
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 // Parse Next.js image parameters
@@ -65,7 +72,7 @@ function parseNextImageParams(url: URL): NextImageParams | null {
 // Convert Next.js parameters to our internal format
 function convertToImagePath(nextParams: NextImageParams): {
   path: string;
-  transformOptions: any;
+  transformOptions: TransformOptions;
 } {
   // Handle different URL formats:
   // 1. Full URLs to our media domain

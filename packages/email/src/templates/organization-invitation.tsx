@@ -9,7 +9,7 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
+} from "@react-email/components";
 
 interface OrganizationInvitationTemplateProps extends Record<string, any> {
   readonly email: string;
@@ -25,7 +25,7 @@ export const OrganizationInvitationTemplate = ({
   inviterName,
   email: email,
   inviteLink,
-  expiresIn = '48 hours',
+  expiresIn = "48 hours",
   inviterEmail,
 }: OrganizationInvitationTemplateProps) => (
   <Tailwind>
@@ -43,8 +43,8 @@ export const OrganizationInvitationTemplate = ({
               <Text className="m-0 mb-4 text-zinc-500">Hi there!</Text>
 
               <Text className="m-0 mb-4 text-zinc-500">
-                {inviterName ?? 'Someone'} ({inviterEmail}) has invited you to join their
-                organization
+                {inviterName ?? "Someone"} ({inviterEmail}) has invited you to
+                join their organization
                 <strong>{organizationName}</strong>.
               </Text>
 
@@ -68,22 +68,33 @@ export const OrganizationInvitationTemplate = ({
               </Text>
 
               <Text className="m-0 mb-2 text-sm text-zinc-500">
-                If you don't want to join this organization, you can safely ignore this email.
+                If you don't want to join this organization, you can safely
+                ignore this email.
               </Text>
 
               <Text className="m-0 text-xs text-zinc-400">
-                If you're having trouble clicking the button, copy and paste this URL into your
-                browser: {inviteLink}
+                If you're having trouble clicking the button, copy and paste
+                this URL into your browser: {inviteLink}
               </Text>
               <Section className="mt-8 rounded-md bg-gray-100 p-4">
                 <Text className="m-0 mb-2 text-xs font-bold text-gray-500">
                   [Debug Info: All Fields]
                 </Text>
-                <Text className="m-0 text-xs text-gray-500">email: {email}</Text>
-                <Text className="m-0 text-xs text-gray-500">expiresIn: {expiresIn}</Text>
-                <Text className="m-0 text-xs text-gray-500">inviteLink: {inviteLink}</Text>
-                <Text className="m-0 text-xs text-gray-500">inviterEmail: {inviterEmail}</Text>
-                <Text className="m-0 text-xs text-gray-500">inviterName: {inviterName}</Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  email: {email}
+                </Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  expiresIn: {expiresIn}
+                </Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  inviteLink: {inviteLink}
+                </Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  inviterEmail: {inviterEmail}
+                </Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  inviterName: {inviterName}
+                </Text>
                 <Text className="m-0 text-xs text-gray-500">
                   organizationName: {organizationName}
                 </Text>

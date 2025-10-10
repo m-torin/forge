@@ -25,7 +25,7 @@ try {
 /**
  * Create a PostHog client for server-side operations
  */
-export async function createPostHogServerClient(apiKey: string, options?: any) {
+async function createPostHogServerClient(apiKey: string, options?: any) {
   if (typeof window !== 'undefined') {
     throw new Error('createPostHogServerClient should only be called on the server');
   }
@@ -48,24 +48,22 @@ export async function createPostHogServerClient(apiKey: string, options?: any) {
  * Get or generate distinct ID for server-side operations
  * Uses React cache to ensure consistent ID across server renders
  */
-export const getOrGenerateDistinctId = cache(
-  async (cookies: any, apiKey: string): Promise<string> => {
-    // Try to get from cookies first
-    const existingId = getDistinctIdFromCookies(cookies, apiKey);
-    if (existingId) {
-      return existingId;
-    }
+const getOrGenerateDistinctId = cache(async (cookies: any, apiKey: string): Promise<string> => {
+  // Try to get from cookies first
+  const existingId = getDistinctIdFromCookies(cookies, apiKey);
+  if (existingId) {
+    return existingId;
+  }
 
-    // Generate new ID
-    return generateDistinctId();
-  },
-);
+  // Generate new ID
+  return generateDistinctId();
+});
 
 /**
  * Fetch PostHog bootstrap data on the server
  * Uses React cache to prevent duplicate requests
  */
-export const getPostHogBootstrapData = cache(
+const getPostHogBootstrapData = cache(
   async (
     apiKey: string,
     distinctId: string,
@@ -109,7 +107,7 @@ export const getPostHogBootstrapData = cache(
  * Complete bootstrap data fetcher for Next.js apps
  * Handles cookies, distinct ID generation, and flag fetching
  */
-export const getCompleteBootstrapData = cache(
+const getCompleteBootstrapData = cache(
   async (
     cookies: any,
     apiKey: string,
@@ -140,7 +138,7 @@ export const getCompleteBootstrapData = cache(
 /**
  * React Suspense-compatible PostHog bootstrap fetcher
  */
-export function createPostHogSuspenseData(
+function createPostHogSuspenseData(
   cookies: any,
   apiKey: string,
   options?: {
@@ -180,7 +178,7 @@ export function createPostHogSuspenseData(
 /**
  * PostHog provider configuration helper for Next.js
  */
-export function createPostHogConfig(
+function createPostHogConfig(
   apiKey: string,
   options?: {
     host?: string;
@@ -215,7 +213,7 @@ export function createPostHogConfig(
 /**
  * Middleware helper for PostHog tracking
  */
-export function createPostHogMiddleware(apiKey: string) {
+function createPostHogMiddleware(apiKey: string) {
   return async (request: any, _response?: any) => {
     try {
       // Extract user info from request
@@ -245,8 +243,11 @@ export function createPostHogMiddleware(apiKey: string) {
  * Export commonly used utilities
  */
 export {
-  createBootstrapData,
-  createMinimalBootstrapData,
-  generateDistinctId,
-  getDistinctIdFromCookies,
-} from './posthog-bootstrap';
+  createPostHogConfig,
+  createPostHogMiddleware,
+  createPostHogServerClient,
+  createPostHogSuspenseData,
+  getCompleteBootstrapData,
+  getOrGenerateDistinctId,
+  getPostHogBootstrapData,
+};

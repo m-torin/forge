@@ -3,7 +3,7 @@
  * Testing createModelWithDefaults, ModelConfigFactory, and related functions
  */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import {
   applyDefaultSettings,
@@ -11,36 +11,36 @@ import {
   createStandardModelConfig,
   createStreamingModelConfig,
   ModelConfigFactory,
-} from '#/server/providers/model-factory';
+} from "#/server/providers/model-factory";
 
 // Mock telemetry and observability
-vi.mock('#/server/core/telemetry', () => ({
+vi.mock("#/server/core/telemetry", () => ({
   createTelemetryConfig: vi.fn(() => ({
     isEnabled: true,
     recordInputs: false,
     recordOutputs: false,
     recordUsage: true,
-    functionId: 'test-function',
-    metadata: { source: 'test' },
+    functionId: "test-function",
+    metadata: { source: "test" },
   })),
-  withTelemetry: vi.fn(config => ({ telemetry: config })),
+  withTelemetry: vi.fn((config) => ({ telemetry: config })),
 }));
 
 // Mock transform middleware
-vi.mock('#/server/core/transforms', () => ({
+vi.mock("#/server/core/transforms", () => ({
   createDefaultTransform: vi.fn(() => ({
-    transformId: 'default-transform',
-    input: vi.fn(x => x),
-    output: vi.fn(x => x),
+    transformId: "default-transform",
+    input: vi.fn((x) => x),
+    output: vi.fn((x) => x),
   })),
   createStreamingTransform: vi.fn(() => ({
-    transformId: 'streaming-transform',
-    stream: vi.fn(x => x),
+    transformId: "streaming-transform",
+    stream: vi.fn((x) => x),
   })),
 }));
 
 // Mock provider registry
-vi.mock('#/server/providers/registry', () => ({
+vi.mock("#/server/providers/registry", () => ({
   getProvider: vi.fn((providerId: string) => ({
     providerId,
     languageModel: vi.fn((modelId: string) => ({
@@ -50,16 +50,16 @@ vi.mock('#/server/providers/registry', () => ({
       doStream: vi.fn(),
     })),
   })),
-  listProviders: vi.fn(() => ['openai', 'anthropic', 'google']),
+  listProviders: vi.fn(() => ["openai", "anthropic", "google"]),
 }));
 
-describe('model Factory', () => {
+describe("model Factory", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('createModelWithDefaults', () => {
-    test('should create model configuration with telemetry enabled', () => {
+  describe("createModelWithDefaults", () => {
+    test("should create model configuration with telemetry enabled", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({
           modelId: id,
@@ -67,31 +67,33 @@ describe('model Factory', () => {
         })),
       };
 
-      const config = createModelWithDefaults(provider, 'test-model');
+      const config = createModelWithDefaults(provider, "test-model");
 
       expect(config.model).toBeDefined();
       expect(config.experimental_telemetry).toBeDefined();
       expect(config.experimental_telemetry?.isEnabled).toBeTruthy();
-      expect(provider.languageModel).toHaveBeenCalledWith('test-model');
+      expect(provider.languageModel).toHaveBeenCalledWith("test-model");
     });
 
-    test('should include default transform middleware', () => {
+    test("should include default transform middleware", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({ modelId: id })),
       };
 
-      const config = createModelWithDefaults(provider, 'test-model');
+      const config = createModelWithDefaults(provider, "test-model");
 
       expect(config.experimental_transform).toBeDefined();
-      expect(config.experimental_transform?.transformId).toBe('default-transform');
+      expect(config.experimental_transform?.transformId).toBe(
+        "default-transform",
+      );
     });
 
-    test('should apply default generation settings', () => {
+    test("should apply default generation settings", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({ modelId: id })),
       };
 
-      const config = createModelWithDefaults(provider, 'test-model', {
+      const config = createModelWithDefaults(provider, "test-model", {
         temperature: 0.7,
         maxTokens: 1000,
       });
@@ -100,50 +102,50 @@ describe('model Factory', () => {
       expect(config.maxTokens).toBe(1000);
     });
 
-    test('should handle provider creation errors', () => {
+    test("should handle provider creation errors", () => {
       const errorProvider = {
         languageModel: vi.fn(() => {
-          throw new Error('Model creation failed');
+          throw new Error("Model creation failed");
         }),
       };
 
       expect(() => {
-        createModelWithDefaults(errorProvider, 'error-model');
-      }).toThrow('Model creation failed');
+        createModelWithDefaults(errorProvider, "error-model");
+      }).toThrow("Model creation failed");
     });
   });
 
-  describe('modelConfigFactory', () => {
+  describe("modelConfigFactory", () => {
     const factory = new ModelConfigFactory();
 
-    test('should create basic model configuration', () => {
+    test("should create basic model configuration", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({ modelId: id })),
       };
 
-      const config = factory.create(provider, 'basic-model');
+      const config = factory.create(provider, "basic-model");
 
       expect(config).toMatchObject({
-        model: expect.objectContaining({ modelId: 'basic-model' }),
+        model: expect.objectContaining({ modelId: "basic-model" }),
         experimental_telemetry: expect.objectContaining({ isEnabled: true }),
         experimental_transform: expect.any(Object),
       });
     });
 
-    test('should support configuration caching', () => {
+    test("should support configuration caching", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({ modelId: id })),
       };
 
-      const config1 = factory.create(provider, 'cached-model');
-      const config2 = factory.create(provider, 'cached-model');
+      const config1 = factory.create(provider, "cached-model");
+      const config2 = factory.create(provider, "cached-model");
 
       // Should reuse configuration for same model
       expect(provider.languageModel).toHaveBeenCalledTimes(2); // Called for each create
       expect(config1.model.modelId).toBe(config2.model.modelId);
     });
 
-    test('should create configurations with custom settings', () => {
+    test("should create configurations with custom settings", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({ modelId: id })),
       };
@@ -156,38 +158,50 @@ describe('model Factory', () => {
         maxTokens: 2000,
       };
 
-      const config = factory.create(provider, 'custom-model', customSettings);
+      const config = factory.create(provider, "custom-model", customSettings);
 
       expect(config).toMatchObject({
-        model: expect.objectContaining({ modelId: 'custom-model' }),
+        model: expect.objectContaining({ modelId: "custom-model" }),
         ...customSettings,
       });
     });
 
-    test('should handle different provider types', () => {
+    test("should handle different provider types", () => {
       const providers = [
-        { name: 'openai', languageModel: vi.fn(id => ({ modelId: id, provider: 'openai' })) },
-        { name: 'anthropic', languageModel: vi.fn(id => ({ modelId: id, provider: 'anthropic' })) },
-        { name: 'google', languageModel: vi.fn(id => ({ modelId: id, provider: 'google' })) },
+        {
+          name: "openai",
+          languageModel: vi.fn((id) => ({ modelId: id, provider: "openai" })),
+        },
+        {
+          name: "anthropic",
+          languageModel: vi.fn((id) => ({
+            modelId: id,
+            provider: "anthropic",
+          })),
+        },
+        {
+          name: "google",
+          languageModel: vi.fn((id) => ({ modelId: id, provider: "google" })),
+        },
       ];
 
-      providers.forEach(provider => {
+      providers.forEach((provider) => {
         const config = factory.create(provider, `${provider.name}-model`);
         expect(config.model.provider).toBe(provider.name);
       });
     });
   });
 
-  describe('createStandardModelConfig', () => {
-    test('should create standard configuration with defaults', () => {
+  describe("createStandardModelConfig", () => {
+    test("should create standard configuration with defaults", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({ modelId: id })),
       };
 
-      const config = createStandardModelConfig(provider, 'standard-model');
+      const config = createStandardModelConfig(provider, "standard-model");
 
       expect(config).toMatchObject({
-        model: expect.objectContaining({ modelId: 'standard-model' }),
+        model: expect.objectContaining({ modelId: "standard-model" }),
         experimental_telemetry: expect.objectContaining({
           isEnabled: true,
           recordUsage: true,
@@ -198,12 +212,12 @@ describe('model Factory', () => {
       });
     });
 
-    test('should override defaults with provided settings', () => {
+    test("should override defaults with provided settings", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({ modelId: id })),
       };
 
-      const config = createStandardModelConfig(provider, 'custom-model', {
+      const config = createStandardModelConfig(provider, "custom-model", {
         temperature: 0.5,
         maxTokens: 1000,
         topP: 0.9,
@@ -215,8 +229,8 @@ describe('model Factory', () => {
     });
   });
 
-  describe('createStreamingModelConfig', () => {
-    test('should create streaming-optimized configuration', () => {
+  describe("createStreamingModelConfig", () => {
+    test("should create streaming-optimized configuration", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({
           modelId: id,
@@ -224,25 +238,25 @@ describe('model Factory', () => {
         })),
       };
 
-      const config = createStreamingModelConfig(provider, 'streaming-model');
+      const config = createStreamingModelConfig(provider, "streaming-model");
 
       expect(config).toMatchObject({
         model: expect.objectContaining({
-          modelId: 'streaming-model',
+          modelId: "streaming-model",
           doStream: expect.any(Function),
         }),
         experimental_transform: expect.objectContaining({
-          transformId: 'streaming-transform',
+          transformId: "streaming-transform",
         }),
       });
     });
 
-    test('should configure streaming-specific settings', () => {
+    test("should configure streaming-specific settings", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({ modelId: id })),
       };
 
-      const config = createStreamingModelConfig(provider, 'stream-model', {
+      const config = createStreamingModelConfig(provider, "stream-model", {
         streamingBufferSize: 1024,
         streamingTimeout: 5000,
       });
@@ -252,16 +266,16 @@ describe('model Factory', () => {
     });
   });
 
-  describe('applyDefaultSettings', () => {
-    test('should apply sensible defaults', () => {
+  describe("applyDefaultSettings", () => {
+    test("should apply sensible defaults", () => {
       const baseConfig = {
-        model: { modelId: 'test' },
+        model: { modelId: "test" },
       };
 
       const config = applyDefaultSettings(baseConfig);
 
       expect(config).toMatchObject({
-        model: { modelId: 'test' },
+        model: { modelId: "test" },
         temperature: 0.7,
         maxTokens: 4096,
         topP: 1,
@@ -270,9 +284,9 @@ describe('model Factory', () => {
       });
     });
 
-    test('should preserve existing settings', () => {
+    test("should preserve existing settings", () => {
       const baseConfig = {
-        model: { modelId: 'test' },
+        model: { modelId: "test" },
         temperature: 0.9,
         maxTokens: 1000,
       };
@@ -284,14 +298,14 @@ describe('model Factory', () => {
       expect(config.topP).toBe(1); // Default applied
     });
 
-    test('should handle undefined/null inputs', () => {
+    test("should handle undefined/null inputs", () => {
       expect(() => applyDefaultSettings(undefined as any)).not.toThrow();
       expect(() => applyDefaultSettings(null as any)).not.toThrow();
     });
   });
 
-  describe('integration Tests', () => {
-    test('should create complete model configuration with all features', () => {
+  describe("integration Tests", () => {
+    test("should create complete model configuration with all features", () => {
       const provider = {
         languageModel: vi.fn((id: string) => ({
           modelId: id,
@@ -304,7 +318,7 @@ describe('model Factory', () => {
         })),
       };
 
-      const config = createModelWithDefaults(provider, 'complete-model', {
+      const config = createModelWithDefaults(provider, "complete-model", {
         temperature: 0.8,
         maxTokens: 2000,
       });
@@ -324,7 +338,7 @@ describe('model Factory', () => {
       expect(config.experimental_transform?.transformId).toBeDefined();
     });
 
-    test('should handle complex provider scenarios', () => {
+    test("should handle complex provider scenarios", () => {
       const complexProvider = {
         languageModel: vi.fn((id: string) => ({
           modelId: id,
@@ -338,7 +352,7 @@ describe('model Factory', () => {
         })),
       };
 
-      const config = createModelWithDefaults(complexProvider, 'complex-model', {
+      const config = createModelWithDefaults(complexProvider, "complex-model", {
         enableReasoning: true,
         enableToolCalling: true,
       });
@@ -348,13 +362,13 @@ describe('model Factory', () => {
     });
   });
 
-  describe('error Handling', () => {
-    test('should handle telemetry configuration errors', () => {
-      vi.mocked(vi.importMock('#/server/core/telemetry')).createTelemetryConfig.mockImplementation(
-        () => {
-          throw new Error('Telemetry setup failed');
-        },
-      );
+  describe("error Handling", () => {
+    test("should handle telemetry configuration errors", () => {
+      vi.mocked(
+        vi.importMock("#/server/core/telemetry"),
+      ).createTelemetryConfig.mockImplementation(() => {
+        throw new Error("Telemetry setup failed");
+      });
 
       const provider = {
         languageModel: vi.fn((id: string) => ({ modelId: id })),
@@ -362,15 +376,15 @@ describe('model Factory', () => {
 
       // Should create config without telemetry rather than fail completely
       expect(() => {
-        createModelWithDefaults(provider, 'no-telemetry-model');
-      }).toThrow('Telemetry setup failed');
+        createModelWithDefaults(provider, "no-telemetry-model");
+      }).toThrow("Telemetry setup failed");
     });
 
-    test('should handle transform middleware errors', () => {
+    test("should handle transform middleware errors", () => {
       vi.mocked(
-        vi.importMock('#/server/core/transforms'),
+        vi.importMock("#/server/core/transforms"),
       ).createDefaultTransform.mockImplementation(() => {
-        throw new Error('Transform setup failed');
+        throw new Error("Transform setup failed");
       });
 
       const provider = {
@@ -378,8 +392,8 @@ describe('model Factory', () => {
       };
 
       expect(() => {
-        createModelWithDefaults(provider, 'no-transform-model');
-      }).toThrow('Transform setup failed');
+        createModelWithDefaults(provider, "no-transform-model");
+      }).toThrow("Transform setup failed");
     });
   });
 });

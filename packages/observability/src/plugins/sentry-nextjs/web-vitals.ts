@@ -3,8 +3,8 @@
  * Automatically captures and reports Core Web Vitals
  */
 
-import * as Sentry from '@sentry/nextjs';
-import type { NextWebVitalsMetric } from 'next/app';
+import * as Sentry from "@sentry/nextjs";
+import type { NextWebVitalsMetric } from "next/app";
 
 /**
  * Web Vital thresholds based on Google's recommendations
@@ -21,22 +21,26 @@ const WEB_VITAL_THRESHOLDS = {
 /**
  * Get rating for a Web Vital value
  */
-function getRating(metric: string, value: number): 'good' | 'needs-improvement' | 'poor' {
-  const thresholds = WEB_VITAL_THRESHOLDS[metric as keyof typeof WEB_VITAL_THRESHOLDS];
+function getRating(
+  metric: string,
+  value: number,
+): "good" | "needs-improvement" | "poor" {
+  const thresholds =
+    WEB_VITAL_THRESHOLDS[metric as keyof typeof WEB_VITAL_THRESHOLDS];
 
   if (!thresholds) {
-    return 'needs-improvement';
+    return "needs-improvement";
   }
 
   if (value <= thresholds.good) {
-    return 'good';
+    return "good";
   }
 
   if (value > thresholds.poor) {
-    return 'poor';
+    return "poor";
   }
 
-  return 'needs-improvement';
+  return "needs-improvement";
 }
 
 /**
@@ -51,28 +55,34 @@ export function reportWebVitals(metric: NextWebVitalsMetric): void {
 
   if (transaction) {
     // Add measurement to transaction using setAttribute in v9
-    const unit = name === 'CLS' ? 'none' : 'millisecond';
+    const unit = name === "CLS" ? "none" : "millisecond";
     transaction.setAttribute(`webvital.${name.toLowerCase()}.value`, value);
     transaction.setAttribute(`webvital.${name.toLowerCase()}.unit`, unit);
 
     // Add rating as attribute or data
     const computedRating = rating || getRating(name, value);
-    transaction.setAttribute?.(`webvital.${name.toLowerCase()}.rating`, computedRating);
+    transaction.setAttribute?.(
+      `webvital.${name.toLowerCase()}.rating`,
+      computedRating,
+    );
 
     // Add attribution data if available
     if (attribution) {
       // Convert attribution object to individual attributes
       Object.entries(attribution).forEach(([key, val]) => {
-        transaction.setAttribute(`webvital.${name.toLowerCase()}.attribution.${key}`, String(val));
+        transaction.setAttribute(
+          `webvital.${name.toLowerCase()}.attribution.${key}`,
+          String(val),
+        );
       });
     }
   }
 
   // Also send as a standalone event for Web Vitals monitoring
   Sentry.addBreadcrumb({
-    category: 'web-vital',
+    category: "web-vital",
     message: `${name} measurement`,
-    level: 'info',
+    level: "info",
     data: {
       id,
       name,
@@ -121,8 +131,9 @@ export function createWebVitalsHandler(options?: {
     }
 
     // Check if we should report
-    const rating = (metric as any).rating || getRating(metric.name, metric.value);
-    if (onlyReportPoor && rating !== 'poor') {
+    const rating =
+      (metric as any).rating || getRating(metric.name, metric.value);
+    if (onlyReportPoor && rating !== "poor") {
       return;
     }
 
@@ -131,14 +142,14 @@ export function createWebVitalsHandler(options?: {
       const _span = Sentry.startSpan(
         {
           name: `Web Vital: ${metric.name}`,
-          op: 'web.vital',
+          op: "web.vital",
           attributes: {
-            'webvital.name': metric.name,
-            'webvital.rating': rating,
-            'webvital.id': metric.id,
+            "webvital.name": metric.name,
+            "webvital.rating": rating,
+            "webvital.id": metric.id,
           },
         },
-        span => {
+        (span) => {
           // Note: In v9, use setAttribute for span attributes
           if (metric.attribution) {
             Object.entries(metric.attribution).forEach(([key, val]) => {
@@ -160,15 +171,15 @@ export function createWebVitalsHandler(options?: {
 export function initWebVitalsTracking(
   options?: Parameters<typeof createWebVitalsHandler>[0],
 ): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
   const handler = createWebVitalsHandler(options);
 
   // Hook into Next.js Web Vitals reporting
-  if ('addEventListener' in window) {
-    window.addEventListener('web-vitals', (event: any) => {
+  if ("addEventListener" in window) {
+    window.addEventListener("web-vitals", (event: any) => {
       handler(event.detail);
     });
   }
@@ -186,7 +197,7 @@ export function trackCustomMetric(
     data?: Record<string, any>;
   },
 ): void {
-  const { unit = 'millisecond', tags = {}, data = {} } = options || {};
+  const { unit = "millisecond", tags = {}, data = {} } = options || {};
 
   const transaction = Sentry.getActiveSpan();
 
@@ -210,9 +221,9 @@ export function trackCustomMetric(
 
   // Also log as breadcrumb
   Sentry.addBreadcrumb({
-    category: 'custom-metric',
+    category: "custom-metric",
     message: name,
-    level: 'info',
+    level: "info",
     data: {
       value,
       unit,
@@ -226,11 +237,13 @@ export function trackCustomMetric(
  * Track page load performance
  */
 export function trackPageLoadPerformance(): void {
-  if (typeof window === 'undefined' || !window.performance) {
+  if (typeof window === "undefined" || !window.performance) {
     return;
   }
 
-  const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+  const navigation = performance.getEntriesByType(
+    "navigation",
+  )[0] as PerformanceNavigationTiming;
 
   if (!navigation) {
     return;
@@ -241,50 +254,59 @@ export function trackPageLoadPerformance(): void {
   if (transaction) {
     // Network timings - use setAttribute in v9
     transaction.setAttribute(
-      'dns_lookup.value',
+      "dns_lookup.value",
       navigation.domainLookupEnd - navigation.domainLookupStart,
     );
-    transaction.setAttribute('dns_lookup.unit', 'millisecond');
-    transaction.setAttribute('tcp_connect.value', navigation.connectEnd - navigation.connectStart);
-    transaction.setAttribute('tcp_connect.unit', 'millisecond');
+    transaction.setAttribute("dns_lookup.unit", "millisecond");
     transaction.setAttribute(
-      'request_time.value',
+      "tcp_connect.value",
+      navigation.connectEnd - navigation.connectStart,
+    );
+    transaction.setAttribute("tcp_connect.unit", "millisecond");
+    transaction.setAttribute(
+      "request_time.value",
       navigation.responseStart - navigation.requestStart,
     );
-    transaction.setAttribute('request_time.unit', 'millisecond');
+    transaction.setAttribute("request_time.unit", "millisecond");
     transaction.setAttribute(
-      'response_time.value',
+      "response_time.value",
       navigation.responseEnd - navigation.responseStart,
     );
-    transaction.setAttribute('response_time.unit', 'millisecond');
+    transaction.setAttribute("response_time.unit", "millisecond");
 
     // Document timings
     transaction.setAttribute(
-      'dom_interactive.value',
+      "dom_interactive.value",
       navigation.domInteractive - navigation.fetchStart,
     );
-    transaction.setAttribute('dom_interactive.unit', 'millisecond');
+    transaction.setAttribute("dom_interactive.unit", "millisecond");
     transaction.setAttribute(
-      'dom_content_loaded.value',
+      "dom_content_loaded.value",
       navigation.domContentLoadedEventEnd - navigation.fetchStart,
     );
-    transaction.setAttribute('dom_content_loaded.unit', 'millisecond');
+    transaction.setAttribute("dom_content_loaded.unit", "millisecond");
     transaction.setAttribute(
-      'load_complete.value',
+      "load_complete.value",
       navigation.loadEventEnd - navigation.fetchStart,
     );
-    transaction.setAttribute('load_complete.unit', 'millisecond');
+    transaction.setAttribute("load_complete.unit", "millisecond");
 
     // Transfer sizes
-    transaction.setAttribute('transfer_size.value', navigation.transferSize);
-    transaction.setAttribute('transfer_size.unit', 'byte');
-    transaction.setAttribute('encoded_body_size.value', navigation.encodedBodySize);
-    transaction.setAttribute('encoded_body_size.unit', 'byte');
-    transaction.setAttribute('decoded_body_size.value', navigation.decodedBodySize);
-    transaction.setAttribute('decoded_body_size.unit', 'byte');
+    transaction.setAttribute("transfer_size.value", navigation.transferSize);
+    transaction.setAttribute("transfer_size.unit", "byte");
+    transaction.setAttribute(
+      "encoded_body_size.value",
+      navigation.encodedBodySize,
+    );
+    transaction.setAttribute("encoded_body_size.unit", "byte");
+    transaction.setAttribute(
+      "decoded_body_size.value",
+      navigation.decodedBodySize,
+    );
+    transaction.setAttribute("decoded_body_size.unit", "byte");
 
     // Add navigation type as attribute
-    transaction.setAttribute?.('navigation.type', navigation.type);
+    transaction.setAttribute?.("navigation.type", navigation.type);
   }
 }
 
@@ -305,17 +327,19 @@ export function trackResourcePerformance(options?: {
    */
   maxResources?: number;
 }): void {
-  if (typeof window === 'undefined' || !window.performance) {
+  if (typeof window === "undefined" || !window.performance) {
     return;
   }
 
   const {
-    types = ['script', 'link', 'img', 'xmlhttprequest', 'fetch'],
+    types = ["script", "link", "img", "xmlhttprequest", "fetch"],
     minDuration = 10,
     maxResources = 50,
   } = options || {};
 
-  const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+  const resources = performance.getEntriesByType(
+    "resource",
+  ) as PerformanceResourceTiming[];
   const transaction = Sentry.getActiveSpan();
 
   if (!transaction) {
@@ -323,10 +347,10 @@ export function trackResourcePerformance(options?: {
   }
 
   resources
-    .filter(resource => types.includes(resource.initiatorType))
-    .filter(resource => resource.duration >= minDuration)
+    .filter((resource) => types.includes(resource.initiatorType))
+    .filter((resource) => resource.duration >= minDuration)
     .slice(0, maxResources)
-    .forEach(resource => {
+    .forEach((resource) => {
       const url = new URL(resource.name);
       const _name = `${resource.initiatorType}: ${url.pathname}`;
 

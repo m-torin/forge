@@ -22,9 +22,9 @@
  * ```
  */
 
-'use server';
+"use server";
 
-import type { Prisma, PrismaClient } from '../../../../prisma-generated/client';
+import type { Prisma, PrismaClient } from "../../../../prisma-generated/client";
 import {
   aggregateAccountsOrm,
   countAccountsOrm,
@@ -41,7 +41,7 @@ import {
   updateAccountOrm,
   updateManyAccountsOrm,
   upsertAccountOrm,
-} from '../orm/auth/authOrm';
+} from "../orm/auth/authOrm";
 
 // ============================================================================
 // ACCOUNT SERVER ACTIONS
@@ -51,8 +51,11 @@ import {
 /**
  * Server action to create a new account
  */
-export async function createAccountAction(args: Prisma.AccountCreateArgs, prisma?: PrismaClient) {
-  'use server';
+export async function createAccountAction(
+  args: Prisma.AccountCreateArgs,
+  prisma?: PrismaClient,
+) {
+  "use server";
   return createAccountOrm(args, prisma);
 }
 
@@ -63,7 +66,7 @@ export async function createManyAccountsAction(
   args: Prisma.AccountCreateManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return createManyAccountsOrm(args, prisma);
 }
 
@@ -75,7 +78,7 @@ export async function findFirstAccountAction(
   args?: Prisma.AccountFindFirstArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findFirstAccountOrm(args, prisma);
 }
 
@@ -86,7 +89,7 @@ export async function findFirstAccountActionOrThrow(
   args: Prisma.AccountFindFirstOrThrowArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findFirstAccountOrmOrThrow(args, prisma);
 }
 
@@ -97,7 +100,7 @@ export async function findUniqueAccountAction(
   args: Prisma.AccountFindUniqueArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findUniqueAccountOrm(args, prisma);
 }
 
@@ -108,7 +111,7 @@ export async function findUniqueAccountActionOrThrow(
   args: Prisma.AccountFindUniqueOrThrowArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findUniqueAccountOrmOrThrow(args, prisma);
 }
 
@@ -119,7 +122,7 @@ export async function findManyAccountsAction(
   args?: Prisma.AccountFindManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findManyAccountsOrm(args, prisma);
 }
 
@@ -127,8 +130,11 @@ export async function findManyAccountsAction(
 /**
  * Server action to update an account
  */
-export async function updateAccountAction(args: Prisma.AccountUpdateArgs, prisma?: PrismaClient) {
-  'use server';
+export async function updateAccountAction(
+  args: Prisma.AccountUpdateArgs,
+  prisma?: PrismaClient,
+) {
+  "use server";
   return updateAccountOrm(args, prisma);
 }
 
@@ -139,15 +145,18 @@ export async function updateManyAccountsAction(
   args: Prisma.AccountUpdateManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return updateManyAccountsOrm(args, prisma);
 }
 
 /**
  * Server action to upsert an account (update or create)
  */
-export async function upsertAccountAction(args: Prisma.AccountUpsertArgs, prisma?: PrismaClient) {
-  'use server';
+export async function upsertAccountAction(
+  args: Prisma.AccountUpsertArgs,
+  prisma?: PrismaClient,
+) {
+  "use server";
   return upsertAccountOrm(args, prisma);
 }
 
@@ -155,8 +164,11 @@ export async function upsertAccountAction(args: Prisma.AccountUpsertArgs, prisma
 /**
  * Server action to delete an account
  */
-export async function deleteAccountAction(args: Prisma.AccountDeleteArgs, prisma?: PrismaClient) {
-  'use server';
+export async function deleteAccountAction(
+  args: Prisma.AccountDeleteArgs,
+  prisma?: PrismaClient,
+) {
+  "use server";
   return deleteAccountOrm(args, prisma);
 }
 
@@ -167,7 +179,7 @@ export async function deleteManyAccountsAction(
   args?: Prisma.AccountDeleteManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return deleteManyAccountsOrm(args, prisma);
 }
 
@@ -179,15 +191,18 @@ export async function aggregateAccountsAction(
   args: Prisma.AccountAggregateArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return aggregateAccountsOrm(args, prisma);
 }
 
 /**
  * Server action to count accounts
  */
-export async function countAccountsAction(args?: Prisma.AccountCountArgs, prisma?: PrismaClient) {
-  'use server';
+export async function countAccountsAction(
+  args?: Prisma.AccountCountArgs,
+  prisma?: PrismaClient,
+) {
+  "use server";
   return countAccountsOrm(args, prisma);
 }
 
@@ -198,6 +213,6 @@ export async function groupByAccountsAction(
   args: Prisma.AccountGroupByArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return groupByAccountsOrm(args, prisma);
 }

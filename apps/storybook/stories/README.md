@@ -1,7 +1,7 @@
 # Storybook Stories Organization
 
 **Note: Stories have been moved to live next to their components in the
-design-system package.**
+uix-system package.**
 
 Stories are now co-located with their components for better organization:
 
@@ -9,18 +9,13 @@ Stories are now co-located with their components for better organization:
 
 ### Ciseco E-commerce Stories
 
-Stories are located in `/packages/design-system/ciseco/components/[component]/`
+Stories are located in `/packages/uix-system/components/[component]/`
 
 - E-commerce focused components for online stores
 - Product cards, shopping carts, checkout flows
 - E-commerce specific headers, heroes, and layouts
 - Built with Tailwind CSS and e-commerce best practices
 
-### Algolia Search Stories
-
-Stories are located in `/packages/design-system/algolia/components/[component]/`
-
-- Search components powered by Algolia
 - Search boxes, results, autocomplete, and providers
 - E-commerce search examples
 - Documentation search patterns
@@ -29,8 +24,7 @@ Stories are located in `/packages/design-system/algolia/components/[component]/`
 
 Stories maintain their hierarchical organization:
 
-- `ciseco/ProductCard` - E-commerce product card
-- `algolia/SearchBox` - Search input component
+- `ProductCard` - E-commerce product card
 
 ## Usage
 
@@ -46,9 +40,6 @@ pnpm dev
 ```typescript
 // Ciseco components
 import { ProductCard, Header } from "@repo/uix-system/mantine";
-
-// Algolia components
-import { SearchBox, SearchProvider } from "@repo/uix-system/algolia";
 ```
 
 ## Features

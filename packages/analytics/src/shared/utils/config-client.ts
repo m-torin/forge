@@ -5,7 +5,7 @@
 
 import type { AnalyticsConfig, ProviderConfig } from '../types/types';
 
-export type ConfigRequirements = Record<string, string[]>;
+type ConfigRequirements = Record<string, string[]>;
 
 export const PROVIDER_REQUIREMENTS: ConfigRequirements = {
   console: [], // No required fields
@@ -30,7 +30,7 @@ export function validateConfig(config: AnalyticsConfig): void {
 /**
  * Validates a single provider configuration
  */
-export function validateProviderConfig(providerName: string, config: ProviderConfig): void {
+function validateProviderConfig(providerName: string, config: ProviderConfig): void {
   const requiredFields = PROVIDER_REQUIREMENTS[providerName] || [];
 
   for (const field of requiredFields) {
@@ -46,7 +46,7 @@ export function validateProviderConfig(providerName: string, config: ProviderCon
 /**
  * Configuration builder (client-safe version)
  */
-export interface ConfigBuilder {
+interface ConfigBuilder {
   addConsole(options?: any): ConfigBuilder;
   addPostHog(apiKey: string, options?: any): ConfigBuilder;
   addProvider(name: string, config: ProviderConfig): ConfigBuilder;
@@ -144,7 +144,7 @@ export function getAnalyticsConfig(options?: {
 /**
  * Conditional provider inclusion based on feature flags (client-safe version)
  */
-export async function buildAnalyticsConfig(
+async function _buildAnalyticsConfig(
   getFeatureFlag: (flag: string) => Promise<boolean>,
   options?: {
     segmentWriteKey?: string;

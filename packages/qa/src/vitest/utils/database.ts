@@ -47,7 +47,7 @@ interface RedisDatabaseAdapter extends DatabaseAdapter {
   sortedSetScore(collection: string, id: string, member: any): Promise<number | null>;
   ttl(collection: string, id: string): Promise<number>;
 }
-// import type { DatabaseAdapter, VectorDatabaseAdapter, RedisDatabaseAdapter } from '@repo/database/types';
+// import type { DatabaseAdapter, VectorDatabaseAdapter, RedisDatabaseAdapter } from '@repo/db-prisma/types';
 
 // Database testing utilities
 export interface DatabaseTestConfig {

@@ -12,7 +12,7 @@ import { secure } from '../../src/server-next';
 vi.mock('server-only', () => ({}));
 
 // Mock the database Redis module
-vi.mock('@repo/database/redis/server', () => {
+vi.mock('@repo/db-upstash-redis/server', () => {
   // Create a simple in-memory mock Redis inside the factory
   const storage = new Map<string, any>();
 

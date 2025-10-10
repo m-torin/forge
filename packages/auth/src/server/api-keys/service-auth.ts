@@ -2,7 +2,7 @@
  * Service-to-service authentication using API keys
  */
 
-import { logError } from '@repo/observability/server/next';
+import { logError } from '@repo/observability';
 import { headers } from 'next/headers';
 import 'server-only';
 
@@ -103,7 +103,10 @@ export async function validateServiceAuth(token: string): Promise<{
     if (!result.valid || !result.key) {
       return {
         isValid: false,
-        error: result.error?.message || 'Invalid service token',
+        error:
+          result?.error && (result.error as any).message
+            ? (result.error as any).message
+            : 'Token validation failed',
       };
     }
 
@@ -117,8 +120,11 @@ export async function validateServiceAuth(token: string): Promise<{
     }
 
     // Get permissions from the key (better-auth returns permissions as Record<string, string[]>)
-    const keyPermissions = result.key.permissions || {};
-    const permissions = Object.values(keyPermissions).flat() as string[];
+    // Only accept array values; ignore non-array entries
+    const keyPermissions = (result.key as any).permissions || {};
+    const permissions = Object.values(keyPermissions).flatMap(v =>
+      Array.isArray(v) ? v : [],
+    ) as string[];
 
     return {
       isValid: true,
@@ -253,10 +259,14 @@ export async function listServiceAuth(): Promise<{
  * Parses a service token from headers
  */
 export function parseServiceToken(headers: Headers): string | null {
+  // Validate headers interface
+  if (!headers || typeof (headers as any).get !== 'function') {
+    return null;
+  }
   // Check Authorization header first
   const authHeader = headers.get('authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    return authHeader.substring(7);
+    return authHeader.substring(7).trim();
   }
 
   // Check x-api-key header

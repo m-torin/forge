@@ -2,7 +2,7 @@
  * Test data for scraping tests
  */
 
-export const scrapingTestData = {
+const scrapingTestData = {
   simpleHtml: `
     <html>
       <head>

@@ -6,14 +6,14 @@
 import { Mock } from 'vitest';
 
 // Mock validation types
-export interface MockValidationResult {
+interface MockValidationResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
   coverage: MockCoverage;
 }
 
-export interface MockCoverage {
+interface MockCoverage {
   called: boolean;
   callCount: number;
   argsUsed: Array<any[]>;
@@ -22,7 +22,7 @@ export interface MockCoverage {
   lastUsed: Date | null;
 }
 
-export interface MockValidationOptions {
+interface MockValidationOptions {
   /**
    * Whether to validate that mock was called
    */
@@ -64,7 +64,7 @@ export interface MockValidationOptions {
   customValidators?: Array<(mock: Mock) => string[]>;
 }
 
-export interface MockHealth {
+interface MockHealth {
   healthy: boolean;
   issues: string[];
   suggestions: string[];
@@ -557,8 +557,3 @@ export const runtimeValidation = {
 };
 
 // Export all utilities
-export default {
-  mockValidation,
-  mockHealth,
-  runtimeValidation,
-};

@@ -3,9 +3,9 @@
  * Wraps withSentryConfig with observability defaults
  */
 
-import { withSentryConfig } from '@sentry/nextjs';
-import type { NextConfig } from 'next';
-import { safeEnv } from './env';
+import { withSentryConfig } from "@sentry/nextjs";
+import type { NextConfig } from "next";
+import { safeEnv } from "./env";
 
 /**
  * Build options for Sentry integration
@@ -64,9 +64,11 @@ export interface ObservabilitySentryBuildOptions {
  * Default error handler for build failures
  */
 const defaultErrorHandler = (error: Error) => {
-  console.warn('⚠️  Sentry build error occurred:', error.message);
-  console.warn('   This may prevent source maps from being uploaded to Sentry.');
-  console.warn('   Check your SENTRY_AUTH_TOKEN and project settings.');
+  console.warn("⚠️  Sentry build error occurred:", error.message);
+  console.warn(
+    "   This may prevent source maps from being uploaded to Sentry.",
+  );
+  console.warn("   Check your SENTRY_AUTH_TOKEN and project settings.");
   // Don't re-throw by default to prevent build failures
 };
 
@@ -105,7 +107,8 @@ export function withObservabilitySentry(
 
     // Release configuration
     release: {
-      name: options.release?.name || env.SENTRY_RELEASE_NAME || env.SENTRY_RELEASE,
+      name:
+        options.release?.name || env.SENTRY_RELEASE_NAME || env.SENTRY_RELEASE,
       create: options.release?.create ?? env.SENTRY_RELEASE_CREATE,
       finalize: options.release?.finalize ?? env.SENTRY_RELEASE_FINALIZE,
       dist: options.release?.dist || env.SENTRY_RELEASE_DIST,
@@ -115,22 +118,28 @@ export function withObservabilitySentry(
     tunnelRoute: options.tunnelRoute ?? env.SENTRY_TUNNEL_ROUTE,
     automaticVercelMonitors:
       options.automaticVercelMonitors ?? env.SENTRY_AUTOMATIC_VERCEL_MONITORS,
-    widenClientFileUpload: options.widenClientFileUpload ?? env.SENTRY_WIDEN_CLIENT_FILE_UPLOAD,
+    widenClientFileUpload:
+      options.widenClientFileUpload ?? env.SENTRY_WIDEN_CLIENT_FILE_UPLOAD,
     disableLogger: options.disableLogger ?? env.SENTRY_DISABLE_LOGGER,
 
     // Pass through advanced options
-    unstable_sentryWebpackPluginOptions: options.unstable_sentryWebpackPluginOptions,
+    unstable_sentryWebpackPluginOptions:
+      options.unstable_sentryWebpackPluginOptions,
   };
 
   // Check if we have minimum required configuration
   if (!autoDetectedOptions.authToken) {
-    console.warn('⚠️  SENTRY_AUTH_TOKEN not found. Source maps will not be uploaded.');
-    console.warn('   Set SENTRY_AUTH_TOKEN environment variable to enable source map uploads.');
+    console.warn(
+      "⚠️  SENTRY_AUTH_TOKEN not found. Source maps will not be uploaded.",
+    );
+    console.warn(
+      "   Set SENTRY_AUTH_TOKEN environment variable to enable source map uploads.",
+    );
   }
 
   if (!autoDetectedOptions.org || !autoDetectedOptions.project) {
-    console.warn('⚠️  SENTRY_ORG or SENTRY_PROJECT not configured.');
-    console.warn('   Source map uploads may fail without these values.');
+    console.warn("⚠️  SENTRY_ORG or SENTRY_PROJECT not configured.");
+    console.warn("   Source map uploads may fail without these values.");
   }
 
   // Enhance Next.js config with Document-Policy header if profiling is enabled
@@ -144,11 +153,11 @@ export function withObservabilitySentry(
 
       // Add Document-Policy header for browser profiling
       headers.push({
-        source: '/:path*',
+        source: "/:path*",
         headers: [
           {
-            key: 'Document-Policy',
-            value: 'js-profiling',
+            key: "Document-Policy",
+            value: "js-profiling",
           },
         ],
       });

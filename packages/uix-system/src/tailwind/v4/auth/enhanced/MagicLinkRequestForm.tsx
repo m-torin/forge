@@ -3,17 +3,17 @@
  * 100% React Server Component for passwordless authentication via magic links
  */
 
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
-import { cn } from '../utils/dark-mode';
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
+import { cn } from "../utils/dark-mode";
 
 // Import real server action from the auth package
-import { requestMagicLinkAction } from '@repo/auth/server-actions';
+import { requestMagicLinkAction } from "@repo/auth/server-actions";
 
 interface MagicLinkRequestFormProps extends BaseProps {
   title?: string;
@@ -27,15 +27,18 @@ interface MagicLinkRequestFormProps extends BaseProps {
 const _initialState: FormState = { success: false };
 
 export function MagicLinkRequestForm({
-  title = 'Sign in with Magic Link',
-  subtitle = 'Enter your email to receive a passwordless sign-in link',
+  title = "Sign in with Magic Link",
+  subtitle = "Enter your email to receive a passwordless sign-in link",
   allowSignUp = true,
   redirectTo,
   onSuccess,
   onError,
-  className = '',
+  className = "",
 }: MagicLinkRequestFormProps) {
-  const [state, action] = useFormState(requestMagicLinkAction, createInitialActionState());
+  const [state, action] = useFormState(
+    requestMagicLinkAction,
+    createInitialActionState(),
+  );
 
   // Handle success/error callbacks
   if (state?.success && state?.data?.email && onSuccess) {
@@ -47,7 +50,7 @@ export function MagicLinkRequestForm({
   }
 
   return (
-    <Card className={cn('mx-auto w-full max-w-md', className)}>
+    <Card className={cn("mx-auto w-full max-w-md", className)}>
       <CardHeader>
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
@@ -65,9 +68,20 @@ export function MagicLinkRequestForm({
               />
             </svg>
           </div>
-          <h1 className={cn('text-2xl font-bold text-gray-900', 'dark:text-gray-100')}>{title}</h1>
+          <h1
+            className={cn(
+              "text-2xl font-bold text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
+            {title}
+          </h1>
           {subtitle && (
-            <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>{subtitle}</p>
+            <p
+              className={cn("mt-2 text-sm text-gray-600", "dark:text-gray-400")}
+            >
+              {subtitle}
+            </p>
           )}
         </div>
       </CardHeader>
@@ -79,13 +93,16 @@ export function MagicLinkRequestForm({
 
             <div
               className={cn(
-                'rounded-lg border border-blue-200 bg-blue-50 p-4',
-                'dark:border-blue-800 dark:bg-blue-900/20',
+                "rounded-lg border border-blue-200 bg-blue-50 p-4",
+                "dark:border-blue-800 dark:bg-blue-900/20",
               )}
             >
               <div className="flex items-start">
                 <svg
-                  className={cn('mr-3 mt-0.5 h-5 w-5 text-blue-400', 'dark:text-blue-400')}
+                  className={cn(
+                    "mr-3 mt-0.5 h-5 w-5 text-blue-400",
+                    "dark:text-blue-400",
+                  )}
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -95,7 +112,9 @@ export function MagicLinkRequestForm({
                     clipRule="evenodd"
                   />
                 </svg>
-                <div className={cn('text-sm text-blue-800', 'dark:text-blue-200')}>
+                <div
+                  className={cn("text-sm text-blue-800", "dark:text-blue-200")}
+                >
                   <h4 className="mb-1 font-medium">Check your email</h4>
                   <p className="mb-2">
                     We sent a magic link to <strong>{state.data?.email}</strong>
@@ -120,7 +139,7 @@ export function MagicLinkRequestForm({
                 className="w-full"
                 disabled={state === undefined}
               >
-                {state === undefined ? 'Resending...' : 'Resend Magic Link'}
+                {state === undefined ? "Resending..." : "Resend Magic Link"}
               </Button>
             </form>
           </div>
@@ -150,14 +169,14 @@ export function MagicLinkRequestForm({
                   id="signUp"
                   name="signUp"
                   className={cn(
-                    'mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500',
-                    'dark:border-gray-600 dark:focus:ring-blue-500',
+                    "mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500",
+                    "dark:border-gray-600 dark:focus:ring-blue-500",
                   )}
                   defaultChecked={true}
                 />
                 <label
                   htmlFor="signUp"
-                  className={cn('text-sm text-gray-700', 'dark:text-gray-300')}
+                  className={cn("text-sm text-gray-700", "dark:text-gray-300")}
                 >
                   Create account if email doesn't exist
                 </label>
@@ -170,31 +189,47 @@ export function MagicLinkRequestForm({
               className="w-full"
               disabled={state === undefined}
             >
-              {state === undefined ? 'Sending Magic Link...' : 'Send Magic Link'}
+              {state === undefined
+                ? "Sending Magic Link..."
+                : "Send Magic Link"}
             </Button>
           </form>
         )}
 
-        <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
-          <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
+        <div
+          className={cn("mt-6 rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+        >
+          <h4
+            className={cn(
+              "mb-2 text-sm font-medium text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
             How Magic Links Work
           </h4>
-          <div className={cn('space-y-1 text-xs text-gray-600', 'dark:text-gray-400')}>
+          <div
+            className={cn(
+              "space-y-1 text-xs text-gray-600",
+              "dark:text-gray-400",
+            )}
+          >
             <p>• No password required - just click the link in your email</p>
             <p>• Links expire after 5 minutes for security</p>
             <p>• Each link can only be used once</p>
-            <p>• Works on any device - click the link where you want to sign in</p>
+            <p>
+              • Works on any device - click the link where you want to sign in
+            </p>
           </div>
         </div>
 
         <div className="mt-4 text-center">
-          <p className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
-            Prefer a different method?{' '}
+          <p className={cn("text-sm text-gray-600", "dark:text-gray-400")}>
+            Prefer a different method?{" "}
             <a
               href="/auth/signin"
               className={cn(
-                'text-blue-600 hover:text-blue-500',
-                'dark:text-blue-400 dark:hover:text-blue-300',
+                "text-blue-600 hover:text-blue-500",
+                "dark:text-blue-400 dark:hover:text-blue-300",
               )}
             >
               Sign in with password

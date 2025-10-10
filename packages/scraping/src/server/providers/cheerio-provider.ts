@@ -383,14 +383,14 @@ export class CheerioProvider implements ScrapingProvider {
 /**
  * Factory function to create a Cheerio provider
  */
-export function createCheerioProvider(_config?: ProviderConfig): CheerioProvider {
+function createCheerioProvider(_config?: ProviderConfig): CheerioProvider {
   return new CheerioProvider();
 }
 
 /**
  * Quick scrape function using Cheerio
  */
-export async function scrapeWithCheerio(
+async function _scrapeWithCheerio(
   url: string,
   selectors?: SelectorMap,
   options?: ScrapeOptions,

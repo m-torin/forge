@@ -1,4 +1,8 @@
-import { defineConfig, devices, type PlaywrightTestConfig } from '@playwright/test';
+import {
+  defineConfig,
+  devices,
+  type PlaywrightTestConfig,
+} from "@playwright/test";
 
 /**
  * Base Playwright configuration shared across all configurations
@@ -19,13 +23,13 @@ export const basePlaywrightConfig: PlaywrightTestConfig = {
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
-    ? [['json', { outputFile: 'test-results/results.json' }], ['github']]
-    : 'list',
+    ? [["json", { outputFile: "test-results/results.json" }], ["github"]]
+    : "list",
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Take screenshots only on failure */
-    screenshot: 'only-on-failure',
+    screenshot: "only-on-failure",
 
     /* Run tests in headless mode by default for CI/CD environments */
     headless: true,
@@ -38,20 +42,20 @@ export const basePlaywrightConfig: PlaywrightTestConfig = {
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
     },
     /* WebKit only locally - CI compatibility issues */
     ...(process.env.CI
       ? []
       : [
           {
-            name: 'webkit',
-            use: { ...devices['Desktop Safari'] },
+            name: "webkit",
+            use: { ...devices["Desktop Safari"] },
           },
         ]),
   ],

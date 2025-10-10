@@ -1,10 +1,10 @@
-import { useCollaboration } from '#/hooks/use-collaboration';
-import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMockCollaborationEvent } from '../testing/factories.js';
-import { setupWebSocketMock } from '../testing/mocks/websocket-mock.js';
+import { useCollaboration } from "#/hooks/use-collaboration";
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockCollaborationEvent } from "../testing/factories.js";
+import { setupWebSocketMock } from "../testing/mocks/websocket-mock.js";
 
-describe('useCollaboration', () => {
+describe("useCollaboration", () => {
   const mockSetup = setupWebSocketMock({ autoConnect: true, latency: 0 });
 
   beforeEach(() => {
@@ -16,8 +16,8 @@ describe('useCollaboration', () => {
   });
 
   const defaultOptions = {
-    documentId: 'test-doc',
-    userId: 'test-user',
+    documentId: "test-doc",
+    userId: "test-user",
     enablePresence: true,
     enableCursors: true,
   };
@@ -26,35 +26,35 @@ describe('useCollaboration', () => {
     vi.clearAllMocks();
   });
 
-  it('initializes with empty collaborators and disconnected state', () => {
+  it("initializes with empty collaborators and disconnected state", () => {
     const { result } = renderHook(() => useCollaboration(defaultOptions));
 
     expect(result.current.collaborators).toStrictEqual([]);
     expect(result.current.isConnected).toBe(false);
   });
 
-  it('connects and sets connected state', async () => {
+  it("connects and sets connected state", async () => {
     const { result } = renderHook(() => useCollaboration(defaultOptions));
 
     // Wait for connection
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
     expect(result.current.isConnected).toBe(true);
   });
 
-  it('sends events through websocket', async () => {
+  it("sends events through websocket", async () => {
     const { result } = renderHook(() => useCollaboration(defaultOptions));
 
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
     const event = createMockCollaborationEvent({
-      type: 'edit',
-      userId: 'test-user',
-      data: { content: 'Hello world' },
+      type: "edit",
+      userId: "test-user",
+      data: { content: "Hello world" },
     });
 
     act(() => {
@@ -70,21 +70,21 @@ describe('useCollaboration', () => {
     expect(result.current.sendEvent).toBeDefined();
   });
 
-  it('handles presence events for user join', async () => {
+  it("handles presence events for user join", async () => {
     const { result } = renderHook(() => useCollaboration(defaultOptions));
 
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
     const presenceEvent = createMockCollaborationEvent({
-      type: 'presence',
-      userId: 'other-user',
+      type: "presence",
+      userId: "other-user",
       data: {
-        action: 'join',
-        name: 'Other User',
-        email: 'other@example.com',
-        color: '#FF0000',
+        action: "join",
+        name: "Other User",
+        email: "other@example.com",
+        color: "#FF0000",
       },
     });
 
@@ -93,23 +93,23 @@ describe('useCollaboration', () => {
     expect(result.current.collaborators).toStrictEqual([]);
   });
 
-  it('handles cursor events when enabled', async () => {
+  it("handles cursor events when enabled", async () => {
     const { result } = renderHook(() =>
       useCollaboration({ ...defaultOptions, enableCursors: true }),
     );
 
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
     expect(result.current.isConnected).toBe(true);
   });
 
-  it('updates presence data', async () => {
+  it("updates presence data", async () => {
     const { result } = renderHook(() => useCollaboration(defaultOptions));
 
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
     act(() => {
@@ -122,11 +122,11 @@ describe('useCollaboration', () => {
     expect(result.current.updatePresence).toBeDefined();
   });
 
-  it('disconnects cleanly', async () => {
+  it("disconnects cleanly", async () => {
     const { result } = renderHook(() => useCollaboration(defaultOptions));
 
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
     });
 
     act(() => {
@@ -136,7 +136,7 @@ describe('useCollaboration', () => {
     expect(result.current.disconnect).toBeDefined();
   });
 
-  it('handles connection failures gracefully', () => {
+  it("handles connection failures gracefully", () => {
     // Test with mock that fails connection
     const { result } = renderHook(() => useCollaboration(defaultOptions));
 

@@ -44,34 +44,34 @@ resource "cloudflare_workers_script" "d1_migrations" {
     if v.enable_migrations
   }
 
-  account_id = var.account_id
-  name       = "${each.value.name}-migrations"
-  
+  account_id  = var.account_id
+  script_name = "${each.value.name}-migrations"
+
   content = <<-EOT
     export default {
       async fetch(request, env, ctx) {
         const url = new URL(request.url);
-        
+
         // Simple authentication check
         const authHeader = request.headers.get('Authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
           return new Response('Unauthorized', { status: 401 });
         }
-        
+
         if (url.pathname === '/migrate') {
           try {
             // Get current schema version
             const version = await env.DB.prepare(
               "SELECT version FROM migrations ORDER BY version DESC LIMIT 1"
             ).first();
-            
+
             const currentVersion = version?.version || 0;
-            
+
             // Apply pending migrations
             // In production, migrations would be loaded from files
             const migrations = env.MIGRATIONS || [];
             let applied = 0;
-            
+
             for (const migration of migrations) {
               if (migration.version > currentVersion) {
                 await env.DB.batch(migration.statements);
@@ -81,7 +81,7 @@ resource "cloudflare_workers_script" "d1_migrations" {
                 applied++;
               }
             }
-            
+
             return new Response(JSON.stringify({
               status: 'success',
               currentVersion: currentVersion + applied,
@@ -99,13 +99,13 @@ resource "cloudflare_workers_script" "d1_migrations" {
             });
           }
         }
-        
+
         if (url.pathname === '/status') {
           try {
             const tables = await env.DB.prepare(
               "SELECT name FROM sqlite_master WHERE type='table'"
             ).all();
-            
+
             return new Response(JSON.stringify({
               status: 'success',
               database: '${each.value.name}',
@@ -123,14 +123,14 @@ resource "cloudflare_workers_script" "d1_migrations" {
             });
           }
         }
-        
+
         return new Response('D1 Migrations Manager', { status: 200 });
       }
     };
   EOT
-  
+
   module = true
-  
+
   d1_database_binding {
     name        = "DB"
     database_id = cloudflare_d1_database.this[each.key].id
@@ -144,33 +144,33 @@ resource "cloudflare_workers_script" "d1_backup" {
     if v.enable_backups
   }
 
-  account_id = var.account_id
-  name       = "${each.value.name}-backup"
-  
+  account_id  = var.account_id
+  script_name = "${each.value.name}-backup"
+
   content = <<-EOT
     export default {
       async scheduled(event, env, ctx) {
         const timestamp = new Date().toISOString();
         const backupName = `backup-${timestamp.replace(/[:.]/g, '-')}`;
-        
+
         try {
           // Get database schema
           const schema = await env.DB.prepare(
             "SELECT sql FROM sqlite_master WHERE sql IS NOT NULL"
           ).all();
-          
+
           // Get table names
           const tables = await env.DB.prepare(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
           ).all();
-          
+
           // Export data from each table
           const backupData = {};
           for (const table of tables.results) {
             const data = await env.DB.prepare(`SELECT * FROM ${table.name}`).all();
             backupData[table.name] = data.results;
           }
-          
+
           // Store backup metadata
           const metadata = {
             timestamp: timestamp,
@@ -182,35 +182,35 @@ resource "cloudflare_workers_script" "d1_backup" {
             ),
             retention_days: ${each.value.backup_retention_days}
           };
-          
+
           await env.BACKUP_METADATA.put(backupName, JSON.stringify(metadata), {
             metadata: { created: timestamp }
           });
-          
+
           // In production, you would upload the actual data to R2 or another storage service
           console.log(`Backup completed: ${backupName}`);
-          
+
           // Clean up old backups
           const cutoffDate = new Date();
           cutoffDate.setDate(cutoffDate.getDate() - ${each.value.backup_retention_days});
-          
+
           const keys = await env.BACKUP_METADATA.list();
           for (const key of keys.keys) {
             if (key.metadata && key.metadata.created < cutoffDate.toISOString()) {
               await env.BACKUP_METADATA.delete(key.name);
             }
           }
-          
+
           return new Response(`Backup completed: ${backupName}`, { status: 200 });
         } catch (error) {
           console.error('Backup error:', error);
           return new Response(`Backup failed: ${error.message}`, { status: 500 });
         }
       },
-      
+
       async fetch(request, env, ctx) {
         const url = new URL(request.url);
-        
+
         if (url.pathname === '/list') {
           const backups = await env.BACKUP_METADATA.list();
           return new Response(JSON.stringify({
@@ -222,32 +222,32 @@ resource "cloudflare_workers_script" "d1_backup" {
             headers: { 'Content-Type': 'application/json' }
           });
         }
-        
+
         if (url.pathname.startsWith('/restore/')) {
           const backupName = url.pathname.split('/')[2];
           const metadata = await env.BACKUP_METADATA.get(backupName, { type: 'json' });
-          
+
           if (!metadata) {
             return new Response('Backup not found', { status: 404 });
           }
-          
+
           return new Response(JSON.stringify(metadata), {
             headers: { 'Content-Type': 'application/json' }
           });
         }
-        
+
         return new Response('D1 Backup Manager', { status: 200 });
       }
     };
   EOT
-  
+
   module = true
-  
+
   d1_database_binding {
     name        = "DB"
     database_id = cloudflare_d1_database.this[each.key].id
   }
-  
+
   kv_namespace_binding {
     name         = "BACKUP_METADATA"
     namespace_id = cloudflare_workers_kv_namespace.d1_backup_metadata[each.key].id
@@ -261,41 +261,41 @@ resource "cloudflare_workers_script" "d1_admin" {
     if v.enable_admin_interface
   }
 
-  account_id = var.account_id
-  name       = "${each.value.name}-admin"
-  
+  account_id  = var.account_id
+  script_name = "${each.value.name}-admin"
+
   content = <<-EOT
     const ALLOWED_EMAILS = ${jsonencode(each.value.admin_allowed_emails)};
-    
+
     export default {
       async fetch(request, env, ctx) {
         const url = new URL(request.url);
-        
+
         // Simple email-based authentication
         const email = request.headers.get('X-User-Email');
         if (!email || !ALLOWED_EMAILS.includes(email)) {
           return new Response('Unauthorized', { status: 401 });
         }
-        
+
         // Query executor
         if (url.pathname === '/query' && request.method === 'POST') {
           try {
             const { query } = await request.json();
-            
+
             // Basic SQL injection prevention (in production, use proper parameterized queries)
             const readOnlyKeywords = ['select', 'show', 'describe', 'explain'];
-            const isReadOnly = readOnlyKeywords.some(keyword => 
+            const isReadOnly = readOnlyKeywords.some(keyword =>
               query.toLowerCase().trim().startsWith(keyword)
             );
-            
+
             if (!isReadOnly && !request.headers.get('X-Allow-Write')) {
               return new Response('Write operations require X-Allow-Write header', {
                 status: 403
               });
             }
-            
+
             const result = await env.DB.prepare(query).all();
-            
+
             return new Response(JSON.stringify({
               status: 'success',
               results: result.results,
@@ -313,14 +313,14 @@ resource "cloudflare_workers_script" "d1_admin" {
             });
           }
         }
-        
+
         // Schema explorer
         if (url.pathname === '/schema') {
           try {
             const tables = await env.DB.prepare(
               "SELECT name, sql FROM sqlite_master WHERE type='table'"
             ).all();
-            
+
             const schema = {};
             for (const table of tables.results) {
               const columns = await env.DB.prepare(
@@ -331,7 +331,7 @@ resource "cloudflare_workers_script" "d1_admin" {
                 columns: columns.results
               };
             }
-            
+
             return new Response(JSON.stringify({
               database: '${each.value.name}',
               schema: schema
@@ -348,7 +348,7 @@ resource "cloudflare_workers_script" "d1_admin" {
             });
           }
         }
-        
+
         // Basic admin UI
         if (url.pathname === '/') {
           return new Response(`
@@ -372,11 +372,11 @@ resource "cloudflare_workers_script" "d1_admin" {
               <button onclick="executeQuery()">Execute Query</button>
               <label><input type="checkbox" id="allowWrite"> Allow Write Operations</label>
               <div id="results"></div>
-              
+
               <h2>Database Schema</h2>
               <button onclick="loadSchema()">Load Schema</button>
               <div id="schema"></div>
-              
+
               <script>
                 async function executeQuery() {
                   const query = document.getElementById('query').value;
@@ -386,33 +386,33 @@ resource "cloudflare_workers_script" "d1_admin" {
                     'X-User-Email': '${each.value.admin_allowed_emails[0]}' // In production, get from auth
                   };
                   if (allowWrite) headers['X-Allow-Write'] = 'true';
-                  
+
                   const response = await fetch('/query', {
                     method: 'POST',
                     headers: headers,
                     body: JSON.stringify({ query })
                   });
-                  
+
                   const result = await response.json();
                   const resultsDiv = document.getElementById('results');
-                  
+
                   if (result.status === 'error') {
                     resultsDiv.innerHTML = '<div class="error">Error: ' + result.message + '</div>';
                   } else {
-                    resultsDiv.innerHTML = '<div class="success">Success!</div><pre>' + 
+                    resultsDiv.innerHTML = '<div class="success">Success!</div><pre>' +
                       JSON.stringify(result.results, null, 2) + '</pre>';
                   }
                 }
-                
+
                 async function loadSchema() {
                   const response = await fetch('/schema', {
                     headers: {
                       'X-User-Email': '${each.value.admin_allowed_emails[0]}'
                     }
                   });
-                  
+
                   const schema = await response.json();
-                  document.getElementById('schema').innerHTML = '<pre>' + 
+                  document.getElementById('schema').innerHTML = '<pre>' +
                     JSON.stringify(schema, null, 2) + '</pre>';
                 }
               </script>
@@ -422,14 +422,14 @@ resource "cloudflare_workers_script" "d1_admin" {
             headers: { 'Content-Type': 'text/html' }
           });
         }
-        
+
         return new Response('Not found', { status: 404 });
       }
     };
   EOT
-  
+
   module = true
-  
+
   d1_database_binding {
     name        = "DB"
     database_id = cloudflare_d1_database.this[each.key].id
@@ -437,19 +437,19 @@ resource "cloudflare_workers_script" "d1_admin" {
 }
 
 # Cron triggers for backups
-resource "cloudflare_worker_cron_trigger" "d1_backup_schedule" {
+resource "cloudflare_workers_cron_trigger" "d1_backup_schedule" {
   for_each = {
     for k, v in var.d1_databases : k => v
     if v.enable_backups
   }
 
   account_id  = var.account_id
-  script_name = cloudflare_workers_script.d1_backup[each.key].name
+  script_name = cloudflare_workers_script.d1_backup[each.key].script_name
   schedules   = [each.value.backup_schedule]
 }
 
 # Routes for D1 admin interfaces
-resource "cloudflare_worker_route" "d1_admin_routes" {
+resource "cloudflare_workers_route" "d1_admin_routes" {
   for_each = {
     for k, v in var.d1_databases : k => v
     if v.enable_admin_interface
@@ -457,11 +457,11 @@ resource "cloudflare_worker_route" "d1_admin_routes" {
 
   zone_id     = var.zone_id
   pattern     = "${each.value.name}-admin.${data.cloudflare_zone.current.name}/*"
-  script_name = cloudflare_workers_script.d1_admin[each.key].name
+  script_name = cloudflare_workers_script.d1_admin[each.key].script_name
 }
 
 # Routes for D1 migrations
-resource "cloudflare_worker_route" "d1_migrations_routes" {
+resource "cloudflare_workers_route" "d1_migrations_routes" {
   for_each = {
     for k, v in var.d1_databases : k => v
     if v.enable_migrations
@@ -469,7 +469,7 @@ resource "cloudflare_worker_route" "d1_migrations_routes" {
 
   zone_id     = var.zone_id
   pattern     = "${each.value.name}-migrations.${data.cloudflare_zone.current.name}/*"
-  script_name = cloudflare_workers_script.d1_migrations[each.key].name
+  script_name = cloudflare_workers_script.d1_migrations[each.key].script_name
 }
 
 # Data source to get zone name
@@ -501,7 +501,7 @@ resource "cloudflare_queue_consumer" "this" {
 
   account_id = var.account_id
   queue_id   = each.value.queue_id
-  
+
   script_name       = each.value.consumer.script_name
   batch_size        = each.value.consumer.batch_size
   max_batch_timeout = each.value.consumer.max_batch_timeout
@@ -517,22 +517,20 @@ resource "cloudflare_workers_analytics_engine_dataset" "this" {
   name       = each.value.name
 }
 
-# Worker Scripts
-resource "cloudflare_worker_script" "this" {
-  for_each = var.workers
+# Image Processing Worker Scripts
+resource "cloudflare_workers_script" "image_workers" {
+  for_each = var.image_workers
 
-  account_id = var.account_id
-  name       = each.value.script_name
-  
+  account_id  = var.account_id
+  script_name = each.value.script_name
+
   # Script content
   content = each.value.script_content != null ? each.value.script_content : (
     each.value.script_path != null ? file(each.value.script_path) : ""
   )
-  
-  module              = each.value.module_type == "esm"
+
   compatibility_date  = each.value.compatibility_date
-  compatibility_flags = each.value.compatibility_flags
-  
+
   # Usage model
   usage_model = each.value.usage_model
   logpush     = each.value.logpush
@@ -561,8 +559,8 @@ resource "cloudflare_worker_script" "this" {
     content {
       name         = kv_namespace_binding.key
       namespace_id = kv_namespace_binding.value.namespace_id != "" ? kv_namespace_binding.value.namespace_id : (
-        contains(keys(cloudflare_workers_kv_namespace.this), kv_namespace_binding.value.namespace_id) ? 
-        cloudflare_workers_kv_namespace.this[kv_namespace_binding.value.namespace_id].id : 
+        contains(keys(cloudflare_workers_kv_namespace.this), kv_namespace_binding.value.namespace_id) ?
+        cloudflare_workers_kv_namespace.this[kv_namespace_binding.value.namespace_id].id :
         kv_namespace_binding.value.namespace_id
       )
     }
@@ -661,7 +659,7 @@ resource "cloudflare_worker_script" "this" {
 }
 
 # Worker Routes
-resource "cloudflare_worker_route" "script_routes" {
+resource "cloudflare_workers_route" "script_routes" {
   for_each = {
     for item in flatten([
       for worker_key, worker in var.workers : [
@@ -681,7 +679,7 @@ resource "cloudflare_worker_route" "script_routes" {
 }
 
 # Additional Worker Routes
-resource "cloudflare_worker_route" "additional" {
+resource "cloudflare_workers_route" "additional" {
   for_each = var.worker_routes
 
   zone_id     = coalesce(each.value.zone_id, var.zone_id)
@@ -690,7 +688,7 @@ resource "cloudflare_worker_route" "additional" {
 }
 
 # Custom Domains for Workers
-resource "cloudflare_worker_domain" "this" {
+resource "cloudflare_workers_custom_domain" "this" {
   for_each = {
     for item in flatten([
       for worker_key, worker in var.workers : [
@@ -710,7 +708,7 @@ resource "cloudflare_worker_domain" "this" {
 }
 
 # Cron Triggers
-resource "cloudflare_worker_cron_trigger" "this" {
+resource "cloudflare_workers_cron_trigger" "this" {
   for_each = {
     for item in flatten([
       for trigger_key, trigger in var.cron_triggers : [
@@ -755,11 +753,11 @@ resource "cloudflare_durable_object_migration" "this" {
 
   account_id   = var.account_id
   namespace_id = each.value.namespace_id
-  
+
   tag             = each.value.migration.tag
   new_classes     = each.value.migration.new_classes
   deleted_classes = each.value.migration.deleted_classes
-  
+
   dynamic "renamed_classes" {
     for_each = each.value.migration.renamed_classes != null ? each.value.migration.renamed_classes : []
     content {
@@ -805,7 +803,7 @@ locals {
   }
 }
 
-resource "cloudflare_worker_tail" "this" {
+resource "cloudflare_workers_tail" "this" {
   for_each = local.tail_workers
 
   account_id = var.account_id

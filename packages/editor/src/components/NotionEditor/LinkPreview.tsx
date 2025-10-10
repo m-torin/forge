@@ -170,7 +170,7 @@ interface LinkPreviewProps {
   showPreview?: boolean;
 }
 
-export function LinkPreview({ url, children, delay = 500, showPreview = true }: LinkPreviewProps) {
+function LinkPreview({ url, children, delay = 500, showPreview = true }: LinkPreviewProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [previewData, setPreviewData] = useState<LinkPreviewData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -362,7 +362,7 @@ interface EnhancedLinkProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-export function EnhancedLink({
+function _EnhancedLink({
   href,
   children,
   showPreview = true,

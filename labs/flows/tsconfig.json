@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/config/typescript/nextjs.json",
+  "extends": "../../packages/config/src/typescript/nextjs.json",
   "compilerOptions": {
     "types": ["node", "vitest/globals"],
     "jsx": "preserve",
@@ -15,6 +15,20 @@
       "#/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.js"],
-  "exclude": ["node_modules", "src/lib/prisma/generated", "src/lib/prisma/generated/**", "**/generated/**", "**/.next/**", "**/dist/**", "**/build/**"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "next.config.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/lib/prisma/generated",
+    "src/lib/prisma/generated/**",
+    "**/generated/**",
+    "**/.next/**",
+    "**/dist/**",
+    "**/build/**"
+  ]
 }

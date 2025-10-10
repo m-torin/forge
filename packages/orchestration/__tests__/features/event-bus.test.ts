@@ -44,7 +44,7 @@ const createEventBus = (options?: {
   return {
     emit: async (type: string, data?: any) => {
       const event = {
-        id: Math.random().toString(36).substring(7),
+        id: crypto.randomUUID().slice(-7),
         type,
         data,
         timestamp: Date.now(),

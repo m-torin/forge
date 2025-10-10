@@ -10,7 +10,7 @@ import { databaseAssertions, mockScenarios, testDataGenerators } from './test-pa
 /**
  * Configuration for seed function tests
  */
-export interface SeedTestConfig {
+interface SeedTestConfig {
   /**
    * Models that should be created during seeding
    */
@@ -45,7 +45,7 @@ export interface SeedTestConfig {
 /**
  * Create a standardized test suite for seed functions
  */
-export function createSeedTestSuite(
+function createSeedTestSuite(
   seedFunction: () => Promise<void>,
   mockClient: any,
   config: SeedTestConfig,
@@ -185,7 +185,7 @@ export function createSeedTestSuite(
 /**
  * Common seed test patterns
  */
-export const seedTestPatterns = {
+const seedTestPatterns = {
   /**
    * Test that creates all required entities
    */
@@ -254,7 +254,7 @@ export const seedTestPatterns = {
 /**
  * Create a comprehensive test description for seed functions
  */
-export function describeSeedFunction(
+function describeSeedFunction(
   functionName: string,
   seedFunction: () => Promise<void>,
   mockClient: any,
@@ -316,7 +316,7 @@ export function describeSeedFunction(
 /**
  * Common seed function expectations
  */
-export const seedExpectations = {
+const seedExpectations = {
   /**
    * Basic CRUD expectations for auth seeding
    */

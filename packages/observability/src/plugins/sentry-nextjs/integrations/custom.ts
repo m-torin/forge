@@ -43,7 +43,9 @@ export interface CustomIntegration {
 /**
  * Custom integration factory
  */
-export function createCustomIntegration(config: CustomIntegration): Integration {
+export function createCustomIntegration(
+  config: CustomIntegration,
+): Integration {
   return {
     name: config.name,
     setupOnce: () => {
@@ -54,7 +56,9 @@ export function createCustomIntegration(config: CustomIntegration): Integration 
       if (config.dependencies) {
         for (const dep of config.dependencies) {
           if (!client.getIntegrationByName(dep)) {
-            console.warn(`Custom integration "${config.name}" requires "${dep}" integration`);
+            console.warn(
+              `Custom integration "${config.name}" requires "${dep}" integration`,
+            );
           }
         }
       }
@@ -82,14 +86,14 @@ export const performanceBudgetIntegration = (budgets: {
   bundleSize?: number;
 }) =>
   createCustomIntegration({
-    name: 'PerformanceBudget',
-    description: 'Monitors performance metrics against defined budgets',
-    setup: client => {
-      if (typeof window === 'undefined') return;
+    name: "PerformanceBudget",
+    description: "Monitors performance metrics against defined budgets",
+    setup: (client) => {
+      if (typeof window === "undefined") return;
 
       // Monitor Web Vitals
-      if ('PerformanceObserver' in window) {
-        const observer = new PerformanceObserver(list => {
+      if ("PerformanceObserver" in window) {
+        const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
             const metric = entry.name;
             const value = (entry as any).value || (entry as any).duration;
@@ -99,22 +103,22 @@ export const performanceBudgetIntegration = (budgets: {
             let budget = 0;
 
             switch (metric) {
-              case 'LCP':
-              case 'largest-contentful-paint':
+              case "LCP":
+              case "largest-contentful-paint":
                 if (budgets.lcp && value > budgets.lcp) {
                   exceeded = true;
                   budget = budgets.lcp;
                 }
                 break;
-              case 'FID':
-              case 'first-input-delay':
+              case "FID":
+              case "first-input-delay":
                 if (budgets.fid && value > budgets.fid) {
                   exceeded = true;
                   budget = budgets.fid;
                 }
                 break;
-              case 'CLS':
-              case 'cumulative-layout-shift':
+              case "CLS":
+              case "cumulative-layout-shift":
                 if (budgets.cls && value > budgets.cls) {
                   exceeded = true;
                   budget = budgets.cls;
@@ -123,18 +127,22 @@ export const performanceBudgetIntegration = (budgets: {
             }
 
             if (exceeded) {
-              client.captureMessage(`Performance budget exceeded: ${metric}`, 'warning', {
-                tags: {
-                  metric,
-                  value,
-                  budget,
-                  exceeded: value - budget,
+              client.captureMessage(
+                `Performance budget exceeded: ${metric}`,
+                "warning",
+                {
+                  tags: {
+                    metric,
+                    value,
+                    budget,
+                    exceeded: value - budget,
+                  },
+                  extra: {
+                    url: window.location.href,
+                    userAgent: navigator.userAgent,
+                  },
                 },
-                extra: {
-                  url: window.location.href,
-                  userAgent: navigator.userAgent,
-                },
-              });
+              );
             }
           }
         });
@@ -142,7 +150,11 @@ export const performanceBudgetIntegration = (budgets: {
         // Observe various performance metrics
         try {
           observer.observe({
-            entryTypes: ['largest-contentful-paint', 'layout-shift', 'first-input'],
+            entryTypes: [
+              "largest-contentful-paint",
+              "layout-shift",
+              "first-input",
+            ],
           });
         } catch (_e) {
           // Some browsers don't support all entry types
@@ -160,9 +172,9 @@ export const abTestingIntegration = (config: {
   tests: string[];
 }) =>
   createCustomIntegration({
-    name: 'ABTesting',
-    description: 'Adds A/B test context to all events',
-    setup: client => {
+    name: "ABTesting",
+    description: "Adds A/B test context to all events",
+    setup: (client) => {
       // Add A/B test context to all events
       client.configureScope((scope: any) => {
         const variants: Record<string, string> = {};
@@ -174,8 +186,8 @@ export const abTestingIntegration = (config: {
           }
         }
 
-        scope.setContext('ab_tests', variants);
-        scope.setTag('has_ab_tests', Object.keys(variants).length > 0);
+        scope.setContext("ab_tests", variants);
+        scope.setTag("has_ab_tests", Object.keys(variants).length > 0);
       });
     },
   });
@@ -192,15 +204,15 @@ export const userBehaviorIntegration = (config: {
   sensitiveSelectors?: string[];
 }) =>
   createCustomIntegration({
-    name: 'UserBehavior',
-    description: 'Enhanced user behavior tracking',
-    setup: client => {
-      if (typeof window === 'undefined') return;
+    name: "UserBehavior",
+    description: "Enhanced user behavior tracking",
+    setup: (client) => {
+      if (typeof window === "undefined") return;
 
       const sensitiveSelectors = config.sensitiveSelectors || [
         'input[type="password"]',
-        '[data-sensitive]',
-        '.private',
+        "[data-sensitive]",
+        ".private",
       ];
 
       // Track clicks
@@ -210,11 +222,11 @@ export const userBehaviorIntegration = (config: {
         const rageClickThreshold = 3;
         const rageClickWindow = 1000; // 1 second
 
-        document.addEventListener('click', event => {
+        document.addEventListener("click", (event) => {
           const target = event.target as HTMLElement;
 
           // Skip sensitive elements
-          if (sensitiveSelectors.some(selector => target.matches(selector))) {
+          if (sensitiveSelectors.some((selector) => target.matches(selector))) {
             return;
           }
 
@@ -226,9 +238,9 @@ export const userBehaviorIntegration = (config: {
             clickCount++;
             if (clickCount >= rageClickThreshold) {
               client.addBreadcrumb({
-                category: 'ui.rageClick',
+                category: "ui.rageClick",
                 message: `Rage click detected on ${selector}`,
-                level: 'warning',
+                level: "warning",
                 data: {
                   selector,
                   clickCount,
@@ -243,7 +255,7 @@ export const userBehaviorIntegration = (config: {
 
           // Normal click tracking
           client.addBreadcrumb({
-            category: 'ui.click',
+            category: "ui.click",
             message: `Clicked on ${selector}`,
             data: {
               selector,
@@ -258,16 +270,18 @@ export const userBehaviorIntegration = (config: {
         let scrollTimer: NodeJS.Timeout;
         let lastScrollPosition = 0;
 
-        window.addEventListener('scroll', () => {
+        window.addEventListener("scroll", () => {
           clearTimeout(scrollTimer);
           scrollTimer = setTimeout(() => {
             const scrollPosition = window.scrollY;
             const scrollPercentage = Math.round(
-              (scrollPosition / (document.documentElement.scrollHeight - window.innerHeight)) * 100,
+              (scrollPosition /
+                (document.documentElement.scrollHeight - window.innerHeight)) *
+                100,
             );
 
             client.addBreadcrumb({
-              category: 'ui.scroll',
+              category: "ui.scroll",
               message: `Scrolled to ${scrollPercentage}%`,
               data: {
                 from: lastScrollPosition,
@@ -283,12 +297,12 @@ export const userBehaviorIntegration = (config: {
 
       // Track form interactions
       if (config.trackForms) {
-        document.addEventListener('submit', event => {
+        document.addEventListener("submit", (event) => {
           const form = event.target as HTMLFormElement;
 
           client.addBreadcrumb({
-            category: 'ui.form.submit',
-            message: `Form submitted: ${form.name || form.id || 'unnamed'}`,
+            category: "ui.form.submit",
+            message: `Form submitted: ${form.name || form.id || "unnamed"}`,
             data: {
               action: form.action,
               method: form.method,
@@ -296,16 +310,16 @@ export const userBehaviorIntegration = (config: {
           });
         });
 
-        document.addEventListener('change', event => {
+        document.addEventListener("change", (event) => {
           const target = event.target as HTMLInputElement;
 
           // Skip sensitive fields
-          if (sensitiveSelectors.some(selector => target.matches(selector))) {
+          if (sensitiveSelectors.some((selector) => target.matches(selector))) {
             return;
           }
 
           client.addBreadcrumb({
-            category: 'ui.form.change',
+            category: "ui.form.change",
             message: `Field changed: ${target.name || target.id}`,
             data: {
               type: target.type,
@@ -327,7 +341,7 @@ function getElementSelector(element: HTMLElement): string {
   }
 
   if (element.className) {
-    return `.${element.className.split(' ').join('.')}`;
+    return `.${element.className.split(" ").join(".")}`;
   }
 
   return element.tagName.toLowerCase();
@@ -344,10 +358,10 @@ export const apiMonitoringIntegration = (config: {
   trackHeaders?: boolean;
 }) =>
   createCustomIntegration({
-    name: 'APIMonitoring',
-    description: 'Enhanced API monitoring with performance tracking',
-    setup: client => {
-      if (typeof window === 'undefined') return;
+    name: "APIMonitoring",
+    description: "Enhanced API monitoring with performance tracking",
+    setup: (client) => {
+      if (typeof window === "undefined") return;
 
       const slowThreshold = config.slowThreshold || 3000;
 
@@ -361,19 +375,22 @@ export const apiMonitoringIntegration = (config: {
           const response = await originalFetch.apply(this, args);
           const duration = performance.now() - startTime;
 
-          const urlString = typeof url === 'string' ? url : url.toString();
+          const urlString = typeof url === "string" ? url : url.toString();
 
           // Check if we should track this endpoint
-          if (config.endpoints && !config.endpoints.some(ep => urlString.includes(ep))) {
+          if (
+            config.endpoints &&
+            !config.endpoints.some((ep) => urlString.includes(ep))
+          ) {
             return response;
           }
 
           // Track slow requests
           if (duration > slowThreshold) {
-            client.captureMessage(`Slow API request: ${urlString}`, 'warning', {
+            client.captureMessage(`Slow API request: ${urlString}`, "warning", {
               tags: {
                 api_endpoint: urlString,
-                api_method: options?.method || 'GET',
+                api_method: options?.method || "GET",
                 api_slow: true,
               },
               extra: {
@@ -386,17 +403,17 @@ export const apiMonitoringIntegration = (config: {
 
           // Add breadcrumb for all API calls
           client.addBreadcrumb({
-            category: 'api',
-            message: `${options?.method || 'GET'} ${urlString}`,
+            category: "api",
+            message: `${options?.method || "GET"} ${urlString}`,
             data: {
               status: response.status,
               duration,
               ...(config.trackPayloads &&
                 options?.body && {
                   requestBody:
-                    typeof options.body === 'string'
+                    typeof options.body === "string"
                       ? options.body.substring(0, 1000)
-                      : '[Binary Data]',
+                      : "[Binary Data]",
                 }),
             },
           });
@@ -406,9 +423,9 @@ export const apiMonitoringIntegration = (config: {
           const duration = performance.now() - startTime;
 
           client.addBreadcrumb({
-            category: 'api',
-            message: `Failed: ${options?.method || 'GET'} ${url}`,
-            level: 'error',
+            category: "api",
+            message: `Failed: ${options?.method || "GET"} ${url}`,
+            level: "error",
             data: {
               error: error instanceof Error ? error.message : String(error),
               duration,
@@ -452,7 +469,7 @@ export class IntegrationRegistry {
    * Create Sentry integrations from registered custom integrations
    */
   createSentryIntegrations(): Integration[] {
-    return this.getAll().map(config => createCustomIntegration(config));
+    return this.getAll().map((config) => createCustomIntegration(config));
   }
 }
 

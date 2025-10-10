@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/config/typescript/react-library.json",
+  "extends": "../config/src/typescript/react-library.json",
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
@@ -8,7 +8,10 @@
       "#/__tests__/*": ["./__tests__/*"],
       "#/root/*": ["./*"],
       "#/*": ["./src/*"]
-    }
+    },
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist"]

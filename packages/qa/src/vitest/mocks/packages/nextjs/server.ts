@@ -142,8 +142,6 @@ export const mockForbidden = vi.fn(() => {
 });
 
 // Export additional server functions for testing
-export { mockAfter as after, mockForbidden as forbidden, mockUnauthorized as unauthorized };
-
 // Mock server-side utilities
 export const mockServerUtils = {
   executeAfterCallbacks: vi.fn(async () => {

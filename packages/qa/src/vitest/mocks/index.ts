@@ -15,6 +15,7 @@ export type {
   formStates,
 } from './internal';
 
+export * from './app-context';
 export * from './packages/index';
 export * from './providers/index';
 

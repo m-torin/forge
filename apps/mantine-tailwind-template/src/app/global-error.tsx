@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Button, Container, Group, Text, Title } from '@mantine/core';
-import { logError } from '@repo/observability';
-import { IconRefresh } from '@tabler/icons-react';
-import { useEffect } from 'react';
+import { Button, Container, Group, Text, Title } from "@mantine/core";
+import { logError } from "@repo/observability";
+import { IconRefresh } from "@tabler/icons-react";
+import { useEffect } from "react";
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
@@ -13,7 +13,7 @@ interface GlobalErrorProps {
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
     // Log the error for monitoring
-    logError('Global error boundary triggered', {
+    logError("Global error boundary triggered", {
       error: error.message,
       digest: error.digest,
       stack: error.stack,
@@ -23,7 +23,10 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   return (
     <html>
       <body>
-        <Container size="md" style={{ textAlign: 'center', paddingTop: '10rem' }}>
+        <Container
+          size="md"
+          style={{ textAlign: "center", paddingTop: "10rem" }}
+        >
           <Title size="h1" mb="md" c="red">
             Something went wrong!
           </Title>
@@ -31,7 +34,11 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             An unexpected error occurred. Please try refreshing the page.
           </Text>
           <Group justify="center">
-            <Button onClick={reset} leftSection={<IconRefresh size={16} />} variant="filled">
+            <Button
+              onClick={reset}
+              leftSection={<IconRefresh size={16} />}
+              variant="filled"
+            >
               Try Again
             </Button>
           </Group>

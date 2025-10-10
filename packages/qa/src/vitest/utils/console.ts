@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 /**
  * Mock console interface
  */
-export interface MockConsole {
+interface MockConsole {
   log: ReturnType<typeof vi.fn>;
   error: ReturnType<typeof vi.fn>;
   warn: ReturnType<typeof vi.fn>;
@@ -28,7 +28,7 @@ export interface MockConsole {
 /**
  * Create a mock console with all methods
  */
-export function createMockConsole(
+function createMockConsole(
   options: {
     suppress?: boolean;
     logLevel?: 'debug' | 'info' | 'warn' | 'error' | 'none';
@@ -89,9 +89,7 @@ export function createMockConsole(
 /**
  * Apply mock console globally
  */
-export function mockConsoleGlobally(
-  options?: Parameters<typeof createMockConsole>[0],
-): MockConsole {
+function mockConsoleGlobally(options?: Parameters<typeof createMockConsole>[0]): MockConsole {
   const mockConsole = createMockConsole(options);
 
   global.console = {
@@ -107,7 +105,7 @@ export function mockConsoleGlobally(
  */
 let originalConsole: Console | null = null;
 
-export function restoreConsole(): void {
+function restoreConsole(): void {
   if (originalConsole) {
     global.console = originalConsole;
     originalConsole = null;
@@ -117,7 +115,7 @@ export function restoreConsole(): void {
 /**
  * Temporarily suppress console output
  */
-export function suppressConsole(): () => void {
+function suppressConsole(): () => void {
   if (!originalConsole) {
     originalConsole = global.console;
   }
@@ -132,7 +130,7 @@ export function suppressConsole(): () => void {
 /**
  * Clear all console mocks
  */
-export function clearConsoleMocks(mockConsole: MockConsole) {
+function clearConsoleMocks(mockConsole: MockConsole) {
   Object.values(mockConsole).forEach(fn => {
     if (typeof fn === 'function' && 'mockClear' in fn) {
       fn.mockClear();
@@ -143,7 +141,7 @@ export function clearConsoleMocks(mockConsole: MockConsole) {
 /**
  * Helper for tests that need clean console state
  */
-export function withMockedConsole<T>(
+function withMockedConsole<T>(
   testFn: (mockConsole: MockConsole) => T,
   options?: Parameters<typeof createMockConsole>[0],
 ): T {
@@ -219,13 +217,8 @@ export function setupConsoleSuppression(config: any): MockConsole {
 /**
  * Create console suppression configuration
  */
-export function createConsoleSuppression(options: any): () => MockConsole {
+function createConsoleSuppression(options: any): () => MockConsole {
   return () => setupConsoleSuppression(options);
 }
 
 // Export everything for easy access
-export {
-  createMockConsole as createMockLogger,
-  mockConsoleGlobally as mockLogger,
-  suppressConsole as suppressLogs,
-};

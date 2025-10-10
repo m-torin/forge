@@ -5,39 +5,39 @@
  * These utilities are provider-agnostic and can be used across different applications.
  */
 
-import { logError, logInfo } from '@repo/observability';
-import { type StreamObjectResult, type StreamTextResult } from 'ai';
+import { logError, logInfo } from "@repo/observability";
+import { type StreamObjectResult, type StreamTextResult } from "ai";
 
 // Export object streaming utilities
-export * from './object-streaming';
+export * from "./object-streaming";
 
 // Re-export official AI SDK streaming types and utilities
-export type { StreamObjectResult, StreamTextResult } from 'ai';
+export type { StreamObjectResult, StreamTextResult } from "ai";
 
 /**
  * Stream event types following official AI SDK v5 specification
  */
 export type StreamEventType =
-  | 'start'
-  | 'start-step'
-  | 'text-start'
-  | 'text-delta'
-  | 'text-end'
-  | 'reasoning-start'
-  | 'reasoning-delta'
-  | 'reasoning-end'
-  | 'source'
-  | 'file'
-  | 'tool-call'
-  | 'tool-input-start'
-  | 'tool-input-delta'
-  | 'tool-input-end'
-  | 'tool-result'
-  | 'tool-error'
-  | 'finish-step'
-  | 'finish'
-  | 'error'
-  | 'raw';
+  | "start"
+  | "start-step"
+  | "text-start"
+  | "text-delta"
+  | "text-end"
+  | "reasoning-start"
+  | "reasoning-delta"
+  | "reasoning-end"
+  | "source"
+  | "file"
+  | "tool-call"
+  | "tool-input-start"
+  | "tool-input-delta"
+  | "tool-input-end"
+  | "tool-result"
+  | "tool-error"
+  | "finish-step"
+  | "finish"
+  | "error"
+  | "raw";
 
 /**
  * Stream event part structure following AI SDK v5
@@ -54,12 +54,16 @@ export interface StreamEventPart {
 /**
  * Event handler function type
  */
-export type StreamEventHandler = (part: StreamEventPart) => void | Promise<void>;
+export type StreamEventHandler = (
+  part: StreamEventPart,
+) => void | Promise<void>;
 
 /**
  * Event handlers map
  */
-export type StreamEventHandlers = Partial<Record<StreamEventType, StreamEventHandler>>;
+export type StreamEventHandlers = Partial<
+  Record<StreamEventType, StreamEventHandler>
+>;
 
 /**
  * Create a UI message stream response using official AI SDK v5 pattern
@@ -80,8 +84,8 @@ export function createUIMessageStreamResponse(
   },
 ): Response {
   try {
-    logInfo('Creating UI message stream response', {
-      operation: 'create_ui_message_stream_response',
+    logInfo("Creating UI message stream response", {
+      operation: "create_ui_message_stream_response",
       metadata: {
         sendSources: options?.sendSources,
         hasCustomHeaders: !!options?.headers,
@@ -97,10 +101,11 @@ export function createUIMessageStreamResponse(
       }),
     });
   } catch (error) {
-    const streamError = error instanceof Error ? error : new Error(String(error));
+    const streamError =
+      error instanceof Error ? error : new Error(String(error));
 
-    logError('Failed to create UI message stream response', {
-      operation: 'create_ui_message_stream_response_error',
+    logError("Failed to create UI message stream response", {
+      operation: "create_ui_message_stream_response_error",
       error: streamError,
     });
 
@@ -123,8 +128,8 @@ export async function processStreamEvents<T>(
   handlers: StreamEventHandlers,
 ): Promise<void> {
   try {
-    logInfo('Starting stream event processing', {
-      operation: 'process_stream_events_start',
+    logInfo("Starting stream event processing", {
+      operation: "process_stream_events_start",
       metadata: {
         handlerTypes: Object.keys(handlers),
       },
@@ -145,10 +150,11 @@ export async function processStreamEvents<T>(
         try {
           await handler(eventPart);
         } catch (error) {
-          const handlerError = error instanceof Error ? error : new Error(String(error));
+          const handlerError =
+            error instanceof Error ? error : new Error(String(error));
 
           logError(`Stream event handler failed for ${eventPart.type}`, {
-            operation: 'stream_event_handler_error',
+            operation: "stream_event_handler_error",
             metadata: {
               eventType: eventPart.type,
               toolName: eventPart.toolName,
@@ -160,7 +166,7 @@ export async function processStreamEvents<T>(
           const errorHandler = handlers.error;
           if (errorHandler) {
             await errorHandler({
-              type: 'error',
+              type: "error",
               error: handlerError,
             });
           }
@@ -168,14 +174,15 @@ export async function processStreamEvents<T>(
       }
     }
 
-    logInfo('Stream event processing completed', {
-      operation: 'process_stream_events_complete',
+    logInfo("Stream event processing completed", {
+      operation: "process_stream_events_complete",
     });
   } catch (error) {
-    const streamError = error instanceof Error ? error : new Error(String(error));
+    const streamError =
+      error instanceof Error ? error : new Error(String(error));
 
-    logError('Stream event processing failed', {
-      operation: 'process_stream_events_error',
+    logError("Stream event processing failed", {
+      operation: "process_stream_events_error",
       error: streamError,
     });
 
@@ -183,7 +190,7 @@ export async function processStreamEvents<T>(
     const errorHandler = handlers.error;
     if (errorHandler) {
       await errorHandler({
-        type: 'error',
+        type: "error",
         error: streamError,
       });
     }
@@ -226,8 +233,8 @@ export function createEnhancedStreamResponse<T>(
 
   try {
     if (enableLogging) {
-      logInfo('Creating enhanced stream response', {
-        operation: 'create_enhanced_stream_response',
+      logInfo("Creating enhanced stream response", {
+        operation: "create_enhanced_stream_response",
         metadata: {
           timeout,
           hasErrorHandler: !!onError,
@@ -238,29 +245,36 @@ export function createEnhancedStreamResponse<T>(
 
     // Use the official pattern for creating stream responses
     const response =
-      'toUIMessageStreamResponse' in streamResult
-        ? (streamResult as StreamTextResult<any, any>).toUIMessageStreamResponse()
+      "toUIMessageStreamResponse" in streamResult
+        ? (
+            streamResult as StreamTextResult<any, any>
+          ).toUIMessageStreamResponse()
         : new Response(
             new ReadableStream({
               async start(controller) {
                 try {
                   const stream =
-                    'fullStream' in streamResult && !('partialObjectStream' in streamResult)
+                    "fullStream" in streamResult &&
+                    !("partialObjectStream" in streamResult)
                       ? (streamResult as StreamTextResult<any, any>).fullStream
-                      : 'partialObjectStream' in streamResult
-                        ? (streamResult as StreamObjectResult<any, any, any>).partialObjectStream
+                      : "partialObjectStream" in streamResult
+                        ? (streamResult as StreamObjectResult<any, any, any>)
+                            .partialObjectStream
                         : null;
 
                   if (stream) {
                     for await (const part of stream) {
-                      controller.enqueue(new TextEncoder().encode(JSON.stringify(part) + '\n'));
+                      controller.enqueue(
+                        new TextEncoder().encode(JSON.stringify(part) + "\n"),
+                      );
                     }
                   }
 
                   controller.close();
                   onComplete?.(streamResult);
                 } catch (error) {
-                  const streamError = error instanceof Error ? error : new Error(String(error));
+                  const streamError =
+                    error instanceof Error ? error : new Error(String(error));
                   onError?.(streamError, {});
                   controller.error(streamError);
                 }
@@ -268,9 +282,9 @@ export function createEnhancedStreamResponse<T>(
             }),
             {
               headers: {
-                'Content-Type': 'text/plain; charset=utf-8',
-                'Cache-Control': 'no-cache',
-                Connection: 'keep-alive',
+                "Content-Type": "text/plain; charset=utf-8",
+                "Cache-Control": "no-cache",
+                Connection: "keep-alive",
               },
             },
           );
@@ -279,7 +293,7 @@ export function createEnhancedStreamResponse<T>(
     if (timeout > 0) {
       const timeoutId = setTimeout(() => {
         if (onError) {
-          onError(new Error('Stream timeout'), {});
+          onError(new Error("Stream timeout"), {});
         }
       }, timeout);
 
@@ -292,11 +306,12 @@ export function createEnhancedStreamResponse<T>(
 
     return response;
   } catch (error) {
-    const streamError = error instanceof Error ? error : new Error(String(error));
+    const streamError =
+      error instanceof Error ? error : new Error(String(error));
 
     if (enableLogging) {
-      logError('Failed to create enhanced stream response', {
-        operation: 'create_enhanced_stream_response_error',
+      logError("Failed to create enhanced stream response", {
+        operation: "create_enhanced_stream_response_error",
         error: streamError,
       });
     }
@@ -331,8 +346,8 @@ export function createDataStreamer(writer: any) {
      * Following official AI SDK v5 pattern: writer.write()
      */
     writeData: (dataPart: DataPart) => {
-      logInfo('Writing data part to stream', {
-        operation: 'write_data_part',
+      logInfo("Writing data part to stream", {
+        operation: "write_data_part",
         metadata: {
           type: dataPart.type,
           id: dataPart.id,
@@ -350,7 +365,7 @@ export function createDataStreamer(writer: any) {
      * Write multiple data parts
      */
     writeBatch: (dataParts: DataPart[]) => {
-      dataParts.forEach(part => {
+      dataParts.forEach((part) => {
         writer.write({
           type: part.type,
           id: part.id,
@@ -362,9 +377,14 @@ export function createDataStreamer(writer: any) {
     /**
      * Write progress data
      */
-    writeProgress: (id: string, current: number, total: number, message?: string) => {
+    writeProgress: (
+      id: string,
+      current: number,
+      total: number,
+      message?: string,
+    ) => {
       writer.write({
-        type: 'progress',
+        type: "progress",
         id,
         data: {
           current,
@@ -381,12 +401,12 @@ export function createDataStreamer(writer: any) {
      */
     writeStatus: (
       id: string,
-      status: 'loading' | 'success' | 'error',
+      status: "loading" | "success" | "error",
       message?: string,
       data?: any,
     ) => {
       writer.write({
-        type: 'status',
+        type: "status",
         id,
         data: {
           status,

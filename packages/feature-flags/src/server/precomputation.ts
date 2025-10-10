@@ -1,5 +1,5 @@
-import { logError, logInfo, logWarn } from '@repo/observability';
-import { evaluate, precompute, serialize } from 'flags/next';
+import { logError, logInfo, logWarn } from "@repo/observability";
+import { evaluate, precompute, serialize } from "flags/next";
 
 /**
  * Modern precomputation using the v4+ SDK pattern
@@ -25,14 +25,14 @@ export async function precomputeFlags<T extends readonly any[]>(
     const code = await Promise.race([
       precompute(flags),
       new Promise<never>((_resolve, reject) =>
-        setTimeout(() => reject(new Error('Precomputation timeout')), timeout),
+        setTimeout(() => reject(new Error("Precomputation timeout")), timeout),
       ),
     ]);
 
     const duration = Date.now() - startTime;
 
     if (enableMetrics) {
-      logInfo('Flags precomputed successfully', {
+      logInfo("Flags precomputed successfully", {
         flagCount: flags.length,
         duration,
         codeLength: code.length,
@@ -44,11 +44,14 @@ export async function precomputeFlags<T extends readonly any[]>(
   } catch (error) {
     const duration = Date.now() - startTime;
 
-    logError(error instanceof Error ? error : new Error('Flag precomputation failed'), {
-      flagCount: flags.length,
-      duration,
-      context: 'precomputation',
-    });
+    logError(
+      error instanceof Error ? error.message : "Flag precomputation failed",
+      {
+        flagCount: flags.length,
+        duration,
+        context: "precomputation",
+      },
+    );
 
     throw error;
   }
@@ -72,7 +75,7 @@ export async function evaluateFlags<T extends readonly any[]>(
     const duration = Date.now() - startTime;
 
     if (enableMetrics) {
-      logInfo('Flags evaluated successfully', {
+      logInfo("Flags evaluated successfully", {
         flagCount: flags.length,
         duration,
         values: Object.keys(values),
@@ -83,11 +86,14 @@ export async function evaluateFlags<T extends readonly any[]>(
   } catch (error) {
     const duration = Date.now() - startTime;
 
-    logError(error instanceof Error ? error : new Error('Flag evaluation failed'), {
-      flagCount: flags.length,
-      duration,
-      context: 'evaluation',
-    });
+    logError(
+      error instanceof Error ? error.message : "Flag evaluation failed",
+      {
+        flagCount: flags.length,
+        duration,
+        context: "evaluation",
+      },
+    );
 
     throw error;
   }
@@ -111,7 +117,7 @@ export async function serializeFlagValues<T extends readonly any[]>(
     const duration = Date.now() - startTime;
 
     if (enableMetrics) {
-      logInfo('Flag values serialized successfully', {
+      logInfo("Flag values serialized successfully", {
         flagCount: flags.length,
         duration,
         codeLength: code.length,
@@ -122,11 +128,14 @@ export async function serializeFlagValues<T extends readonly any[]>(
   } catch (error) {
     const duration = Date.now() - startTime;
 
-    logError(error instanceof Error ? error : new Error('Flag serialization failed'), {
-      flagCount: flags.length,
-      duration,
-      context: 'serialization',
-    });
+    logError(
+      error instanceof Error ? error.message : "Flag serialization failed",
+      {
+        flagCount: flags.length,
+        duration,
+        context: "serialization",
+      },
+    );
 
     throw error;
   }
@@ -153,16 +162,21 @@ export async function batchPrecompute(
   const results = await Promise.allSettled(
     flagGroups.map(async ({ name, flags, context }) => {
       try {
-        const code = await precomputeFlags(flags, context, { enableMetrics: false });
+        const code = await precomputeFlags(flags, context, {
+          enableMetrics: false,
+        });
         return { name, code };
       } catch (error) {
-        const err = error instanceof Error ? error : new Error(`Failed to precompute ${name}`);
+        const err =
+          error instanceof Error
+            ? error
+            : new Error(`Failed to precompute ${name}`);
 
         if (failFast) {
           throw err;
         }
 
-        return { name, code: '', error: err };
+        return { name, code: "", error: err };
       }
     }),
   );
@@ -170,23 +184,26 @@ export async function batchPrecompute(
   const finalResults = results.map((result, index) => {
     const { name } = flagGroups[index];
 
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
       return result.value;
     } else {
       return {
         name,
-        code: '',
-        error: result.reason instanceof Error ? result.reason : new Error(String(result.reason)),
+        code: "",
+        error:
+          result.reason instanceof Error
+            ? result.reason
+            : new Error(String(result.reason)),
       };
     }
   });
 
   const duration = Date.now() - startTime;
-  const successful = finalResults.filter(r => !r.error).length;
+  const successful = finalResults.filter((r) => !r.error).length;
   const failed = finalResults.length - successful;
 
   if (enableMetrics) {
-    logInfo('Batch precomputation completed', {
+    logInfo("Batch precomputation completed", {
       total: flagGroups.length,
       successful,
       failed,
@@ -197,8 +214,8 @@ export async function batchPrecompute(
   if (failed > 0) {
     logWarn(`${failed} flag groups failed to precompute`, {
       failures: finalResults
-        .filter(r => r.error)
-        .map(r => ({ name: r.name, error: r.error?.message })),
+        .filter((r) => r.error)
+        .map((r) => ({ name: r.name, error: r.error?.message })),
     });
   }
 
@@ -221,12 +238,14 @@ export async function precomputeWithCache<T extends readonly any[]>(
   const { cacheKey, cacheDuration = 300000, enableMetrics = true } = options; // 5 minutes default
 
   // Simple in-memory cache (in production, use Redis or similar)
-  const cache = globalThis.__flagPrecomputeCache || (globalThis.__flagPrecomputeCache = new Map());
+  const cache =
+    globalThis.__flagPrecomputeCache ||
+    (globalThis.__flagPrecomputeCache = new Map());
 
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < cacheDuration) {
     if (enableMetrics) {
-      logInfo('Using cached precomputed flags', { cacheKey });
+      logInfo("Using cached precomputed flags", { cacheKey });
     }
     return cached.code;
   }
@@ -273,5 +292,7 @@ export type BatchPrecomputeResult = {
 
 // Global cache type augmentation
 declare global {
-  var __flagPrecomputeCache: Map<string, { code: string; timestamp: number }> | undefined;
+  var __flagPrecomputeCache:
+    | Map<string, { code: string; timestamp: number }>
+    | undefined;
 }

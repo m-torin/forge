@@ -3,14 +3,14 @@
  * 100% React Server Component with server actions
  */
 
-import { useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
-import { enableTwoFactorAction, verifyTwoFactorSetupAction } from '../actions';
-import type { BaseProps, FormState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
+import { useState, useTransition } from "react";
+import { useFormState } from "react-dom";
+import { enableTwoFactorAction, verifyTwoFactorSetupAction } from "../actions";
+import type { BaseProps, FormState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
 
 interface TwoFactorSetupProps extends BaseProps {
   qrCodeUrl?: string;
@@ -26,10 +26,10 @@ type VerifyState =
   | { success: true; message: string }
   | { success: false; error: string };
 
-const initialVerifyState: VerifyState = { success: false, error: '' };
+const initialVerifyState: VerifyState = { success: false, error: "" };
 
 export function TwoFactorSetup({
-  className = '',
+  className = "",
   qrCodeUrl,
   secret,
   backupCodes,
@@ -37,18 +37,26 @@ export function TwoFactorSetup({
 }: TwoFactorSetupProps) {
   const [isPending, startTransition] = useTransition();
   const [setupState, setSetupState] = useState(initialState);
-  const [verifyState, verifyAction] = useFormState(verifyTwoFactorSetupAction, initialVerifyState);
+  const [verifyState, verifyAction] = useFormState(
+    verifyTwoFactorSetupAction,
+    initialVerifyState,
+  );
 
   const handleEnableTwoFactor = async () => {
     startTransition(async () => {
       try {
         const _result = await enableTwoFactorAction();
-        setSetupState({ success: true, message: 'Two-factor authentication enabled successfully' });
+        setSetupState({
+          success: true,
+          message: "Two-factor authentication enabled successfully",
+        });
       } catch (error) {
         setSetupState({
           success: false,
           error:
-            error instanceof Error ? error.message : 'Failed to enable two-factor authentication',
+            error instanceof Error
+              ? error.message
+              : "Failed to enable two-factor authentication",
         });
       }
     });
@@ -61,7 +69,11 @@ export function TwoFactorSetup({
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="h-5 w-5 text-green-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     fillRule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -74,15 +86,18 @@ export function TwoFactorSetup({
               <h3 className="text-lg font-medium text-gray-900">
                 Two-Factor Authentication Enabled
               </h3>
-              <p className="text-sm text-gray-500">Your account is protected with 2FA</p>
+              <p className="text-sm text-gray-500">
+                Your account is protected with 2FA
+              </p>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Two-factor authentication adds an extra layer of security to your account. When
-              enabled, you'll need to enter a code from your authenticator app when signing in.
+              Two-factor authentication adds an extra layer of security to your
+              account. When enabled, you'll need to enter a code from your
+              authenticator app when signing in.
             </p>
             <Button variant="outline" className="w-full">
               Regenerate Backup Codes
@@ -101,8 +116,12 @@ export function TwoFactorSetup({
     return (
       <Card className={className}>
         <CardHeader>
-          <h3 className="text-lg font-medium text-gray-900">Enable Two-Factor Authentication</h3>
-          <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
+          <h3 className="text-lg font-medium text-gray-900">
+            Enable Two-Factor Authentication
+          </h3>
+          <p className="text-sm text-gray-500">
+            Add an extra layer of security to your account
+          </p>
         </CardHeader>
         <CardContent>
           {setupState?.error && (
@@ -113,8 +132,9 @@ export function TwoFactorSetup({
 
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Two-factor authentication (2FA) adds an extra layer of security to your account.
-              You'll need an authenticator app like Google Authenticator, Authy, or 1Password.
+              Two-factor authentication (2FA) adds an extra layer of security to
+              your account. You'll need an authenticator app like Google
+              Authenticator, Authy, or 1Password.
             </p>
 
             <Button
@@ -135,7 +155,9 @@ export function TwoFactorSetup({
   return (
     <Card className={className}>
       <CardHeader>
-        <h3 className="text-lg font-medium text-gray-900">Complete Two-Factor Setup</h3>
+        <h3 className="text-lg font-medium text-gray-900">
+          Complete Two-Factor Setup
+        </h3>
         <p className="text-sm text-gray-500">
           Scan the QR code and verify with your authenticator app
         </p>
@@ -155,10 +177,16 @@ export function TwoFactorSetup({
 
         <div className="space-y-6">
           <div>
-            <h4 className="mb-3 text-sm font-medium text-gray-900">Step 1: Scan QR Code</h4>
+            <h4 className="mb-3 text-sm font-medium text-gray-900">
+              Step 1: Scan QR Code
+            </h4>
             <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
               {qrCodeUrl ? (
-                <img src={qrCodeUrl} alt="2FA QR Code" className="mx-auto h-48 w-48" />
+                <img
+                  src={qrCodeUrl}
+                  alt="2FA QR Code"
+                  className="mx-auto h-48 w-48"
+                />
               ) : (
                 <div className="mx-auto flex h-48 w-48 items-center justify-center bg-gray-100">
                   <span className="text-gray-400">QR Code</span>
@@ -196,7 +224,11 @@ export function TwoFactorSetup({
               />
 
               <div className="flex space-x-3">
-                <Button type="submit" variant="primary" loading={verifyState === undefined}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  loading={verifyState === undefined}
+                >
                   Verify & Enable
                 </Button>
                 <Button type="button" variant="outline">
@@ -208,14 +240,16 @@ export function TwoFactorSetup({
 
           {backupCodes && backupCodes.length > 0 && (
             <div>
-              <h4 className="mb-3 text-sm font-medium text-gray-900">Step 3: Save Backup Codes</h4>
+              <h4 className="mb-3 text-sm font-medium text-gray-900">
+                Step 3: Save Backup Codes
+              </h4>
               <Alert type="warning" className="mb-3">
-                Save these backup codes in a safe place. You can use them to access your account if
-                you lose your authenticator device.
+                Save these backup codes in a safe place. You can use them to
+                access your account if you lose your authenticator device.
               </Alert>
               <div className="rounded-lg border bg-gray-50 p-4">
                 <div className="grid grid-cols-2 gap-2 font-mono text-sm">
-                  {backupCodes.map(code => (
+                  {backupCodes.map((code) => (
                     <div key={code} className="rounded border bg-white p-2">
                       {code}
                     </div>

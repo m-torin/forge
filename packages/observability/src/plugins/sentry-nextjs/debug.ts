@@ -3,7 +3,7 @@
  */
 
 // Use a generic type for Integration since @sentry/nextjs doesn't export it directly
-import type { SentryNextJSPluginConfig } from './plugin';
+import type { SentryNextJSPluginConfig } from "./plugin";
 
 /**
  * Debug configuration
@@ -42,7 +42,11 @@ export interface DebugConfig {
   /**
    * Custom logger function
    */
-  logger?: (level: 'debug' | 'info' | 'warn' | 'error', message: string, data?: any) => void;
+  logger?: (
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    data?: any,
+  ) => void;
 }
 
 /**
@@ -57,7 +61,11 @@ export class DebugLogger {
     this.startTime = Date.now();
   }
 
-  private log(level: 'debug' | 'info' | 'warn' | 'error', message: string, data?: any): void {
+  private log(
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    data?: any,
+  ): void {
     if (this.config.logger) {
       this.config.logger(level, message, data);
       return;
@@ -68,37 +76,37 @@ export class DebugLogger {
     const prefix = `[Sentry Next.js ${level.toUpperCase()}] [${timestamp}] [+${elapsed}ms]`;
 
     switch (level) {
-      case 'debug':
+      case "debug":
         if (this.config.verbose) {
-          console.debug(prefix, message, data || '');
+          console.debug(prefix, message, data || "");
         }
         break;
-      case 'info':
-        console.info(prefix, message, data || '');
+      case "info":
+        console.info(prefix, message, data || "");
         break;
-      case 'warn':
-        console.warn(prefix, message, data || '');
+      case "warn":
+        console.warn(prefix, message, data || "");
         break;
-      case 'error':
-        console.error(prefix, message, data || '');
+      case "error":
+        console.error(prefix, message, data || "");
         break;
     }
   }
 
   debug(message: string, data?: any): void {
-    this.log('debug', message, data);
+    this.log("debug", message, data);
   }
 
   info(message: string, data?: any): void {
-    this.log('info', message, data);
+    this.log("info", message, data);
   }
 
   warn(message: string, data?: any): void {
-    this.log('warn', message, data);
+    this.log("warn", message, data);
   }
 
   error(message: string, data?: any): void {
-    this.log('error', message, data);
+    this.log("error", message, data);
   }
 }
 
@@ -127,16 +135,22 @@ export class ConfigValidator {
 
     // Validate DSN
     if (!config.dsn) {
-      this.warnings.push('No DSN configured - Sentry will run in debug mode');
+      this.warnings.push("No DSN configured - Sentry will run in debug mode");
     } else if (!this.isValidDSN(config.dsn)) {
-      this.errors.push('Invalid DSN format');
+      this.errors.push("Invalid DSN format");
     }
 
     // Validate sample rates
-    this.validateSampleRate('tracesSampleRate', config.tracesSampleRate);
-    this.validateSampleRate('replaysSessionSampleRate', config.replaysSessionSampleRate);
-    this.validateSampleRate('replaysOnErrorSampleRate', config.replaysOnErrorSampleRate);
-    this.validateSampleRate('profilesSampleRate', config.profilesSampleRate);
+    this.validateSampleRate("tracesSampleRate", config.tracesSampleRate);
+    this.validateSampleRate(
+      "replaysSessionSampleRate",
+      config.replaysSessionSampleRate,
+    );
+    this.validateSampleRate(
+      "replaysOnErrorSampleRate",
+      config.replaysOnErrorSampleRate,
+    );
+    this.validateSampleRate("profilesSampleRate", config.profilesSampleRate);
 
     // Validate integrations
     if (config.integrations) {
@@ -151,34 +165,40 @@ export class ConfigValidator {
     if (config.featureFlags) {
       const { provider, launchDarkly, unleash } = config.featureFlags;
 
-      if (provider === 'launchdarkly' && !launchDarkly?.clientId) {
-        this.errors.push('LaunchDarkly provider selected but no clientId provided');
+      if (provider === "launchdarkly" && !launchDarkly?.clientId) {
+        this.errors.push(
+          "LaunchDarkly provider selected but no clientId provided",
+        );
       }
 
-      if (provider === 'unleash' && (!unleash?.url || !unleash?.clientKey)) {
-        this.errors.push('Unleash provider selected but missing url or clientKey');
+      if (provider === "unleash" && (!unleash?.url || !unleash?.clientKey)) {
+        this.errors.push(
+          "Unleash provider selected but missing url or clientKey",
+        );
       }
     }
 
     // Performance warnings
     if (config.enableProfiling && (config.profilesSampleRate || 0) > 0.1) {
-      this.warnings.push('High profiling sample rate may impact performance');
+      this.warnings.push("High profiling sample rate may impact performance");
     }
 
     if (config.enableReplay && (config.replaysSessionSampleRate || 0) > 0.5) {
-      this.warnings.push('High replay sample rate may impact bandwidth');
+      this.warnings.push("High replay sample rate may impact bandwidth");
     }
 
     // Log results
     if (this.logger.config.logValidation) {
       if (this.errors.length > 0) {
-        this.logger.error('Configuration validation failed', { errors: this.errors });
+        this.logger.error("Configuration validation failed", {
+          errors: this.errors,
+        });
       }
       if (this.warnings.length > 0) {
-        this.logger.warn('Configuration warnings', { warnings: this.warnings });
+        this.logger.warn("Configuration warnings", { warnings: this.warnings });
       }
       if (this.errors.length === 0 && this.warnings.length === 0) {
-        this.logger.info('Configuration validation passed');
+        this.logger.info("Configuration validation passed");
       }
     }
 
@@ -192,7 +212,7 @@ export class ConfigValidator {
   private isValidDSN(dsn: string): boolean {
     try {
       const url = new URL(dsn);
-      return url.protocol === 'https:' || url.protocol === 'http:';
+      return url.protocol === "https:" || url.protocol === "http:";
     } catch {
       return false;
     }
@@ -201,17 +221,17 @@ export class ConfigValidator {
   private validateSampleRate(name: string, rate?: number): void {
     if (rate === undefined) return;
 
-    if (typeof rate !== 'number' || rate < 0 || rate > 1) {
+    if (typeof rate !== "number" || rate < 0 || rate > 1) {
       this.errors.push(`Invalid ${name}: must be between 0 and 1`);
     }
   }
 
   private isValidIntegration(integration: any): boolean {
     return (
-      typeof integration === 'object' &&
+      typeof integration === "object" &&
       integration !== null &&
-      'name' in integration &&
-      typeof integration.name === 'string'
+      "name" in integration &&
+      typeof integration.name === "string"
     );
   }
 }
@@ -239,23 +259,23 @@ export class IntegrationStatus {
 
     // Common integrations to check
     const integrationsToCheck = [
-      'BrowserTracing',
-      'Replay',
-      'ReplayCanvas',
-      'Feedback',
-      'Profiling',
-      'HttpClient',
-      'ContextLines',
-      'ReportingObserver',
-      'CaptureConsole',
-      'ExtraErrorData',
-      'RewriteFrames',
-      'SessionTiming',
-      'Debug',
-      'Dedupe',
-      'FeatureFlags',
-      'LaunchDarkly',
-      'Unleash',
+      "BrowserTracing",
+      "Replay",
+      "ReplayCanvas",
+      "Feedback",
+      "Profiling",
+      "HttpClient",
+      "ContextLines",
+      "ReportingObserver",
+      "CaptureConsole",
+      "ExtraErrorData",
+      "RewriteFrames",
+      "SessionTiming",
+      "Debug",
+      "Dedupe",
+      "FeatureFlags",
+      "LaunchDarkly",
+      "Unleash",
     ];
 
     for (const name of integrationsToCheck) {
@@ -272,7 +292,7 @@ export class IntegrationStatus {
       }
     }
 
-    this.logger.info('Integration status', {
+    this.logger.info("Integration status", {
       active: integrations,
       failed: failedIntegrations,
       total: integrations.length,
@@ -367,7 +387,7 @@ export class PerformanceMonitor {
     }
 
     const metrics = this.getMetrics();
-    this.logger.info('Performance metrics', metrics);
+    this.logger.info("Performance metrics", metrics);
   }
 }
 
@@ -387,7 +407,7 @@ export class DevToolsIntegration {
    * Initialize DevTools integration
    */
   initialize(client: any): void {
-    if (!this.enabled || typeof window === 'undefined') {
+    if (!this.enabled || typeof window === "undefined") {
       return;
     }
 
@@ -402,15 +422,17 @@ export class DevToolsIntegration {
       // Get integration status
       getIntegrations: () =>
         client.getIntegrationByName
-          ? ['BrowserTracing', 'Replay', 'Feedback', 'Profiling'].map(name => ({
-              name,
-              active: !!client.getIntegrationByName(name),
-            }))
+          ? ["BrowserTracing", "Replay", "Feedback", "Profiling"].map(
+              (name) => ({
+                name,
+                active: !!client.getIntegrationByName(name),
+              }),
+            )
           : [],
 
       // Capture test event
       testError: () => {
-        client.captureException(new Error('Test error from DevTools'));
+        client.captureException(new Error("Test error from DevTools"));
       },
 
       // Get current user
@@ -423,15 +445,19 @@ export class DevToolsIntegration {
       getMetrics: () =>
         this.logger.config.logPerformance
           ? (window as any).__SENTRY_PERFORMANCE__?.getMetrics()
-          : 'Performance monitoring disabled',
+          : "Performance monitoring disabled",
     };
 
     // Add performance monitor to window
     if (this.logger.config.logPerformance) {
-      (window as any).__SENTRY_PERFORMANCE__ = new PerformanceMonitor(this.logger);
+      (window as any).__SENTRY_PERFORMANCE__ = new PerformanceMonitor(
+        this.logger,
+      );
     }
 
-    this.logger.info('DevTools integration initialized - use window.__SENTRY_DEBUG__');
+    this.logger.info(
+      "DevTools integration initialized - use window.__SENTRY_DEBUG__",
+    );
   }
 }
 

@@ -3,21 +3,21 @@
  * 100% React Server Component for tracking magic link status and providing resend functionality
  */
 
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { cn } from '../utils/dark-mode';
+import { useEffect, useState } from "react";
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { cn } from "../utils/dark-mode";
 
 // Import real server action from the auth package
-import { resendMagicLinkAction } from '@repo/auth/server-actions';
+import { resendMagicLinkAction } from "@repo/auth/server-actions";
 
-type MagicLinkStatus = 'sending' | 'sent' | 'clicked' | 'expired' | 'error';
+type MagicLinkStatus = "sending" | "sent" | "clicked" | "expired" | "error";
 
 interface MagicLinkStatusIndicatorProps extends BaseProps {
   email: string;
@@ -32,12 +32,12 @@ const _initialState: FormState = { success: false };
 
 export function MagicLinkStatusIndicator({
   email,
-  initialStatus = 'sent',
+  initialStatus = "sent",
   onStatusChange,
   onSuccess,
   allowResend = true,
   expirationTime = 300, // 5 minutes
-  className = '',
+  className = "",
 }: MagicLinkStatusIndicatorProps) {
   const [status, setStatus] = useState<MagicLinkStatus>(initialStatus);
   const [timeRemaining, setTimeRemaining] = useState(expirationTime);
@@ -48,11 +48,11 @@ export function MagicLinkStatusIndicator({
 
   // Countdown timer
   useEffect(() => {
-    if (status === 'sent' && timeRemaining > 0) {
+    if (status === "sent" && timeRemaining > 0) {
       const timer = setInterval(() => {
-        setTimeRemaining(prev => {
+        setTimeRemaining((prev) => {
           if (prev <= 1) {
-            setStatus('expired');
+            setStatus("expired");
             return 0;
           }
           return prev - 1;
@@ -69,7 +69,7 @@ export function MagicLinkStatusIndicator({
       onStatusChange(status);
     }
 
-    if (status === 'clicked' && onSuccess) {
+    if (status === "clicked" && onSuccess) {
       onSuccess();
     }
   }, [status, onStatusChange, onSuccess]);
@@ -77,14 +77,14 @@ export function MagicLinkStatusIndicator({
   // Handle resend success
   useEffect(() => {
     if (resendState?.success) {
-      setStatus('sent');
+      setStatus("sent");
       setTimeRemaining(expirationTime);
     }
   }, [resendState?.success, expirationTime]);
 
   // Simulate checking for magic link clicks (in real implementation, this would be via websocket or polling)
   useEffect(() => {
-    if (status === 'sent') {
+    if (status === "sent") {
       const checkInterval = setInterval(async () => {
         // In real implementation, check if the magic link was clicked
         // This could be done via polling an endpoint or websocket
@@ -96,7 +96,7 @@ export function MagicLinkStatusIndicator({
           const result = { clicked: Math.random() > 0.8 };
 
           if (result.clicked) {
-            setStatus('clicked');
+            setStatus("clicked");
           }
         } catch (_error) {
           // Handle error silently for now
@@ -110,12 +110,12 @@ export function MagicLinkStatusIndicator({
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const getStatusIcon = () => {
     switch (status) {
-      case 'sending':
+      case "sending":
         return (
           <svg
             className="h-6 w-6 animate-spin text-blue-600 dark:text-blue-400"
@@ -137,7 +137,7 @@ export function MagicLinkStatusIndicator({
             />
           </svg>
         );
-      case 'sent':
+      case "sent":
         return (
           <svg
             className="h-6 w-6 text-blue-600 dark:text-blue-400"
@@ -153,7 +153,7 @@ export function MagicLinkStatusIndicator({
             />
           </svg>
         );
-      case 'clicked':
+      case "clicked":
         return (
           <svg
             className="h-6 w-6 text-green-600 dark:text-green-400"
@@ -167,7 +167,7 @@ export function MagicLinkStatusIndicator({
             />
           </svg>
         );
-      case 'expired':
+      case "expired":
         return (
           <svg
             className="h-6 w-6 text-red-600 dark:text-red-400"
@@ -181,7 +181,7 @@ export function MagicLinkStatusIndicator({
             />
           </svg>
         );
-      case 'error':
+      case "error":
         return (
           <svg
             className="h-6 w-6 text-red-600 dark:text-red-400"
@@ -200,35 +200,36 @@ export function MagicLinkStatusIndicator({
 
   const getStatusMessage = () => {
     switch (status) {
-      case 'sending':
+      case "sending":
         return {
-          title: 'Sending Magic Link',
-          description: 'Please wait while we send your magic link...',
-          variant: 'default' as const,
+          title: "Sending Magic Link",
+          description: "Please wait while we send your magic link...",
+          variant: "default" as const,
         };
-      case 'sent':
+      case "sent":
         return {
-          title: 'Magic Link Sent!',
+          title: "Magic Link Sent!",
           description: `Check your email at ${email} and click the link to sign in.`,
-          variant: 'success' as const,
+          variant: "success" as const,
         };
-      case 'clicked':
+      case "clicked":
         return {
-          title: 'Success!',
-          description: 'Magic link clicked. You should be signed in shortly.',
-          variant: 'success' as const,
+          title: "Success!",
+          description: "Magic link clicked. You should be signed in shortly.",
+          variant: "success" as const,
         };
-      case 'expired':
+      case "expired":
         return {
-          title: 'Magic Link Expired',
-          description: 'Your magic link has expired. Please request a new one.',
-          variant: 'warning' as const,
+          title: "Magic Link Expired",
+          description: "Your magic link has expired. Please request a new one.",
+          variant: "warning" as const,
         };
-      case 'error':
+      case "error":
         return {
-          title: 'Something Went Wrong',
-          description: 'There was an error with your magic link. Please try again.',
-          variant: 'destructive' as const,
+          title: "Something Went Wrong",
+          description:
+            "There was an error with your magic link. Please try again.",
+          variant: "destructive" as const,
         };
     }
   };
@@ -236,25 +237,30 @@ export function MagicLinkStatusIndicator({
   const statusMessage = getStatusMessage();
 
   return (
-    <Card className={cn('mx-auto w-full max-w-md', className)}>
+    <Card className={cn("mx-auto w-full max-w-md", className)}>
       <CardHeader>
         <div className="text-center">
           <div
             className={cn(
-              'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full',
-              status === 'clicked'
-                ? 'bg-green-100 dark:bg-green-900/20'
-                : status === 'expired' || status === 'error'
-                  ? 'bg-red-100 dark:bg-red-900/20'
-                  : 'bg-blue-100 dark:bg-blue-900/20',
+              "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full",
+              status === "clicked"
+                ? "bg-green-100 dark:bg-green-900/20"
+                : status === "expired" || status === "error"
+                  ? "bg-red-100 dark:bg-red-900/20"
+                  : "bg-blue-100 dark:bg-blue-900/20",
             )}
           >
             {getStatusIcon()}
           </div>
-          <h2 className={cn('text-xl font-bold text-gray-900', 'dark:text-gray-100')}>
+          <h2
+            className={cn(
+              "text-xl font-bold text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
             {statusMessage.title}
           </h2>
-          <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>
+          <p className={cn("mt-2 text-sm text-gray-600", "dark:text-gray-400")}>
             {statusMessage.description}
           </p>
         </div>
@@ -267,26 +273,41 @@ export function MagicLinkStatusIndicator({
         </Alert>
 
         {/* Timer for active links */}
-        {status === 'sent' && timeRemaining > 0 && (
+        {status === "sent" && timeRemaining > 0 && (
           <div
             className={cn(
-              'mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4',
-              'dark:border-blue-800 dark:bg-blue-900/20',
+              "mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4",
+              "dark:border-blue-800 dark:bg-blue-900/20",
             )}
           >
             <div className="flex items-center justify-between">
-              <span className={cn('text-sm font-medium text-blue-800', 'dark:text-blue-200')}>
+              <span
+                className={cn(
+                  "text-sm font-medium text-blue-800",
+                  "dark:text-blue-200",
+                )}
+              >
                 Link expires in:
               </span>
-              <span className={cn('font-mono text-lg text-blue-900', 'dark:text-blue-100')}>
+              <span
+                className={cn(
+                  "font-mono text-lg text-blue-900",
+                  "dark:text-blue-100",
+                )}
+              >
                 {formatTime(timeRemaining)}
               </span>
             </div>
-            <div className={cn('mt-2 h-2 rounded-full bg-blue-200', 'dark:bg-blue-800')}>
+            <div
+              className={cn(
+                "mt-2 h-2 rounded-full bg-blue-200",
+                "dark:bg-blue-800",
+              )}
+            >
               <div
                 className={cn(
-                  'h-2 rounded-full bg-blue-600 transition-all duration-1000',
-                  'dark:bg-blue-400',
+                  "h-2 rounded-full bg-blue-600 transition-all duration-1000",
+                  "dark:bg-blue-400",
                 )}
                 style={{ width: `${(timeRemaining / expirationTime) * 100}%` }}
               />
@@ -311,28 +332,31 @@ export function MagicLinkStatusIndicator({
         {/* Action Buttons */}
         <div className="space-y-3">
           {/* Resend Button */}
-          {allowResend && (status === 'expired' || status === 'error' || status === 'sent') && (
-            <form action={resendAction}>
-              <input type="hidden" name="email" value={email} />
-              <input type="hidden" name="redirectTo" value="/dashboard" />
+          {allowResend &&
+            (status === "expired" ||
+              status === "error" ||
+              status === "sent") && (
+              <form action={resendAction}>
+                <input type="hidden" name="email" value={email} />
+                <input type="hidden" name="redirectTo" value="/dashboard" />
 
-              <Button
-                type="submit"
-                variant={status === 'sent' ? 'outline' : 'primary'}
-                className="w-full"
-                disabled={resendState === undefined}
-              >
-                {resendState === undefined
-                  ? 'Resending...'
-                  : status === 'sent'
-                    ? 'Resend Magic Link'
-                    : 'Send New Magic Link'}
-              </Button>
-            </form>
-          )}
+                <Button
+                  type="submit"
+                  variant={status === "sent" ? "outline" : "primary"}
+                  className="w-full"
+                  disabled={resendState === undefined}
+                >
+                  {resendState === undefined
+                    ? "Resending..."
+                    : status === "sent"
+                      ? "Resend Magic Link"
+                      : "Send New Magic Link"}
+                </Button>
+              </form>
+            )}
 
           {/* Manual refresh for checking status */}
-          {status === 'sent' && (
+          {status === "sent" && (
             <Button
               variant="ghost"
               className="w-full"
@@ -350,8 +374,8 @@ export function MagicLinkStatusIndicator({
             <a
               href="/auth/signin"
               className={cn(
-                'text-sm text-gray-600 hover:text-gray-500',
-                'dark:text-gray-400 dark:hover:text-gray-300',
+                "text-sm text-gray-600 hover:text-gray-500",
+                "dark:text-gray-400 dark:hover:text-gray-300",
               )}
             >
               ← Back to sign in
@@ -360,13 +384,27 @@ export function MagicLinkStatusIndicator({
         </div>
 
         {/* Help Information */}
-        <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
-          <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
+        <div
+          className={cn("mt-6 rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+        >
+          <h4
+            className={cn(
+              "mb-2 text-sm font-medium text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
             Troubleshooting
           </h4>
-          <div className={cn('space-y-1 text-xs text-gray-600', 'dark:text-gray-400')}>
+          <div
+            className={cn(
+              "space-y-1 text-xs text-gray-600",
+              "dark:text-gray-400",
+            )}
+          >
             <p>• Check your spam/junk folder if you don't see the email</p>
-            <p>• Make sure to click the link on the device you want to sign in on</p>
+            <p>
+              • Make sure to click the link on the device you want to sign in on
+            </p>
             <p>• Magic links expire after 5 minutes for security</p>
             <p>• Each link can only be used once</p>
           </div>

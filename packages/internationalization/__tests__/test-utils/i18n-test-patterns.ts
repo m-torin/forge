@@ -5,8 +5,8 @@
  * Provides consistent testing approaches across all i18n test files.
  */
 
-import { expect, test, vi } from 'vitest';
-import type { Dictionary, Locale } from '../../src/shared/dictionary-loader';
+import { expect, test, vi } from "vitest";
+import type { Dictionary, Locale } from "../../src/shared/dictionary-loader";
 
 // ============================================================================
 // CORE I18N TEST PATTERNS
@@ -18,9 +18,9 @@ import type { Dictionary, Locale } from '../../src/shared/dictionary-loader';
 export function testAllLocales<T>(
   operation: (locale: Locale) => T,
   assertion: (result: T, locale: Locale) => void,
-  supportedLocales: Locale[] = ['en', 'fr', 'es', 'pt', 'de'],
+  supportedLocales: Locale[] = ["en", "fr", "es", "pt", "de"],
 ) {
-  supportedLocales.forEach(locale => {
+  supportedLocales.forEach((locale) => {
     test(`should work correctly for ${locale} locale`, () => {
       const result = operation(locale);
       assertion(result, locale);
@@ -34,9 +34,9 @@ export function testAllLocales<T>(
 export function testDictionaryOperations(
   dictionaryProvider: (locale: Locale) => Dictionary,
   validationFn: (dictionary: Dictionary, locale: Locale) => void,
-  supportedLocales: Locale[] = ['en', 'fr', 'es', 'pt', 'de'],
+  supportedLocales: Locale[] = ["en", "fr", "es", "pt", "de"],
 ) {
-  supportedLocales.forEach(locale => {
+  supportedLocales.forEach((locale) => {
     test(`should provide valid dictionary for ${locale}`, () => {
       const dictionary = dictionaryProvider(locale);
       validationFn(dictionary, locale);
@@ -57,7 +57,7 @@ export function testMiddlewareScenarios(
     customAssertions?: (result: any, request: any) => void;
   }>,
 ) {
-  scenarios.forEach(scenario => {
+  scenarios.forEach((scenario) => {
     test(`should handle ${scenario.name}`, () => {
       const middleware = middlewareFactory(scenario.config);
       const result = middleware(scenario.request);
@@ -83,7 +83,7 @@ export function testLocaleDetection(
     fallback?: Locale;
   }>,
 ) {
-  testCases.forEach(testCase => {
+  testCases.forEach((testCase) => {
     test(`should detect ${testCase.expected} locale from ${testCase.name}`, () => {
       const result = detectionFn(testCase.source);
       expect(result).toBe(testCase.expected);
@@ -108,17 +108,17 @@ export function createMockRequest(
 ) {
   return {
     headers: {
-      'accept-language': overrides.acceptLanguage || 'en-US,en;q=0.9',
+      "accept-language": overrides.acceptLanguage || "en-US,en;q=0.9",
       ...overrides.headers,
     },
     cookies: overrides.cookies || {},
     nextUrl: {
-      pathname: overrides.pathname || '/',
-      search: '',
-      hash: '',
+      pathname: overrides.pathname || "/",
+      search: "",
+      hash: "",
     },
-    method: 'GET',
-    url: `https://example.com${overrides.pathname || '/'}`,
+    method: "GET",
+    url: `https://example.com${overrides.pathname || "/"}`,
   };
 }
 
@@ -126,34 +126,34 @@ export function createMockRequest(
  * Creates a standardized mock dictionary
  */
 export function createMockDictionary(
-  locale: Locale = 'en',
+  locale: Locale = "en",
   overrides: Partial<Dictionary> = {},
 ): Dictionary {
   const baseDictionaries = {
     en: {
-      common: { hello: 'Hello', goodbye: 'Goodbye' },
-      navigation: { home: 'Home', about: 'About' },
-      forms: { submit: 'Submit', cancel: 'Cancel' },
+      common: { hello: "Hello", goodbye: "Goodbye" },
+      navigation: { home: "Home", about: "About" },
+      forms: { submit: "Submit", cancel: "Cancel" },
     },
     fr: {
-      common: { hello: 'Bonjour', goodbye: 'Au revoir' },
-      navigation: { home: 'Accueil', about: 'À propos' },
-      forms: { submit: 'Soumettre', cancel: 'Annuler' },
+      common: { hello: "Bonjour", goodbye: "Au revoir" },
+      navigation: { home: "Accueil", about: "À propos" },
+      forms: { submit: "Soumettre", cancel: "Annuler" },
     },
     es: {
-      common: { hello: 'Hola', goodbye: 'Adiós' },
-      navigation: { home: 'Inicio', about: 'Acerca de' },
-      forms: { submit: 'Enviar', cancel: 'Cancelar' },
+      common: { hello: "Hola", goodbye: "Adiós" },
+      navigation: { home: "Inicio", about: "Acerca de" },
+      forms: { submit: "Enviar", cancel: "Cancelar" },
     },
     pt: {
-      common: { hello: 'Olá', goodbye: 'Tchau' },
-      navigation: { home: 'Início', about: 'Sobre' },
-      forms: { submit: 'Enviar', cancel: 'Cancelar' },
+      common: { hello: "Olá", goodbye: "Tchau" },
+      navigation: { home: "Início", about: "Sobre" },
+      forms: { submit: "Enviar", cancel: "Cancelar" },
     },
     de: {
-      common: { hello: 'Hallo', goodbye: 'Auf Wiedersehen' },
-      navigation: { home: 'Startseite', about: 'Über uns' },
-      forms: { submit: 'Absenden', cancel: 'Abbrechen' },
+      common: { hello: "Hallo", goodbye: "Auf Wiedersehen" },
+      navigation: { home: "Startseite", about: "Über uns" },
+      forms: { submit: "Absenden", cancel: "Abbrechen" },
     },
   };
 
@@ -168,11 +168,11 @@ export function createMockDictionary(
  */
 export function createMockI18nConfig(overrides: any = {}) {
   return {
-    locales: ['en', 'fr', 'es', 'pt', 'de'],
-    defaultLocale: 'en',
-    fallbackLocale: 'en',
-    cookieName: 'locale',
-    headerName: 'x-locale',
+    locales: ["en", "fr", "es", "pt", "de"],
+    defaultLocale: "en",
+    fallbackLocale: "en",
+    cookieName: "locale",
+    headerName: "x-locale",
     ...overrides,
   };
 }
@@ -186,7 +186,7 @@ export function createMockI18nConfig(overrides: any = {}) {
  */
 export function validateLocale(
   locale: string,
-  supportedLocales: Locale[] = ['en', 'fr', 'es', 'pt', 'de'],
+  supportedLocales: Locale[] = ["en", "fr", "es", "pt", "de"],
 ) {
   expect(supportedLocales).toContain(locale);
 }
@@ -196,7 +196,7 @@ export function validateLocale(
  */
 export function validateDictionary(dictionary: any) {
   expect(dictionary).toBeDefined();
-  expect(typeof dictionary).toBe('object');
+  expect(typeof dictionary).toBe("object");
   expect(dictionary).not.toBeNull();
   expect(Array.isArray(dictionary)).toBeFalsy();
   expect(Object.keys(dictionary).length).toBeGreaterThan(0);
@@ -205,9 +205,12 @@ export function validateDictionary(dictionary: any) {
 /**
  * Validates that a dictionary has required translation keys
  */
-export function validateTranslationKeys(dictionary: Dictionary, requiredKeys: string[]) {
-  requiredKeys.forEach(key => {
-    const keys = key.split('.');
+export function validateTranslationKeys(
+  dictionary: Dictionary,
+  requiredKeys: string[],
+) {
+  requiredKeys.forEach((key) => {
+    const keys = key.split(".");
     let current = dictionary;
 
     for (const k of keys) {
@@ -215,7 +218,7 @@ export function validateTranslationKeys(dictionary: Dictionary, requiredKeys: st
       current = (current as any)[k];
     }
 
-    expect(typeof current).toBe('string');
+    expect(typeof current).toBe("string");
     expect((current as any).length).toBeGreaterThan(0);
   });
 }
@@ -224,7 +227,7 @@ export function validateTranslationKeys(dictionary: Dictionary, requiredKeys: st
  * Validates URL structure for i18n routing
  */
 export function validateI18nUrl(url: string, locale: Locale) {
-  if (locale === 'en') {
+  if (locale === "en") {
     // English might not have locale prefix
     expect(url).toMatch(/^\/(?!(?:en|fr|es|pt|de)\/)/);
   } else {
@@ -268,14 +271,14 @@ export function assertMiddlewareResponse(
 ) {
   if (expectedRedirect) {
     expect(response.status).toBe(307);
-    expect(response.headers.get('Location')).toBe(expectedRedirect);
+    expect(response.headers.get("Location")).toBe(expectedRedirect);
   } else {
     expect(response.status).toBe(200);
   }
 
   // Check for locale in response headers or cookies
   if (response.headers) {
-    const localeHeader = response.headers.get('x-locale');
+    const localeHeader = response.headers.get("x-locale");
     if (localeHeader) {
       expect(localeHeader).toBe(expectedLocale);
     }
@@ -334,9 +337,9 @@ export function measureI18nPerformance<T>(
 export function testDictionaryPerformance(
   dictionaryLoader: (locale: Locale) => Dictionary,
   maxLoadTime: number = 5, // 5ms default
-  locales: Locale[] = ['en', 'fr', 'es', 'pt', 'de'],
+  locales: Locale[] = ["en", "fr", "es", "pt", "de"],
 ) {
-  locales.forEach(locale => {
+  locales.forEach((locale) => {
     test(`should load ${locale} dictionary quickly`, () => {
       const { averageTime } = measureI18nPerformance(
         () => dictionaryLoader(locale),
@@ -359,49 +362,49 @@ export function testDictionaryPerformance(
 export function generateI18nErrorScenarios() {
   return [
     {
-      name: 'missing dictionary file',
+      name: "missing dictionary file",
       setup: () => {
         // Mock file not found
         vi.mocked(require).mockImplementation(() => {
-          throw new Error('Module not found');
+          throw new Error("Module not found");
         });
       },
-      expectedError: 'Module not found',
-      expectedFallback: 'en',
+      expectedError: "Module not found",
+      expectedFallback: "en",
     },
     {
-      name: 'malformed dictionary JSON',
+      name: "malformed dictionary JSON",
       setup: () => {
         // Mock invalid JSON
         vi.mocked(require).mockImplementation(() => {
-          throw new SyntaxError('Unexpected token in JSON');
+          throw new SyntaxError("Unexpected token in JSON");
         });
       },
-      expectedError: 'Unexpected token in JSON',
+      expectedError: "Unexpected token in JSON",
       expectedFallback: {},
     },
     {
-      name: 'unsupported locale',
+      name: "unsupported locale",
       setup: () => {
         // No setup needed
       },
       operation: (locale: string) => {
-        if (!['en', 'fr', 'es', 'pt', 'de'].includes(locale)) {
-          return 'en'; // Fallback to English
+        if (!["en", "fr", "es", "pt", "de"].includes(locale)) {
+          return "en"; // Fallback to English
         }
         return locale;
       },
-      expectedFallback: 'en',
+      expectedFallback: "en",
     },
     {
-      name: 'empty Accept-Language header',
+      name: "empty Accept-Language header",
       setup: () => {
         // Mock empty header
       },
       operation: (header: string) => {
-        return header || 'en'; // Fallback to English
+        return header || "en"; // Fallback to English
       },
-      expectedFallback: 'en',
+      expectedFallback: "en",
     },
   ];
 }
@@ -416,9 +419,9 @@ export function generateI18nErrorScenarios() {
 export function testLocalesBulk<T>(
   operation: (locale: Locale) => T,
   assertion: (result: T, locale: Locale) => void,
-  locales: Locale[] = ['en', 'fr', 'es', 'pt', 'de'],
+  locales: Locale[] = ["en", "fr", "es", "pt", "de"],
 ) {
-  const results = locales.map(locale => ({
+  const results = locales.map((locale) => ({
     locale,
     result: operation(locale),
   }));
@@ -436,9 +439,9 @@ export function testLocalesBulk<T>(
 export function testDictionaryConsistency(
   dictionaryProvider: (locale: Locale) => Dictionary,
   requiredKeys: string[],
-  locales: Locale[] = ['en', 'fr', 'es', 'pt', 'de'],
+  locales: Locale[] = ["en", "fr", "es", "pt", "de"],
 ) {
-  const dictionaries = locales.map(locale => ({
+  const dictionaries = locales.map((locale) => ({
     locale,
     dictionary: dictionaryProvider(locale),
   }));
@@ -461,9 +464,9 @@ export function testDictionaryConsistency(
 export function testComponentI18n(
   renderComponent: (locale: Locale) => HTMLElement,
   expectedTexts: Record<Locale, string>,
-  locales: Locale[] = ['en', 'fr', 'es', 'pt', 'de'],
+  locales: Locale[] = ["en", "fr", "es", "pt", "de"],
 ) {
-  locales.forEach(locale => {
+  locales.forEach((locale) => {
     test(`should render correctly in ${locale}`, () => {
       const container = renderComponent(locale);
       assertLocaleSpecificText(container, expectedTexts, locale);
@@ -477,10 +480,10 @@ export function testComponentI18n(
 export function testLocalizedLinks(
   linkProvider: (locale: Locale, href: string) => string,
   testUrls: string[],
-  locales: Locale[] = ['en', 'fr', 'es', 'pt', 'de'],
+  locales: Locale[] = ["en", "fr", "es", "pt", "de"],
 ) {
-  locales.forEach(locale => {
-    testUrls.forEach(url => {
+  locales.forEach((locale) => {
+    testUrls.forEach((url) => {
       test(`should localize ${url} for ${locale}`, () => {
         const localizedUrl = linkProvider(locale, url);
         validateI18nUrl(localizedUrl, locale);

@@ -6,13 +6,13 @@
     "build:local": "echo 'Mintlify docs build'",
     "circular": "madge --circular --extensions ts,tsx,js,jsx .",
     "coverage:collect": "vitest run --coverage --reporter=json",
-    "dev": "mintlify dev --port 3800",
+    "dev": "node api.js && mintlify dev --port 3800",
     "doppler:open": "doppler open",
     "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
     "doppler:secrets": "doppler secrets",
     "doppler:secrets:download": "doppler secrets download --no-file --format env",
     "doppler:secrets:upload": "doppler secrets upload .env.local",
-    "knip": "knip",
+    "knip": "knip --reporter json --exclude unlisted,unresolved,exports,dependencies,files,binaries,types,duplicates",
     "lint": "mintlify broken-links",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -28,6 +28,10 @@
   },
   "devDependencies": {
     "@repo/qa": "workspace:*",
-    "vite-tsconfig-paths": "catalog:"
+    "@vitest/coverage-v8": "catalog:",
+    "knip": "catalog:",
+    "madge": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
   }
 }

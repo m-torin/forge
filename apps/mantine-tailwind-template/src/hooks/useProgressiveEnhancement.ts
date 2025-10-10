@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useMediaQuery, useOs, useReducedMotion } from '@mantine/hooks';
-import { useEffect, useState } from 'react';
+import { useMediaQuery, useOs, useReducedMotion } from "@mantine/hooks";
+import { useEffect, useState } from "react";
 
 interface BrowserCapabilities {
   hasViewTransitions: boolean;
@@ -23,7 +23,7 @@ interface BrowserCapabilities {
 
 export function useProgressiveEnhancement(): BrowserCapabilities {
   // Use Mantine hooks for common capabilities
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const prefersReducedMotion = useReducedMotion();
   const operatingSystem = useOs();
 
@@ -40,32 +40,32 @@ export function useProgressiveEnhancement(): BrowserCapabilities {
     hasPaintWorklet: false,
     prefersDarkMode: false,
     prefersReducedMotion: false,
-    connectionType: 'unknown',
+    connectionType: "unknown",
     isHighBandwidth: true,
-    operatingSystem: 'undetermined',
+    operatingSystem: "undetermined",
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const detectCapabilities = () => {
-      setCapabilities(prev => ({
+      setCapabilities((prev) => ({
         ...prev,
         // Modern APIs
-        hasViewTransitions: 'startViewTransition' in document,
-        hasContainerQueries: CSS.supports('container-type: inline-size'),
-        hasBackdropFilter: CSS.supports('backdrop-filter: blur(10px)'),
-        hasSubgrid: CSS.supports('grid-template-rows: subgrid'),
-        hasColorMix: CSS.supports('color: color-mix(in srgb, red, blue)'),
+        hasViewTransitions: "startViewTransition" in document,
+        hasContainerQueries: CSS.supports("container-type: inline-size"),
+        hasBackdropFilter: CSS.supports("backdrop-filter: blur(10px)"),
+        hasSubgrid: CSS.supports("grid-template-rows: subgrid"),
+        hasColorMix: CSS.supports("color: color-mix(in srgb, red, blue)"),
 
         // Observer APIs
-        hasIntersectionObserver: 'IntersectionObserver' in window,
-        hasResizeObserver: 'ResizeObserver' in window,
+        hasIntersectionObserver: "IntersectionObserver" in window,
+        hasResizeObserver: "ResizeObserver" in window,
 
         // Modern web APIs
-        hasWebShare: 'share' in navigator,
-        hasFileSystemAccess: 'showOpenFilePicker' in window,
-        hasPaintWorklet: 'paintWorklet' in CSS,
+        hasWebShare: "share" in navigator,
+        hasFileSystemAccess: "showOpenFilePicker" in window,
+        hasPaintWorklet: "paintWorklet" in CSS,
 
         // Use Mantine hook values
         prefersDarkMode,
@@ -74,12 +74,14 @@ export function useProgressiveEnhancement(): BrowserCapabilities {
 
         // Network information (keep custom as it's specialized)
         connectionType:
-          'connection' in navigator
-            ? (navigator as any).connection?.effectiveType || 'unknown'
-            : 'unknown',
+          "connection" in navigator
+            ? (navigator as any).connection?.effectiveType || "unknown"
+            : "unknown",
         isHighBandwidth:
-          'connection' in navigator
-            ? !['slow-2g', '2g'].includes((navigator as any).connection?.effectiveType)
+          "connection" in navigator
+            ? !["slow-2g", "2g"].includes(
+                (navigator as any).connection?.effectiveType,
+              )
             : true,
       }));
     };

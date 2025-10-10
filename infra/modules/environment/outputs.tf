@@ -87,6 +87,7 @@ output "integration_api_keys" {
     openai_api_key        = local.integration_secrets.openai_api_key
     resend_api_key        = local.integration_secrets.resend_api_key
     knock_api_key         = local.integration_secrets.knock_api_key
+    image_signing_key     = local.integration_secrets.image_signing_key
   }
   sensitive = true
 }

@@ -2,7 +2,7 @@
  * Migration utilities for moving from @sentry/nextjs to observability plugin
  */
 
-import type { SentryNextJSPluginConfig } from '../plugin';
+import type { SentryNextJSPluginConfig } from "../plugin";
 
 /**
  * Migration options
@@ -72,7 +72,7 @@ export function migrateConfig(vanillaConfig: any): SentryNextJSPluginConfig {
   // Process integrations
   if (vanillaConfig.integrations) {
     const integrations =
-      typeof vanillaConfig.integrations === 'function'
+      typeof vanillaConfig.integrations === "function"
         ? vanillaConfig.integrations([])
         : vanillaConfig.integrations;
 
@@ -95,7 +95,8 @@ export function migrateConfig(vanillaConfig: any): SentryNextJSPluginConfig {
 
   // Process trace propagation targets
   if (vanillaConfig.tracePropagationTargets) {
-    pluginConfig.tracePropagationTargets = vanillaConfig.tracePropagationTargets;
+    pluginConfig.tracePropagationTargets =
+      vanillaConfig.tracePropagationTargets;
   }
 
   return pluginConfig;
@@ -104,15 +105,18 @@ export function migrateConfig(vanillaConfig: any): SentryNextJSPluginConfig {
 /**
  * Migrate individual integration
  */
-function migrateIntegration(integration: any, config: SentryNextJSPluginConfig): any | null {
+function migrateIntegration(
+  integration: any,
+  config: SentryNextJSPluginConfig,
+): any | null {
   const name = integration.name;
 
   switch (name) {
-    case 'BrowserTracing':
+    case "BrowserTracing":
       config.enableTracing = true;
       return null; // Will be added by plugin
 
-    case 'Replay':
+    case "Replay":
       config.enableReplay = true;
       // Extract replay options if available
       if (integration._options) {
@@ -120,78 +124,78 @@ function migrateIntegration(integration: any, config: SentryNextJSPluginConfig):
       }
       return null; // Will be added by plugin
 
-    case 'ReplayCanvas':
+    case "ReplayCanvas":
       config.enableCanvasRecording = true;
       if (integration._options) {
         config.canvasRecordingOptions = integration._options;
       }
       return null; // Will be added by plugin
 
-    case 'Feedback':
+    case "Feedback":
       config.enableFeedback = true;
       if (integration._options) {
         config.feedbackOptions = integration._options;
       }
       return null; // Will be added by plugin
 
-    case 'ProfilingIntegration':
-    case 'Profiling':
+    case "ProfilingIntegration":
+    case "Profiling":
       config.enableProfiling = true;
       return null; // Will be added by plugin
 
-    case 'HttpClient':
+    case "HttpClient":
       config.enableHttpClient = true;
       return null;
 
-    case 'ContextLines':
+    case "ContextLines":
       config.enableContextLines = true;
       return null;
 
-    case 'ReportingObserver':
+    case "ReportingObserver":
       config.enableReportingObserver = true;
       return null;
 
-    case 'CaptureConsole':
+    case "CaptureConsole":
       config.enableCaptureConsole = true;
       if (integration._options) {
         config.captureConsoleOptions = integration._options;
       }
       return null;
 
-    case 'ExtraErrorData':
+    case "ExtraErrorData":
       config.enableExtraErrorData = true;
       if (integration._options) {
         config.extraErrorDataOptions = integration._options;
       }
       return null;
 
-    case 'RewriteFrames':
+    case "RewriteFrames":
       config.enableRewriteFrames = true;
       if (integration._options) {
         config.rewriteFramesOptions = integration._options;
       }
       return null;
 
-    case 'SessionTiming':
+    case "SessionTiming":
       config.enableSessionTiming = true;
       return null;
 
-    case 'Debug':
+    case "Debug":
       config.enableDebug = true;
       if (integration._options) {
         config.debugOptions = integration._options;
       }
       return null;
 
-    case 'LaunchDarkly':
+    case "LaunchDarkly":
       if (!config.featureFlags) {
-        config.featureFlags = { provider: 'launchdarkly' };
+        config.featureFlags = { provider: "launchdarkly" };
       }
       return null;
 
-    case 'Unleash':
+    case "Unleash":
       if (!config.featureFlags) {
-        config.featureFlags = { provider: 'unleash' };
+        config.featureFlags = { provider: "unleash" };
       }
       return null;
 
@@ -380,7 +384,7 @@ sentryPlugin.initialize({
   ],
 });
 `
-    : ''
+    : ""
 }
 
 ${
@@ -396,7 +400,7 @@ ${
 // NEW: NEXT_PUBLIC_SENTRY_ENABLE_REPLAY=true
 // NEW: NEXT_PUBLIC_SENTRY_ENABLE_CANVAS_RECORDING=true
 `
-    : ''
+    : ""
 }
 `;
 }
@@ -413,28 +417,32 @@ export function checkCompatibility(config: any): {
   const recommendations: string[] = [];
 
   // Check for deprecated options
-  if ('sentry' in config) {
+  if ("sentry" in config) {
     issues.push('The "sentry" property in next.config.js is deprecated');
-    recommendations.push('Move Sentry options to withObservabilitySentry() second parameter');
+    recommendations.push(
+      "Move Sentry options to withObservabilitySentry() second parameter",
+    );
   }
 
   // Check for old integration syntax
-  if (config.integrations?.some((i: any) => typeof i === 'function')) {
-    issues.push('Function-based integration syntax detected');
-    recommendations.push('Use new integration configuration options');
+  if (config.integrations?.some((i: any) => typeof i === "function")) {
+    issues.push("Function-based integration syntax detected");
+    recommendations.push("Use new integration configuration options");
   }
 
   // Check for unsupported features
   if (config.transport) {
-    issues.push('Custom transport detected');
-    recommendations.push('Custom transports need to be reimplemented as plugins');
+    issues.push("Custom transport detected");
+    recommendations.push(
+      "Custom transports need to be reimplemented as plugins",
+    );
   }
 
   // Check environment
   if (!process.env.NEXT_PUBLIC_SENTRY_DSN && !process.env.SENTRY_DSN) {
-    issues.push('No Sentry DSN found in environment');
+    issues.push("No Sentry DSN found in environment");
     recommendations.push(
-      'Set NEXT_PUBLIC_SENTRY_DSN for client-side and SENTRY_DSN for server-side',
+      "Set NEXT_PUBLIC_SENTRY_DSN for client-side and SENTRY_DSN for server-side",
     );
   }
 

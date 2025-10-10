@@ -43,8 +43,10 @@ export function accountSecurityPlugin(options: AccountSecurityOptions = {}) {
   const getClientInfo = (request: Request) => {
     const headers = request.headers;
     const ipAddress =
-      headers.get('x-forwarded-for')?.split(',')[0] || headers.get('x-real-ip') || 'unknown';
-    const userAgent = headers.get('user-agent') || 'unknown';
+      headers.get("x-forwarded-for")?.split(",")[0] ||
+      headers.get("x-real-ip") ||
+      "unknown";
+    const userAgent = headers.get("user-agent") || "unknown";
     return { ipAddress, userAgent };
   };
 
@@ -84,7 +86,11 @@ export function accountSecurityPlugin(options: AccountSecurityOptions = {}) {
     return { locked: false };
   };
 
-  const recordFailedAttempt = async (email: string, ipAddress: string, userAgent: string) => {
+  const recordFailedAttempt = async (
+    email: string,
+    ipAddress: string,
+    userAgent: string,
+  ) => {
     const key = email.toLowerCase();
     const existing = failedAttempts.get(key);
 
@@ -101,7 +107,9 @@ export function accountSecurityPlugin(options: AccountSecurityOptions = {}) {
 
       // Lock account if max attempts reached
       if (existing.attempts >= (config.maxFailedAttempts ?? 5)) {
-        existing.lockedUntil = new Date(Date.now() + (config.lockoutDuration ?? 30) * 60 * 1000);
+        existing.lockedUntil = new Date(
+          Date.now() + (config.lockoutDuration ?? 30) * 60 * 1000,
+        );
       }
 
       failedAttempts.set(key, existing);
@@ -131,11 +139,11 @@ export function accountSecurityPlugin(options: AccountSecurityOptions = {}) {
   };
 
   return {
-    id: 'account-security',
+    id: "account-security",
     hooks: {
       before: [
         {
-          matcher: (context: any) => context.path === '/sign-in',
+          matcher: (context: any) => context.path === "/sign-in",
           handler: async (context: any) => {
             const { email } = context.body || {};
 
@@ -155,7 +163,7 @@ export function accountSecurityPlugin(options: AccountSecurityOptions = {}) {
       ],
       after: [
         {
-          matcher: (context: any) => context.path === '/sign-in',
+          matcher: (context: any) => context.path === "/sign-in",
           handler: async (context: any) => {
             const { email } = context.body || {};
             const { ipAddress, userAgent } = getClientInfo(context.request);
@@ -177,7 +185,7 @@ export function accountSecurityPlugin(options: AccountSecurityOptions = {}) {
 
                 if (isSuspicious && config.notifySuspiciousLogin) {
                   // Log suspicious login (integrate with your notification system)
-                  logWarn('Suspicious login detected', {
+                  logWarn("Suspicious login detected", {
                     userId: context.context.user.id,
                     email: context.context.user.email,
                     ipAddress,
@@ -203,7 +211,7 @@ export async function validateAccountSecurity(data: {
 }): Promise<{ isValid: boolean; error?: string }> {
   // Basic implementation for testing
   if (!data.userId || !data.action) {
-    return { isValid: false, error: 'Missing required parameters' };
+    return { isValid: false, error: "Missing required parameters" };
   }
   return { isValid: true };
 }

@@ -1,9 +1,9 @@
 /**
  * Rate limiting utilities using Upstash Redis
- * Uses shared Redis instance from @repo/database
+ * Uses shared Redis instance from @repo/db-prisma
  */
 
-import { redis } from '@repo/database/redis/server';
+import { getServerClient } from '@repo/db-upstash-redis/server';
 import { Ratelimit, type RatelimitConfig } from '@upstash/ratelimit';
 import { safeEnv } from './env';
 
@@ -43,10 +43,11 @@ export const createRateLimiter = (props: Omit<RatelimitConfig, 'redis'>): Rateli
     } as any;
   }
 
+  const redisClient = getServerClient();
   return new Ratelimit({
     limiter: props.limiter ?? Ratelimit.slidingWindow(10, '10 s'),
     prefix: props.prefix ?? 'forge',
-    redis,
+    redis: redisClient.redis, // Access the raw Redis client
     analytics: props.analytics ?? false,
     ephemeralCache: props.ephemeralCache ?? undefined,
   });

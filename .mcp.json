@@ -2,7 +2,9 @@
   "mcpServers": {
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"]
+      "args": ["-y", "@upstash/context7-mcp"],
+      "alwaysAllow": ["resolve-library-id", "get-library-docs"],
+      "disabled": false
     },
     "git": {
       "command": "npx",
@@ -10,19 +12,51 @@
     },
     "memory": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "disabled": false,
+      "alwaysAllow": []
     },
     "prisma-local": {
       "command": "npx",
-      "args": ["-y", "prisma", "mcp"]
+      "args": ["-y", "prisma", "mcp"],
+      "disabled": false,
+      "alwaysAllow": []
     },
-    "claude-utils": {
+    "forge": {
       "command": "node",
-      "args": ["./packages/mcp-utils/bin/mcp-server.mjs"],
+      "args": ["./packages/mcp-server/bin/mcp-server.mjs"],
       "env": {
         "NODE_ENV": "production",
-        "LOG_LEVEL": "info"
-      }
+        "LOG_LEVEL": "info",
+        "PROJECT_ROOT": "${PROJECT_ROOT}"
+      },
+      "disabled": false,
+      "alwaysAllow": [
+        "safe_stringify",
+        "batch_processor",
+        "file_discovery",
+        "file_streaming",
+        "path_manager",
+        "extract_imports",
+        "extract_exports",
+        "calculate_complexity",
+        "extract_file_metadata",
+        "pattern_analyzer",
+        "architecture_detector",
+        "dependency_analyzer",
+        "circular_deps",
+        "memory_monitor",
+        "advanced_memory_monitor",
+        "memory_aware_cache",
+        "workflow_orchestrator",
+        "worktree_manager",
+        "resource_lifecycle_manager",
+        "initialize_session",
+        "close_session",
+        "context_session_manager",
+        "report_generator",
+        "optimization_engine"
+      ]
     },
     "playwright": {
       "command": "npx",
@@ -37,6 +71,14 @@
         "./test-results",
         "--save-trace",
         "--ignore-https-errors"
+      ],
+      "alwaysAllow": [
+        "browser_navigate",
+        "browser_close",
+        "browser_click",
+        "browser_hover",
+        "browser_resize",
+        "browser_snapshot"
       ]
     },
     "github": {
@@ -44,7 +86,9 @@
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": ""
-      }
+      },
+      "disabled": false,
+      "alwaysAllow": []
     }
   }
 }

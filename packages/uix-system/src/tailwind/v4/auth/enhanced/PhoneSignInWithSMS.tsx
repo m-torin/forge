@@ -3,17 +3,17 @@
  * 100% React Server Component for SMS-based authentication
  */
 
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
-import { cn } from '../utils/dark-mode';
+import { useEffect, useState } from "react";
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
+import { cn } from "../utils/dark-mode";
 
 interface PhoneSignInWithSMSProps extends BaseProps {
   title?: string;
@@ -29,42 +29,48 @@ const _initialState: FormState = { success: false };
 
 // Common country codes
 const COUNTRY_CODES = [
-  { code: '+1', country: 'US/CA', name: 'United States / Canada' },
-  { code: '+44', country: 'GB', name: 'United Kingdom' },
-  { code: '+33', country: 'FR', name: 'France' },
-  { code: '+49', country: 'DE', name: 'Germany' },
-  { code: '+81', country: 'JP', name: 'Japan' },
-  { code: '+86', country: 'CN', name: 'China' },
-  { code: '+91', country: 'IN', name: 'India' },
-  { code: '+61', country: 'AU', name: 'Australia' },
-  { code: '+55', country: 'BR', name: 'Brazil' },
-  { code: '+7', country: 'RU', name: 'Russia' },
+  { code: "+1", country: "US/CA", name: "United States / Canada" },
+  { code: "+44", country: "GB", name: "United Kingdom" },
+  { code: "+33", country: "FR", name: "France" },
+  { code: "+49", country: "DE", name: "Germany" },
+  { code: "+81", country: "JP", name: "Japan" },
+  { code: "+86", country: "CN", name: "China" },
+  { code: "+91", country: "IN", name: "India" },
+  { code: "+61", country: "AU", name: "Australia" },
+  { code: "+55", country: "BR", name: "Brazil" },
+  { code: "+7", country: "RU", name: "Russia" },
 ];
 
 // Phone number validation
-function validatePhoneNumber(countryCode: string, phoneNumber: string): string | null {
-  if (!countryCode || !phoneNumber) return 'Phone number is required';
+function validatePhoneNumber(
+  countryCode: string,
+  phoneNumber: string,
+): string | null {
+  if (!countryCode || !phoneNumber) return "Phone number is required";
 
-  const cleanPhone = phoneNumber.replace(/\D/g, '');
-  if (cleanPhone.length < 7) return 'Phone number is too short';
-  if (cleanPhone.length > 15) return 'Phone number is too long';
+  const cleanPhone = phoneNumber.replace(/\D/g, "");
+  if (cleanPhone.length < 7) return "Phone number is too short";
+  if (cleanPhone.length > 15) return "Phone number is too long";
 
   return null;
 }
 
 // Server action for requesting SMS sign-in code
-async function requestSMSSignInAction(prevState: any, formData: FormData): Promise<FormState> {
-  'use server';
+async function requestSMSSignInAction(
+  prevState: any,
+  formData: FormData,
+): Promise<FormState> {
+  "use server";
 
   try {
-    const countryCode = formData.get('countryCode') as string;
-    const phoneNumber = formData.get('phoneNumber') as string;
+    const countryCode = formData.get("countryCode") as string;
+    const phoneNumber = formData.get("phoneNumber") as string;
 
     // Validation
     const errors: Record<string, string[]> = {};
 
-    if (!countryCode) errors.countryCode = ['Please select a country code'];
-    if (!phoneNumber) errors.phoneNumber = ['Phone number is required'];
+    if (!countryCode) errors.countryCode = ["Please select a country code"];
+    if (!phoneNumber) errors.phoneNumber = ["Phone number is required"];
 
     if (countryCode && phoneNumber) {
       const phoneError = validatePhoneNumber(countryCode, phoneNumber);
@@ -76,11 +82,13 @@ async function requestSMSSignInAction(prevState: any, formData: FormData): Promi
     }
 
     // Clean and format phone number
-    const cleanPhone = phoneNumber.replace(/\D/g, '');
+    const cleanPhone = phoneNumber.replace(/\D/g, "");
     const fullPhoneNumber = `${countryCode}${cleanPhone}`;
 
     // Import Better Auth server action
-    const { sendSMSSignInCodeAction } = await import('@repo/auth/server-actions');
+    const { sendSMSSignInCodeAction } = await import(
+      "@repo/auth/server-actions"
+    );
 
     const result = await sendSMSSignInCodeAction(prevState, formData);
 
@@ -90,72 +98,77 @@ async function requestSMSSignInAction(prevState: any, formData: FormData): Promi
         message: `Sign-in code sent to ${fullPhoneNumber}! Check your SMS messages.`,
         data: {
           phoneNumber: fullPhoneNumber,
-          step: 'verification',
+          step: "verification",
         },
       };
     } else {
       return {
         success: false,
-        error: result.error || 'Failed to send sign-in code.',
+        error: result.error || "Failed to send sign-in code.",
       };
     }
   } catch (error: any) {
     // console.error('SMS sign-in request error:', error);
 
-    if (error?.message?.includes('not found')) {
+    if (error?.message?.includes("not found")) {
       return {
         success: false,
         error:
-          'No account found with this phone number. Please sign up first or use a different sign-in method.',
+          "No account found with this phone number. Please sign up first or use a different sign-in method.",
       };
     }
 
-    if (error?.message?.includes('not verified')) {
+    if (error?.message?.includes("not verified")) {
       return {
         success: false,
         error:
-          'This phone number is not verified. Please verify it in your account settings first.',
+          "This phone number is not verified. Please verify it in your account settings first.",
       };
     }
 
-    if (error?.message?.includes('rate limit')) {
-      return {
-        success: false,
-        error: 'Too many requests. Please wait a few minutes before trying again.',
-      };
-    }
-
-    if (error?.message?.includes('carrier blocked')) {
+    if (error?.message?.includes("rate limit")) {
       return {
         success: false,
         error:
-          'SMS messages to this number are currently blocked. Please use a different sign-in method.',
+          "Too many requests. Please wait a few minutes before trying again.",
+      };
+    }
+
+    if (error?.message?.includes("carrier blocked")) {
+      return {
+        success: false,
+        error:
+          "SMS messages to this number are currently blocked. Please use a different sign-in method.",
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred while sending the sign-in code. Please try again.',
+      error:
+        "An error occurred while sending the sign-in code. Please try again.",
     };
   }
 }
 
 // Server action for verifying SMS sign-in code
-async function verifySMSSignInAction(prevState: any, formData: FormData): Promise<FormState> {
-  'use server';
+async function verifySMSSignInAction(
+  prevState: any,
+  formData: FormData,
+): Promise<FormState> {
+  "use server";
 
   try {
-    const phoneNumber = formData.get('phoneNumber') as string;
-    const code = formData.get('code') as string;
-    const redirectTo = formData.get('redirectTo') as string;
+    const phoneNumber = formData.get("phoneNumber") as string;
+    const code = formData.get("code") as string;
+    const redirectTo = formData.get("redirectTo") as string;
 
     // Validation
     const errors: Record<string, string[]> = {};
 
-    if (!phoneNumber) errors.phoneNumber = ['Phone number is required'];
-    if (!code) errors.code = ['Verification code is required'];
+    if (!phoneNumber) errors.phoneNumber = ["Phone number is required"];
+    if (!code) errors.code = ["Verification code is required"];
     if (code && !/^\d{6}$/.test(code)) {
-      errors.code = ['Verification code must be 6 digits'];
+      errors.code = ["Verification code must be 6 digits"];
     }
 
     if (Object.keys(errors).length > 0) {
@@ -163,62 +176,65 @@ async function verifySMSSignInAction(prevState: any, formData: FormData): Promis
     }
 
     // Import Better Auth server action
-    const { verifySMSCodeAction } = await import('@repo/auth/server-actions');
+    const { verifySMSCodeAction } = await import("@repo/auth/server-actions");
 
     const result = await verifySMSCodeAction(prevState, formData);
 
     if (result.success) {
       return {
         success: true,
-        message: 'Successfully signed in! Redirecting...',
-        data: { redirectTo: redirectTo || '/dashboard' },
+        message: "Successfully signed in! Redirecting...",
+        data: { redirectTo: redirectTo || "/dashboard" },
       };
     } else {
       return {
         success: false,
-        error: result.error || 'Invalid verification code. Please try again.',
+        error: result.error || "Invalid verification code. Please try again.",
       };
     }
   } catch (error: any) {
     // console.error('SMS sign-in verification error:', error);
 
-    if (error?.message?.includes('invalid code')) {
+    if (error?.message?.includes("invalid code")) {
       return {
         success: false,
-        errors: { code: ['Invalid verification code. Please check and try again.'] },
+        errors: {
+          code: ["Invalid verification code. Please check and try again."],
+        },
       };
     }
 
-    if (error?.message?.includes('expired')) {
+    if (error?.message?.includes("expired")) {
       return {
         success: false,
-        error: 'Verification code has expired. Please request a new code.',
+        error: "Verification code has expired. Please request a new code.",
       };
     }
 
-    if (error?.message?.includes('too many attempts')) {
+    if (error?.message?.includes("too many attempts")) {
       return {
         success: false,
-        error: 'Too many failed attempts. Please wait 15 minutes before trying again.',
+        error:
+          "Too many failed attempts. Please wait 15 minutes before trying again.",
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred during sign-in. Please try again.',
+      error: "An error occurred during sign-in. Please try again.",
     };
   }
 }
 
 export function PhoneSignInWithSMS({
-  title = 'Sign in with SMS',
-  subtitle = 'Sign in to your account using your phone number',
-  defaultCountryCode = '+1',
+  title = "Sign in with SMS",
+  subtitle = "Sign in to your account using your phone number",
+  defaultCountryCode = "+1",
   redirectTo,
   onSuccess,
   onError,
   onCodeSent,
-  className = '',
+  className = "",
 }: PhoneSignInWithSMSProps) {
   const [requestState, requestAction] = useFormState(
     requestSMSSignInAction,
@@ -228,13 +244,13 @@ export function PhoneSignInWithSMS({
     verifySMSSignInAction,
     createInitialActionState(),
   );
-  const [code, setCode] = useState('');
-  const [step, setStep] = useState<'phone' | 'verification'>('phone');
+  const [code, setCode] = useState("");
+  const [step, setStep] = useState<"phone" | "verification">("phone");
 
   // Handle step transitions
   useEffect(() => {
-    if (requestState?.success && requestState?.data?.step === 'verification') {
-      setStep('verification');
+    if (requestState?.success && requestState?.data?.step === "verification") {
+      setStep("verification");
       if (onCodeSent && requestState.data.phoneNumber) {
         onCodeSent(requestState.data.phoneNumber);
       }
@@ -267,33 +283,33 @@ export function PhoneSignInWithSMS({
 
   // Auto-submit when code is complete
   useEffect(() => {
-    if (step === 'verification' && code.length === 6 && /^\d+$/.test(code)) {
+    if (step === "verification" && code.length === 6 && /^\d+$/.test(code)) {
       const form = new FormData();
-      form.append('phoneNumber', requestState?.data?.phoneNumber || '');
-      form.append('code', code);
-      form.append('redirectTo', redirectTo || '');
+      form.append("phoneNumber", requestState?.data?.phoneNumber || "");
+      form.append("code", code);
+      form.append("redirectTo", redirectTo || "");
       verifyAction(form);
     }
   }, [code, step, requestState?.data?.phoneNumber, redirectTo, verifyAction]);
 
   // Format phone number for display
   const formatPhoneNumber = (phone: string) => {
-    if (phone.startsWith('+1') && phone.length === 12) {
+    if (phone.startsWith("+1") && phone.length === 12) {
       return `${phone.slice(0, 2)} (${phone.slice(2, 5)}) ${phone.slice(5, 8)}-${phone.slice(8)}`;
     }
     return phone;
   };
 
   return (
-    <Card className={cn('mx-auto w-full max-w-md', className)}>
+    <Card className={cn("mx-auto w-full max-w-md", className)}>
       <CardHeader>
         <div className="text-center">
           <div
             className={cn(
-              'mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full',
+              "mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full",
               verifyState?.success
-                ? 'bg-green-100 dark:bg-green-900/20'
-                : 'bg-blue-100 dark:bg-blue-900/20',
+                ? "bg-green-100 dark:bg-green-900/20"
+                : "bg-blue-100 dark:bg-blue-900/20",
             )}
           >
             {verifyState?.success ? (
@@ -324,9 +340,20 @@ export function PhoneSignInWithSMS({
               </svg>
             )}
           </div>
-          <h1 className={cn('text-2xl font-bold text-gray-900', 'dark:text-gray-100')}>{title}</h1>
+          <h1
+            className={cn(
+              "text-2xl font-bold text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
+            {title}
+          </h1>
           {subtitle && (
-            <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>{subtitle}</p>
+            <p
+              className={cn("mt-2 text-sm text-gray-600", "dark:text-gray-400")}
+            >
+              {subtitle}
+            </p>
           )}
         </div>
       </CardHeader>
@@ -338,8 +365,8 @@ export function PhoneSignInWithSMS({
 
             <div
               className={cn(
-                'rounded-lg border border-green-200 bg-green-50 p-4',
-                'dark:border-green-800 dark:bg-green-900/20',
+                "rounded-lg border border-green-200 bg-green-50 p-4",
+                "dark:border-green-800 dark:bg-green-900/20",
               )}
             >
               <div className="flex items-start">
@@ -354,7 +381,12 @@ export function PhoneSignInWithSMS({
                     clipRule="evenodd"
                   />
                 </svg>
-                <div className={cn('text-sm text-green-800', 'dark:text-green-200')}>
+                <div
+                  className={cn(
+                    "text-sm text-green-800",
+                    "dark:text-green-200",
+                  )}
+                >
                   <h4 className="mb-1 font-medium">Welcome back!</h4>
                   <p>You have been successfully signed in to your account.</p>
                 </div>
@@ -363,13 +395,18 @@ export function PhoneSignInWithSMS({
           </div>
         )}
 
-        {step === 'phone' && !verifyState?.success && (
+        {step === "phone" && !verifyState?.success && (
           <form action={requestAction} className="space-y-4">
-            {requestState?.error && <Alert variant="destructive">{requestState.error}</Alert>}
+            {requestState?.error && (
+              <Alert variant="destructive">{requestState.error}</Alert>
+            )}
 
             <div className="space-y-2">
               <label
-                className={cn('block text-sm font-medium text-gray-700', 'dark:text-gray-300')}
+                className={cn(
+                  "block text-sm font-medium text-gray-700",
+                  "dark:text-gray-300",
+                )}
               >
                 Country / Region
               </label>
@@ -377,22 +414,24 @@ export function PhoneSignInWithSMS({
                 name="countryCode"
                 defaultValue={defaultCountryCode}
                 className={cn(
-                  'block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm',
-                  'focus:border-blue-500 focus:outline-none focus:ring-blue-500',
-                  'dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100',
-                  'dark:focus:border-blue-400 dark:focus:ring-blue-400',
-                  requestState?.errors?.countryCode ? 'border-red-500 dark:border-red-400' : '',
+                  "block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm",
+                  "focus:border-blue-500 focus:outline-none focus:ring-blue-500",
+                  "dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100",
+                  "dark:focus:border-blue-400 dark:focus:ring-blue-400",
+                  requestState?.errors?.countryCode
+                    ? "border-red-500 dark:border-red-400"
+                    : "",
                 )}
                 required
               >
-                {COUNTRY_CODES.map(country => (
+                {COUNTRY_CODES.map((country) => (
                   <option key={country.code} value={country.code}>
                     {country.code} - {country.name}
                   </option>
                 ))}
               </select>
               {requestState?.errors?.countryCode && (
-                <p className={cn('text-sm text-red-600', 'dark:text-red-400')}>
+                <p className={cn("text-sm text-red-600", "dark:text-red-400")}>
                   {requestState.errors.countryCode[0]}
                 </p>
               )}
@@ -415,24 +454,42 @@ export function PhoneSignInWithSMS({
               className="w-full"
               disabled={requestState === undefined}
             >
-              {requestState === undefined ? 'Sending code...' : 'Send Sign-in Code'}
+              {requestState === undefined
+                ? "Sending code..."
+                : "Send Sign-in Code"}
             </Button>
           </form>
         )}
 
-        {step === 'verification' && !verifyState?.success && (
+        {step === "verification" && !verifyState?.success && (
           <div className="space-y-4">
-            {requestState?.success && <Alert variant="success">{requestState.message}</Alert>}
+            {requestState?.success && (
+              <Alert variant="success">{requestState.message}</Alert>
+            )}
 
-            {verifyState?.error && <Alert variant="destructive">{verifyState.error}</Alert>}
+            {verifyState?.error && (
+              <Alert variant="destructive">{verifyState.error}</Alert>
+            )}
 
-            <div className={cn('rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
+            <div
+              className={cn("rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+            >
               <div className="text-center">
-                <p className={cn('text-sm font-medium text-gray-700', 'dark:text-gray-300')}>
+                <p
+                  className={cn(
+                    "text-sm font-medium text-gray-700",
+                    "dark:text-gray-300",
+                  )}
+                >
                   Sign-in code sent to:
                 </p>
-                <p className={cn('font-mono text-lg text-gray-900', 'dark:text-gray-100')}>
-                  {formatPhoneNumber(requestState?.data?.phoneNumber || '')}
+                <p
+                  className={cn(
+                    "font-mono text-lg text-gray-900",
+                    "dark:text-gray-100",
+                  )}
+                >
+                  {formatPhoneNumber(requestState?.data?.phoneNumber || "")}
                 </p>
               </div>
             </div>
@@ -441,13 +498,16 @@ export function PhoneSignInWithSMS({
               <input
                 type="hidden"
                 name="phoneNumber"
-                value={requestState?.data?.phoneNumber || ''}
+                value={requestState?.data?.phoneNumber || ""}
               />
-              <input type="hidden" name="redirectTo" value={redirectTo || ''} />
+              <input type="hidden" name="redirectTo" value={redirectTo || ""} />
 
               <div className="space-y-2">
                 <label
-                  className={cn('block text-sm font-medium text-gray-700', 'dark:text-gray-300')}
+                  className={cn(
+                    "block text-sm font-medium text-gray-700",
+                    "dark:text-gray-300",
+                  )}
                 >
                   Sign-in Code
                 </label>
@@ -459,17 +519,19 @@ export function PhoneSignInWithSMS({
                     pattern="[0-9]*"
                     maxLength={6}
                     value={code}
-                    onChange={e => {
-                      const value = e.target.value.replace(/\D/g, '');
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
                       setCode(value);
                     }}
                     className={cn(
-                      'w-full px-4 py-3 text-center font-mono text-2xl',
-                      'rounded-md border border-gray-300 shadow-sm',
-                      'focus:border-blue-500 focus:outline-none focus:ring-blue-500',
-                      'dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100',
-                      'dark:focus:border-blue-400 dark:focus:ring-blue-400',
-                      verifyState?.errors?.code ? 'border-red-500 dark:border-red-400' : '',
+                      "w-full px-4 py-3 text-center font-mono text-2xl",
+                      "rounded-md border border-gray-300 shadow-sm",
+                      "focus:border-blue-500 focus:outline-none focus:ring-blue-500",
+                      "dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100",
+                      "dark:focus:border-blue-400 dark:focus:ring-blue-400",
+                      verifyState?.errors?.code
+                        ? "border-red-500 dark:border-red-400"
+                        : "",
                     )}
                     placeholder="000000"
                     autoComplete="one-time-code"
@@ -477,11 +539,21 @@ export function PhoneSignInWithSMS({
                   />
                 </div>
                 {verifyState?.errors?.code && (
-                  <p className={cn('text-center text-sm text-red-600', 'dark:text-red-400')}>
+                  <p
+                    className={cn(
+                      "text-center text-sm text-red-600",
+                      "dark:text-red-400",
+                    )}
+                  >
                     {verifyState.errors.code[0]}
                   </p>
                 )}
-                <p className={cn('text-center text-xs text-gray-600', 'dark:text-gray-400')}>
+                <p
+                  className={cn(
+                    "text-center text-xs text-gray-600",
+                    "dark:text-gray-400",
+                  )}
+                >
                   Enter the 6-digit code sent to your phone
                 </p>
               </div>
@@ -492,24 +564,34 @@ export function PhoneSignInWithSMS({
                 className="w-full"
                 disabled={verifyState === undefined || code.length !== 6}
               >
-                {verifyState === undefined ? 'Signing in...' : 'Sign In'}
+                {verifyState === undefined ? "Signing in..." : "Sign In"}
               </Button>
             </form>
 
             <div className="text-center">
-              <p className={cn('mb-2 text-sm text-gray-600', 'dark:text-gray-400')}>
+              <p
+                className={cn(
+                  "mb-2 text-sm text-gray-600",
+                  "dark:text-gray-400",
+                )}
+              >
                 Didn't receive the code?
               </p>
               <form action={requestAction}>
                 <input
                   type="hidden"
                   name="countryCode"
-                  value={requestState?.data?.phoneNumber?.split(/\d/)[0] || defaultCountryCode}
+                  value={
+                    requestState?.data?.phoneNumber?.split(/\d/)[0] ||
+                    defaultCountryCode
+                  }
                 />
                 <input
                   type="hidden"
                   name="phoneNumber"
-                  value={requestState?.data?.phoneNumber?.replace(/^\+\d+/, '') || ''}
+                  value={
+                    requestState?.data?.phoneNumber?.replace(/^\+\d+/, "") || ""
+                  }
                 />
                 <Button
                   type="submit"
@@ -517,7 +599,7 @@ export function PhoneSignInWithSMS({
                   className="w-full"
                   disabled={requestState === undefined}
                 >
-                  {requestState === undefined ? 'Resending...' : 'Resend Code'}
+                  {requestState === undefined ? "Resending..." : "Resend Code"}
                 </Button>
               </form>
             </div>
@@ -526,12 +608,12 @@ export function PhoneSignInWithSMS({
               <button
                 type="button"
                 onClick={() => {
-                  setStep('phone');
-                  setCode('');
+                  setStep("phone");
+                  setCode("");
                 }}
                 className={cn(
-                  'text-sm text-gray-600 hover:text-gray-500',
-                  'dark:text-gray-400 dark:hover:text-gray-300',
+                  "text-sm text-gray-600 hover:text-gray-500",
+                  "dark:text-gray-400 dark:hover:text-gray-300",
                 )}
               >
                 Use a different phone number
@@ -541,12 +623,24 @@ export function PhoneSignInWithSMS({
         )}
 
         {!verifyState?.success && (
-          <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
-            <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
-              {step === 'phone' ? 'SMS Sign-in' : 'Having trouble?'}
+          <div
+            className={cn("mt-6 rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+          >
+            <h4
+              className={cn(
+                "mb-2 text-sm font-medium text-gray-900",
+                "dark:text-gray-100",
+              )}
+            >
+              {step === "phone" ? "SMS Sign-in" : "Having trouble?"}
             </h4>
-            <div className={cn('space-y-1 text-xs text-gray-600', 'dark:text-gray-400')}>
-              {step === 'phone' ? (
+            <div
+              className={cn(
+                "space-y-1 text-xs text-gray-600",
+                "dark:text-gray-400",
+              )}
+            >
+              {step === "phone" ? (
                 <>
                   <p>• Sign in using your verified phone number</p>
                   <p>• A 6-digit code will be sent via SMS</p>
@@ -567,13 +661,13 @@ export function PhoneSignInWithSMS({
 
         {!verifyState?.success && (
           <div className="mt-6 text-center">
-            <p className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
-              Prefer a different method?{' '}
+            <p className={cn("text-sm text-gray-600", "dark:text-gray-400")}>
+              Prefer a different method?{" "}
               <a
                 href="/auth/signin"
                 className={cn(
-                  'text-blue-600 hover:text-blue-500',
-                  'dark:text-blue-400 dark:hover:text-blue-300',
+                  "text-blue-600 hover:text-blue-500",
+                  "dark:text-blue-400 dark:hover:text-blue-300",
                 )}
               >
                 Sign in with email

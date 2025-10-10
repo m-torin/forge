@@ -3,14 +3,14 @@
  * 100% React Server Component for registering and verifying phone numbers
  */
 
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
-import { cn } from '../utils/dark-mode';
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
+import { cn } from "../utils/dark-mode";
 
 interface PhoneNumberSetupFormProps extends BaseProps {
   title?: string;
@@ -26,39 +26,44 @@ const _initialState: FormState = { success: false };
 
 // Common country codes
 const COUNTRY_CODES = [
-  { code: '+1', country: 'US/CA', name: 'United States / Canada' },
-  { code: '+44', country: 'GB', name: 'United Kingdom' },
-  { code: '+33', country: 'FR', name: 'France' },
-  { code: '+49', country: 'DE', name: 'Germany' },
-  { code: '+81', country: 'JP', name: 'Japan' },
-  { code: '+86', country: 'CN', name: 'China' },
-  { code: '+91', country: 'IN', name: 'India' },
-  { code: '+61', country: 'AU', name: 'Australia' },
-  { code: '+55', country: 'BR', name: 'Brazil' },
-  { code: '+7', country: 'RU', name: 'Russia' },
+  { code: "+1", country: "US/CA", name: "United States / Canada" },
+  { code: "+44", country: "GB", name: "United Kingdom" },
+  { code: "+33", country: "FR", name: "France" },
+  { code: "+49", country: "DE", name: "Germany" },
+  { code: "+81", country: "JP", name: "Japan" },
+  { code: "+86", country: "CN", name: "China" },
+  { code: "+91", country: "IN", name: "India" },
+  { code: "+61", country: "AU", name: "Australia" },
+  { code: "+55", country: "BR", name: "Brazil" },
+  { code: "+7", country: "RU", name: "Russia" },
 ];
 
 // Phone number validation
-function validatePhoneNumber(countryCode: string, phoneNumber: string): string | null {
-  if (!countryCode || !phoneNumber) return 'Phone number is required';
+function validatePhoneNumber(
+  countryCode: string,
+  phoneNumber: string,
+): string | null {
+  if (!countryCode || !phoneNumber) return "Phone number is required";
 
   // Remove any non-digit characters from phone number
-  const cleanPhone = phoneNumber.replace(/\D/g, '');
+  const cleanPhone = phoneNumber.replace(/\D/g, "");
 
-  if (cleanPhone.length < 7) return 'Phone number is too short';
-  if (cleanPhone.length > 15) return 'Phone number is too long';
+  if (cleanPhone.length < 7) return "Phone number is too short";
+  if (cleanPhone.length > 15) return "Phone number is too long";
 
   // Basic validation for common country codes
   switch (countryCode) {
-    case '+1': // US/Canada
-      if (cleanPhone.length !== 10) return 'US/Canada phone numbers must be 10 digits';
+    case "+1": // US/Canada
+      if (cleanPhone.length !== 10)
+        return "US/Canada phone numbers must be 10 digits";
       break;
-    case '+44': // UK
+    case "+44": // UK
       if (cleanPhone.length < 10 || cleanPhone.length > 11)
-        return 'UK phone numbers must be 10-11 digits';
+        return "UK phone numbers must be 10-11 digits";
       break;
-    case '+33': // France
-      if (cleanPhone.length !== 9) return 'French phone numbers must be 9 digits';
+    case "+33": // France
+      if (cleanPhone.length !== 9)
+        return "French phone numbers must be 9 digits";
       break;
   }
 
@@ -66,19 +71,22 @@ function validatePhoneNumber(countryCode: string, phoneNumber: string): string |
 }
 
 // Server action for phone number setup
-async function setupPhoneNumberAction(prevState: any, formData: FormData): Promise<FormState> {
-  'use server';
+async function setupPhoneNumberAction(
+  prevState: any,
+  formData: FormData,
+): Promise<FormState> {
+  "use server";
 
   try {
-    const countryCode = formData.get('countryCode') as string;
-    const phoneNumber = formData.get('phoneNumber') as string;
-    const requireVerification = formData.get('requireVerification') === 'true';
+    const countryCode = formData.get("countryCode") as string;
+    const phoneNumber = formData.get("phoneNumber") as string;
+    const requireVerification = formData.get("requireVerification") === "true";
 
     // Validation
     const errors: Record<string, string[]> = {};
 
-    if (!countryCode) errors.countryCode = ['Please select a country code'];
-    if (!phoneNumber) errors.phoneNumber = ['Phone number is required'];
+    if (!countryCode) errors.countryCode = ["Please select a country code"];
+    if (!phoneNumber) errors.phoneNumber = ["Phone number is required"];
 
     if (countryCode && phoneNumber) {
       const phoneError = validatePhoneNumber(countryCode, phoneNumber);
@@ -90,11 +98,13 @@ async function setupPhoneNumberAction(prevState: any, formData: FormData): Promi
     }
 
     // Clean and format phone number
-    const cleanPhone = phoneNumber.replace(/\D/g, '');
+    const cleanPhone = phoneNumber.replace(/\D/g, "");
     const fullPhoneNumber = `${countryCode}${cleanPhone}`;
 
     // Import Better Auth server action
-    const { setupPhoneNumberAction: authSetupPhone } = await import('@repo/auth/server-actions');
+    const { setupPhoneNumberAction: authSetupPhone } = await import(
+      "@repo/auth/server-actions"
+    );
 
     const result = await authSetupPhone(prevState, formData);
 
@@ -121,58 +131,64 @@ async function setupPhoneNumberAction(prevState: any, formData: FormData): Promi
     } else {
       return {
         success: false,
-        error: result.error || 'Failed to setup phone number.',
+        error: result.error || "Failed to setup phone number.",
       };
     }
   } catch (error: any) {
     // console.error('Phone number setup error:', error);
 
-    if (error?.message?.includes('already exists')) {
+    if (error?.message?.includes("already exists")) {
       return {
         success: false,
-        error: 'This phone number is already registered to another account.',
+        error: "This phone number is already registered to another account.",
       };
     }
 
-    if (error?.message?.includes('invalid phone')) {
+    if (error?.message?.includes("invalid phone")) {
       return {
         success: false,
-        errors: { phoneNumber: ['Please enter a valid phone number'] },
+        errors: { phoneNumber: ["Please enter a valid phone number"] },
       };
     }
 
-    if (error?.message?.includes('rate limit')) {
+    if (error?.message?.includes("rate limit")) {
       return {
         success: false,
-        error: 'Too many requests. Please wait a few minutes before trying again.',
+        error:
+          "Too many requests. Please wait a few minutes before trying again.",
       };
     }
 
-    if (error?.message?.includes('carrier blocked')) {
+    if (error?.message?.includes("carrier blocked")) {
       return {
         success: false,
-        error: 'SMS messages to this number are currently blocked. Please try a different number.',
+        error:
+          "SMS messages to this number are currently blocked. Please try a different number.",
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred while setting up your phone number. Please try again.',
+      error:
+        "An error occurred while setting up your phone number. Please try again.",
     };
   }
 }
 
 export function PhoneNumberSetupForm({
-  title = 'Add Phone Number',
-  subtitle = 'Add a phone number to your account for enhanced security and SMS notifications',
-  defaultCountryCode = '+1',
+  title = "Add Phone Number",
+  subtitle = "Add a phone number to your account for enhanced security and SMS notifications",
+  defaultCountryCode = "+1",
   requireVerification = true,
   onSuccess,
   onError,
   onVerificationSent,
-  className = '',
+  className = "",
 }: PhoneNumberSetupFormProps) {
-  const [state, action] = useFormState(setupPhoneNumberAction, createInitialActionState());
+  const [state, action] = useFormState(
+    setupPhoneNumberAction,
+    createInitialActionState(),
+  );
 
   // Handle callbacks
   if (state?.success && state?.data?.phoneNumber) {
@@ -188,15 +204,15 @@ export function PhoneNumberSetupForm({
   }
 
   return (
-    <Card className={cn('mx-auto w-full max-w-md', className)}>
+    <Card className={cn("mx-auto w-full max-w-md", className)}>
       <CardHeader>
         <div className="text-center">
           <div
             className={cn(
-              'mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full',
+              "mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full",
               state?.success
-                ? 'bg-green-100 dark:bg-green-900/20'
-                : 'bg-blue-100 dark:bg-blue-900/20',
+                ? "bg-green-100 dark:bg-green-900/20"
+                : "bg-blue-100 dark:bg-blue-900/20",
             )}
           >
             {state?.success ? (
@@ -227,9 +243,20 @@ export function PhoneNumberSetupForm({
               </svg>
             )}
           </div>
-          <h1 className={cn('text-2xl font-bold text-gray-900', 'dark:text-gray-100')}>{title}</h1>
+          <h1
+            className={cn(
+              "text-2xl font-bold text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
+            {title}
+          </h1>
           {subtitle && (
-            <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>{subtitle}</p>
+            <p
+              className={cn("mt-2 text-sm text-gray-600", "dark:text-gray-400")}
+            >
+              {subtitle}
+            </p>
           )}
         </div>
       </CardHeader>
@@ -242,8 +269,8 @@ export function PhoneNumberSetupForm({
             {state.data?.requiresVerification ? (
               <div
                 className={cn(
-                  'rounded-lg border border-blue-200 bg-blue-50 p-4',
-                  'dark:border-blue-800 dark:bg-blue-900/20',
+                  "rounded-lg border border-blue-200 bg-blue-50 p-4",
+                  "dark:border-blue-800 dark:bg-blue-900/20",
                 )}
               >
                 <div className="flex items-start">
@@ -258,9 +285,18 @@ export function PhoneNumberSetupForm({
                       clipRule="evenodd"
                     />
                   </svg>
-                  <div className={cn('text-sm text-blue-800', 'dark:text-blue-200')}>
-                    <h4 className="mb-1 font-medium">Verification code sent!</h4>
-                    <p className="mb-2">Check your SMS messages for a verification code</p>
+                  <div
+                    className={cn(
+                      "text-sm text-blue-800",
+                      "dark:text-blue-200",
+                    )}
+                  >
+                    <h4 className="mb-1 font-medium">
+                      Verification code sent!
+                    </h4>
+                    <p className="mb-2">
+                      Check your SMS messages for a verification code
+                    </p>
                     <ul className="list-inside list-disc space-y-1 text-xs">
                       <li>Enter the 6-digit code in the verification form</li>
                       <li>The code will expire in 10 minutes</li>
@@ -273,8 +309,8 @@ export function PhoneNumberSetupForm({
             ) : (
               <div
                 className={cn(
-                  'rounded-lg border border-green-200 bg-green-50 p-4',
-                  'dark:border-green-800 dark:bg-green-900/20',
+                  "rounded-lg border border-green-200 bg-green-50 p-4",
+                  "dark:border-green-800 dark:bg-green-900/20",
                 )}
               >
                 <div className="flex items-start">
@@ -289,9 +325,18 @@ export function PhoneNumberSetupForm({
                       clipRule="evenodd"
                     />
                   </svg>
-                  <div className={cn('text-sm text-green-800', 'dark:text-green-200')}>
-                    <h4 className="mb-1 font-medium">Phone number added successfully!</h4>
-                    <p className="mb-2">Your phone number is now linked to your account</p>
+                  <div
+                    className={cn(
+                      "text-sm text-green-800",
+                      "dark:text-green-200",
+                    )}
+                  >
+                    <h4 className="mb-1 font-medium">
+                      Phone number added successfully!
+                    </h4>
+                    <p className="mb-2">
+                      Your phone number is now linked to your account
+                    </p>
                     <ul className="list-inside list-disc space-y-1 text-xs">
                       <li>You can use SMS for two-factor authentication</li>
                       <li>Receive security notifications via SMS</li>
@@ -308,15 +353,15 @@ export function PhoneNumberSetupForm({
                 className="w-full"
                 onClick={() => {
                   if (state.data?.requiresVerification) {
-                    window.location.href = '/auth/verify-phone';
+                    window.location.href = "/auth/verify-phone";
                   } else {
-                    window.location.href = '/account/settings';
+                    window.location.href = "/account/settings";
                   }
                 }}
               >
                 {state.data?.requiresVerification
-                  ? 'Continue to Verification'
-                  : 'Back to Account Settings'}
+                  ? "Continue to Verification"
+                  : "Back to Account Settings"}
               </Button>
 
               <Button
@@ -338,7 +383,10 @@ export function PhoneNumberSetupForm({
 
             <div className="space-y-2">
               <label
-                className={cn('block text-sm font-medium text-gray-700', 'dark:text-gray-300')}
+                className={cn(
+                  "block text-sm font-medium text-gray-700",
+                  "dark:text-gray-300",
+                )}
               >
                 Country / Region
               </label>
@@ -346,22 +394,24 @@ export function PhoneNumberSetupForm({
                 name="countryCode"
                 defaultValue={defaultCountryCode}
                 className={cn(
-                  'block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm',
-                  'focus:border-blue-500 focus:outline-none focus:ring-blue-500',
-                  'dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100',
-                  'dark:focus:border-blue-400 dark:focus:ring-blue-400',
-                  state?.errors?.countryCode ? 'border-red-500 dark:border-red-400' : '',
+                  "block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm",
+                  "focus:border-blue-500 focus:outline-none focus:ring-blue-500",
+                  "dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100",
+                  "dark:focus:border-blue-400 dark:focus:ring-blue-400",
+                  state?.errors?.countryCode
+                    ? "border-red-500 dark:border-red-400"
+                    : "",
                 )}
                 required
               >
-                {COUNTRY_CODES.map(country => (
+                {COUNTRY_CODES.map((country) => (
                   <option key={country.code} value={country.code}>
                     {country.code} - {country.name}
                   </option>
                 ))}
               </select>
               {state?.errors?.countryCode && (
-                <p className={cn('text-sm text-red-600', 'dark:text-red-400')}>
+                <p className={cn("text-sm text-red-600", "dark:text-red-400")}>
                   {state.errors.countryCode[0]}
                 </p>
               )}
@@ -385,14 +435,14 @@ export function PhoneNumberSetupForm({
                   id="requireVerification"
                   name="requireVerification"
                   className={cn(
-                    'mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500',
-                    'dark:border-gray-600 dark:focus:ring-blue-500',
+                    "mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500",
+                    "dark:border-gray-600 dark:focus:ring-blue-500",
                   )}
                   defaultChecked={true}
                 />
                 <label
                   htmlFor="requireVerification"
-                  className={cn('text-sm text-gray-700', 'dark:text-gray-300')}
+                  className={cn("text-sm text-gray-700", "dark:text-gray-300")}
                 >
                   Send verification code via SMS (recommended)
                 </label>
@@ -411,15 +461,17 @@ export function PhoneNumberSetupForm({
               className="w-full"
               disabled={state === undefined}
             >
-              {state === undefined ? 'Setting up phone number...' : 'Add Phone Number'}
+              {state === undefined
+                ? "Setting up phone number..."
+                : "Add Phone Number"}
             </Button>
           </form>
         )}
 
         <div
           className={cn(
-            'mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4',
-            'dark:border-blue-800 dark:bg-blue-900/20',
+            "mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4",
+            "dark:border-blue-800 dark:bg-blue-900/20",
           )}
         >
           <div className="flex items-start">
@@ -434,7 +486,7 @@ export function PhoneNumberSetupForm({
                 clipRule="evenodd"
               />
             </svg>
-            <div className={cn('text-sm text-blue-800', 'dark:text-blue-200')}>
+            <div className={cn("text-sm text-blue-800", "dark:text-blue-200")}>
               <h4 className="mb-1 font-medium">Why add a phone number?</h4>
               <ul className="list-inside list-disc space-y-1 text-xs">
                 <li>Enable two-factor authentication via SMS</li>
@@ -451,8 +503,8 @@ export function PhoneNumberSetupForm({
             <a
               href="/account/settings"
               className={cn(
-                'text-sm text-gray-600 hover:text-gray-500',
-                'dark:text-gray-400 dark:hover:text-gray-300',
+                "text-sm text-gray-600 hover:text-gray-500",
+                "dark:text-gray-400 dark:hover:text-gray-300",
               )}
             >
               Cancel and return to settings
@@ -460,8 +512,9 @@ export function PhoneNumberSetupForm({
           </div>
 
           <div className="text-center">
-            <p className={cn('text-xs text-gray-500', 'dark:text-gray-500')}>
-              Standard SMS rates may apply. We will never share your phone number.
+            <p className={cn("text-xs text-gray-500", "dark:text-gray-500")}>
+              Standard SMS rates may apply. We will never share your phone
+              number.
             </p>
           </div>
         </div>

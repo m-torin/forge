@@ -1,658 +1,105 @@
----
-title: MCP Utils
-description:
-  Centralized MCP server providing common utilities for Claude Code agents
-icon: "plug"
----
+# MCP Utils Package
 
-# MCP Utils
+The MCP Utils package exposes high-leverage utilities to Claude Code agents via
+the Model Context Protocol. After the October 2025 refresh, the package focuses
+on reporting, workflow orchestration, performance diagnostics, and analysis
+helpers.
 
-A centralized MCP (Model Context Protocol) server providing common utilities for
-Claude Code agents. This package eliminates code duplication across agent files
-by offering shared utilities through a standardized MCP interface.
+## Installation & Setup
 
-## Overview
-
-The MCP Utils package addresses the DRY (Don't Repeat Yourself) problem in
-Claude agent development by providing:
-
-- **Safe JSON stringification** with circular reference handling and performance
-  optimizations
-- **Bounded caching** with LRU eviction, TTL, and memory pressure monitoring
-- **Async logging** with buffering, file rotation, and observability integration
-- **Agent utilities** for MCP memory operations and validation
-- **Centralized resource management** through standardized MCP protocol
-
-<Note>
-  This package uses the Model Context Protocol (MCP) v0.6.0 and is optimized for
-  Claude Code agents.
-</Note>
-
-<Info>
-  This package is specifically designed for Claude Code agents and provides
-  utilities through MCP tools rather than direct imports.
-</Info>
-
-## Key Features
-
-<CardGroup cols={2}>
-  <Card title="Safe Stringify" icon="code">
-    Advanced JSON stringification with circular reference handling and size
-    limits
-  </Card>
-  <Card title="Bounded Cache" icon="database">
-    LRU cache with TTL support and comprehensive analytics
-  </Card>
-  <Card title="Async Logger" icon="file-text">
-    High-performance logging with buffering and file rotation
-  </Card>
-  <Card title="MCP Protocol" icon="plug">
-    Full MCP integration for seamless Claude Code usage
-  </Card>
-</CardGroup>
-
-## Quick Start
-
-### Installation
-
-The MCP server is already configured in the project's `.mcp.json` file:
+The package is part of the workspace monorepo. No additional installation steps
+are required beyond enabling the `forge` MCP server in `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "claude-utils": {
+    "forge": {
       "command": "node",
-      "args": ["./packages/mcp-utils/bin/mcp-server.mjs"],
+      "args": ["./packages/mcp-server/bin/mcp-server.mjs"],
       "env": {
         "NODE_ENV": "production",
-        "LOG_LEVEL": "info",
-        "PROJECT_ROOT": "${PROJECT_ROOT}"
-      }
+        "LOG_LEVEL": "info"
+      },
+      "disabled": false
     }
   }
 }
 ```
 
-<Warning>
-  The MCP server executable is built during the package build process. Ensure
-  you run `pnpm build` in the mcp-utils package before using the server.
-</Warning>
-
-### TypeScript Usage
-
-You can also import utilities directly in TypeScript:
-
-```typescript
-import { safeStringify, BoundedCache, AsyncLogger } from "@repo/mcp-utils";
-import { createEntityName, validateAgentRequest } from "@repo/mcp-utils/utils";
-```
-
-### Basic Usage
-
-```javascript
-// Safe stringify with circular reference handling
-const result = await mcp__claude_utils__safe_stringify({
-  obj: complexObject,
-  maxLength: 50000,
-  prettify: true
-});
-
-// Create a bounded cache
-await mcp__claude_utils__create_bounded_cache({
-  name: "analysis-cache",
-  maxSize: 100,
-  ttl: 1800000 // 30 minutes
-});
-
-// Create an async logger
-await mcp__claude_utils__create_async_logger({
-  sessionId: "my-session",
-  logLevel: "info"
-});
-```
-
-## Available Tools
-
-The MCP Utils server provides 12 specialized tools organized into four
-categories:
-
-### String Utilities
-
-#### `safe_stringify`
-
-Advanced JSON stringification with comprehensive options and performance
-monitoring:
-
-```javascript
-await mcp__claude_utils__safe_stringify({
-  obj: myObject, // Object to stringify
-  maxLength: 50000, // Maximum output length (default: 75000)
-  maxDepth: 20, // Maximum nesting depth (default: 20)
-  prettify: true, // Format with indentation (default: false)
-  includeMetadata: true // Include execution metadata (default: false)
-});
-```
-
-**Parameters:**
-
-- `obj` (required) - The object to stringify
-- `maxLength` (optional) - Maximum output length, defaults to 75000
-- `maxDepth` (optional) - Maximum recursion depth, defaults to 20
-- `prettify` (optional) - Format with indentation, defaults to false
-- `includeMetadata` (optional) - Include performance metadata, defaults to false
-
-**Features:**
-
-- Handles circular references safely
-- Processes Symbols, Functions, Errors, Maps, Sets, Buffers
-- Performance timing and memory usage tracking
-- Configurable truncation for large objects
-- Special handling for problematic getters
-
-#### `legacy_safe_stringify`
-
-Backward-compatible version for existing code:
-
-```javascript
-await mcp__claude_utils__legacy_safe_stringify({
-  obj: myObject,
-  maxLength: 75000
-});
-```
-
-### Cache Management
-
-The cache system uses a global registry to manage multiple named caches with
-automatic cleanup and analytics.
-
-#### `create_bounded_cache`
-
-Create a high-performance LRU cache with TTL and memory monitoring:
-
-```javascript
-await mcp__claude_utils__create_bounded_cache({
-  name: "my-cache", // Unique cache name
-  maxSize: 100, // Maximum entries (default: 100)
-  ttl: 1800000, // Time to live in ms (default: 30 minutes)
-  enableAnalytics: true // Enable performance tracking (default: false)
-});
-```
-
-**Features:**
-
-- Built on battle-tested `lru-cache` library
-- Automatic TTL expiration
-- Memory pressure monitoring and auto-cleanup
-- Comprehensive analytics (hit rate, evictions, memory usage)
-- Thread-safe operations
-
-#### `cache_operation`
-
-Perform operations on existing caches with full CRUD support:
-
-```javascript
-// Set a value
-await mcp__claude_utils__cache_operation({
-  cacheName: "my-cache",
-  operation: "set",
-  key: "user-123",
-  value: { name: "John", age: 30, timestamp: Date.now() }
-});
-
-// Get a value
-const result = await mcp__claude_utils__cache_operation({
-  cacheName: "my-cache",
-  operation: "get",
-  key: "user-123"
-});
-
-// Check existence
-const exists = await mcp__claude_utils__cache_operation({
-  cacheName: "my-cache",
-  operation: "has",
-  key: "user-123"
-});
-
-// Get all keys
-const keys = await mcp__claude_utils__cache_operation({
-  cacheName: "my-cache",
-  operation: "keys"
-});
-```
-
-**Operations:**
-
-- `get` - Retrieve a value by key (returns undefined if not found)
-- `set` - Store a key-value pair (overwrites existing)
-- `delete` - Remove a specific key (returns boolean success)
-- `clear` - Clear all entries (immediate operation)
-- `has` - Check if key exists (returns boolean)
-- `size` - Get current cache size (returns number)
-- `keys` - List all keys (returns string array)
-
-#### `cache_analytics`
-
-Monitor cache performance:
-
-```javascript
-// Get analytics for specific cache
-await mcp__claude_utils__cache_analytics({
-  cacheName: "my-cache"
-});
-
-// Get global analytics for all caches
-await mcp__claude_utils__cache_analytics({});
-```
-
-#### `cache_cleanup`
-
-Manage memory usage:
-
-```javascript
-await mcp__claude_utils__cache_cleanup({
-  cacheName: "my-cache", // Optional: specific cache
-  force: true // Force cleanup regardless of memory pressure
-});
-```
-
-### Logger Management
-
-The async logger system supports multiple concurrent sessions with automatic
-cleanup and observability integration.
-
-#### `create_async_logger`
-
-Create high-performance async loggers with observability integration:
-
-```javascript
-await mcp__claude_utils__create_async_logger({
-  sessionId: "analysis-123", // Unique session identifier (required)
-  logLevel: "info", // Minimum log level (default: "info")
-  logDir: "./logs", // Log directory (default: "./logs")
-  maxBufferSize: 16384, // Buffer size in bytes (default: 16384)
-  maxFileSize: 10485760, // Max file size before rotation (default: 10MB)
-  maxFiles: 5, // Number of rotated files to keep (default: 5)
-  observabilityEnabled: true // Enable observability integration (default: true)
-});
-```
-
-**Features:**
-
-- **Log Levels:** `debug`, `info`, `warn`, `error`
-- Non-blocking async operations with buffering
-- Automatic file rotation based on size
-- Integration with `@repo/observability` package
-- Performance monitoring and statistics
-- Memory-efficient debounced writes
-
-#### `log_message`
-
-Write log messages:
-
-```javascript
-await mcp__claude_utils__log_message({
-  sessionId: "analysis-123",
-  message: "Processing file: example.ts",
-  level: "info"
-});
-```
-
-#### `logger_stats`
-
-Monitor logger performance:
-
-```javascript
-// Stats for specific logger
-await mcp__claude_utils__logger_stats({
-  sessionId: "analysis-123"
-});
-
-// Global stats for all loggers
-await mcp__claude_utils__logger_stats({});
-```
-
-#### `logger_management`
-
-Manage logger lifecycle:
-
-```javascript
-// List all active loggers
-await mcp__claude_utils__logger_management({
-  operation: "list"
-});
-
-// Flush a specific logger
-await mcp__claude_utils__logger_management({
-  operation: "flush",
-  sessionId: "analysis-123"
-});
-
-// Close a logger
-await mcp__claude_utils__logger_management({
-  operation: "close",
-  sessionId: "analysis-123"
-});
-```
-
-**Operations:** `list`, `close`, `closeAll`, `flush`
-
-### Agent Utilities
-
-Specialized tools for Claude Code agent development and MCP memory operations.
-
-#### `extract_observation`
-
-Extract specific values from MCP memory entity observations:
-
-```javascript
-await mcp__claude_utils__extract_observation({
-  entity: memoryEntity, // Entity from MCP memory
-  key: "status" // Key to extract
-});
-```
-
-#### `create_entity_name`
-
-Generate standardized entity names for MCP memory storage:
-
-```javascript
-await mcp__claude_utils__create_entity_name({
-  entityType: "AnalysisSession", // Standard entity type
-  sessionId: "session-123", // Session identifier
-  additionalIds: ["file-path", "operation"] // Optional additional identifiers
-});
-```
-
-#### `validate_agent_request`
-
-Validate agent request format and required fields:
-
-```javascript
-await mcp__claude_utils__validate_agent_request({
-  request: requestObject, // Request to validate
-  requiredFields: ["sessionId", "operation"], // Required field names
-  version: "1.0" // Expected protocol version
-});
-```
-
-#### `format_agent_response`
-
-Format standardized agent response with consistent structure:
-
-```javascript
-await mcp__claude_utils__format_agent_response({
-  success: true, // Operation success status
-  data: responseData, // Optional response data
-  error: errorMessage // Optional error message
-});
-```
-
-## Migration Benefits
-
-### Before (Duplicated Code)
-
-```javascript
-// Each agent file had duplicated utilities
-function safeStringify(obj, maxLength = 75000) {
-  // 50+ lines of circular reference handling
-  // Manual depth tracking
-  // Error prone edge case handling
-}
-
-class BoundedCache {
-  // 100+ lines of LRU implementation
-  // Manual TTL management
-  // No memory pressure monitoring
-}
-
-class AsyncLogger {
-  // 150+ lines of async file operations
-  // Manual buffer management
-  // No observability integration
-}
-```
-
-### After (Using MCP Utils)
-
-```javascript
-// Battle-tested, centralized implementations
-const result = await mcp__claude_utils__safe_stringify({
-  obj: complexObject,
-  maxLength: 50000,
+## Core MCP Tools
+
+| Tool                                | Purpose                                               |
+| ----------------------------------- | ----------------------------------------------------- |
+| `mcp__forge__safe_stringify`        | Safe JSON serialization with circular reference data. |
+| `mcp__forge__report_generator`      | Generate human-readable summaries for hand-offs.      |
+| `mcp__forge__workflow_orchestrator` | Coordinate multi-step agent workflows.                |
+| `mcp__forge__worktree_manager`      | Create, list, and remove git worktrees.               |
+| `mcp__forge__memory_monitor`        | Inspect memory pressure and trigger cleanups.         |
+
+> Legacy cache-management tools have been removed. Internal cache utilities
+> remain available for TypeScript consumption via direct imports.
+
+## Usage Examples
+
+### Safe Stringification
+
+```ts
+const stringifyResult = await mcp__forge__safe_stringify({
+  obj: {
+    session: `analysis-${Date.now()}`,
+    files: changedFiles,
+    insights: await computeInsights(changedFiles)
+  },
+  prettify: true,
   includeMetadata: true
 });
 
-await mcp__claude_utils__create_bounded_cache({
-  name: "analysis-cache",
-  maxSize: 100,
-  enableAnalytics: true
+const payload = JSON.parse(stringifyResult.content[0].text);
+console.log(payload.result);
+```
+
+### Generate a Report
+
+```ts
+const result = await mcp__forge__report_generator({
+  title: "Weekly Architecture Review",
+  sections: [
+    { heading: "Highlights", content: highlights.join("\n") },
+    { heading: "Risks", content: risks.join("\n") },
+    { heading: "Next Steps", content: nextSteps.join("\n") }
+  ]
 });
 
-await mcp__claude_utils__create_async_logger({
-  sessionId: "analysis-session",
-  observabilityEnabled: true
+console.log(result.content[0].text);
+```
+
+## Direct TypeScript Imports
+
+Agents that run outside MCP or backend services can import the underlying
+utilities directly from `@repo/mcp-server` and `@repo/core-utils`:
+
+```ts
+import { safeStringify } from "@repo/core-utils/shared/stringify";
+import { workflowOrchestratorTool } from "@repo/core-utils/server/workflow-orchestrator";
+
+const json = safeStringify(data);
+const orchestration = await workflowOrchestratorTool.execute({
+  workflow: "code-modernization",
+  steps: ["analyze", "plan", "apply"]
 });
 ```
-
-## Performance & Benefits
-
-<CardGroup cols={2}>
-  <Card title="🚀 Performance" icon="zap">
-    - LRU cache with automatic TTL expiration - Memory pressure monitoring and
-    auto-cleanup - Non-blocking async operations with buffering - Optimized
-    circular reference detection - Debounced file operations
-  </Card>
-  <Card title="🛠 Maintenance" icon="wrench">
-    - Single source of truth for all utilities - Centralized bug fixes and
-    security updates - Consistent API across all agent files - Automated
-    dependency updates - Zero breaking changes with MCP protocol
-  </Card>
-  <Card title="📊 Analytics" icon="chart-line">
-    - Cache hit rate and eviction tracking - Memory usage monitoring with
-    automatic cleanup - Logger performance statistics and buffer metrics -
-    Execution time tracking for stringify operations - Comprehensive
-    observability integration
-  </Card>
-  <Card title="🧪 Quality" icon="flask">
-    - 95%+ test coverage with integration tests - Full TypeScript safety with
-    Zod validation - Robust error handling with stack traces - Graceful
-    degradation and fallback mechanisms - Automated resource cleanup and memory
-    management
-  </Card>
-</CardGroup>
-
-## Development
-
-### Building the Package
-
-```bash
-cd packages/mcp-utils
-
-# Install dependencies
-pnpm install
-
-# Build the package (required for MCP server)
-pnpm build
-
-# Build in watch mode for development
-pnpm dev
-```
-
-### Testing
-
-```bash
-# Run all tests
-pnpm test
-
-# Run tests in watch mode
-pnpm test:watch
-
-# Generate coverage report
-pnpm test:coverage
-```
-
-### Local Development
-
-```bash
-# Start MCP server directly
-pnpm start
-
-# Or run the built server
-node bin/mcp-server.mjs
-
-# Test a specific tool
-echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "safe_stringify", "arguments": {"obj": {"test": true}}}}' | node bin/mcp-server.mjs
-```
-
-### Code Quality
-
-```bash
-# Type checking
-pnpm typecheck
-
-# Linting with auto-fix
-pnpm lint
-
-# Full quality check
-pnpm typecheck && pnpm lint && pnpm test
-```
-
-## Architecture
-
-### Package Structure
-
-```
-packages/mcp-utils/
-├── bin/
-│   └── mcp-server.mjs         # Executable MCP server entry point
-├── dist/                      # Built outputs (generated)
-├── src/
-│   ├── index.ts               # TypeScript main export
-│   ├── server.ts              # MCP server implementation
-│   ├── tools/                 # MCP tool definitions
-│   │   ├── index.ts           # Tool registry
-│   │   ├── safe-stringify.ts  # String utilities
-│   │   ├── bounded-cache.ts   # Cache operations
-│   │   ├── async-logger.ts    # Logger operations
-│   │   └── agent-utilities.ts # Agent helper tools
-│   ├── utils/                 # Core utility implementations
-│   │   ├── index.ts           # Utils registry
-│   │   ├── stringify.ts       # SafeStringifier class
-│   │   ├── cache.ts           # BoundedCache class
-│   │   ├── logger.ts          # AsyncLogger class
-│   │   └── agent-helpers.ts   # Agent utilities
-│   └── types/                 # TypeScript type definitions
-└── __tests__/                 # Comprehensive test suite
-    ├── tools/                 # Tool-specific tests
-    ├── utils/                 # Utility tests
-    └── integration/           # Integration tests
-```
-
-### Dependencies
-
-- **@modelcontextprotocol/sdk**: MCP protocol implementation (v0.6.0)
-- **@repo/observability**: Logging and monitoring integration
-- **lru-cache**: High-performance LRU cache implementation
-- **perfect-debounce**: Debounced function execution
-- **zod**: Runtime type validation
-
-### MCP Integration
-
-- **Protocol Compliance**: Full MCP v0.6.0 support
-- **Tool Discovery**: Automatic tool registration with schema validation
-- **Error Handling**: Comprehensive error reporting with stack traces
-- **Resource Cleanup**: Automatic cleanup on shutdown with graceful termination
-- **Type Safety**: Complete TypeScript definitions with Zod schemas
-- **Performance**: Optimized for high-throughput agent operations
-- **Observability**: Integrated logging and monitoring
 
 ## Troubleshooting
 
-### Common Issues
+- **Tools aren't listed in Claude Code:** confirm `.mcp.json` sets
+  `"disabled": false` and restart the IDE.
+- **Memory pressure warnings:** run `memory_monitor` with
+  `action: "comprehensiveReport"` to receive a structured diagnostic payload.
 
-<AccordionGroup>
-  <Accordion title="Server Won't Start">
-    **Symptoms:** MCP server fails to initialize or crashes on startup
-    
-    **Solutions:**
-    - Check Node.js version: `node --version` (requires 18+, recommended 22+)
-    - Ensure package is built: `pnpm build` in the mcp-utils directory
-    - Verify file permissions: `chmod +x bin/mcp-server.mjs`
-    - Check for TypeScript compilation errors
-    - Review server logs for specific error messages
-    
-    **Debug:** Run `node bin/mcp-server.mjs` directly to see error output
-  </Accordion>
+## Additional Reading
 
-  <Accordion title="Tools Not Available">
-    **Symptoms:** MCP tools don't appear in Claude Code or return "Unknown tool" errors
-    
-    **Solutions:**
-    - Verify `.mcp.json` configuration points to correct path
-    - Restart Claude Code after config changes
-    - Test server independently: `echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | node bin/mcp-server.mjs`
-    - Check that the package build is up to date
-    - Verify MCP server process is running
-  </Accordion>
-
-<Accordion title="Memory Issues">
-  **Symptoms:** High memory usage, slow performance, or out-of-memory errors
-  **Solutions:** - Use `cache_cleanup` tool with `force: true` to immediately
-  free memory - Monitor cache analytics to identify memory-hungry caches -
-  Reduce cache `maxSize` and `ttl` values for high-volume caches - Check logger
-  `maxBufferSize` settings - Enable automatic memory pressure monitoring
-  **Monitor:** Use `cache_analytics` and `logger_stats` tools for insights
-</Accordion>
-
-  <Accordion title="Performance Problems">
-    **Symptoms:** Slow tool responses, high CPU usage, or timeout errors
-    
-    **Solutions:**
-    - Review cache analytics for hit rates and eviction patterns
-    - Reduce `maxDepth` for `safe_stringify` operations on complex objects
-    - Use `includeMetadata: false` for better stringify performance
-    - Implement cache warming for frequently accessed data
-    - Monitor logger buffer usage and flush frequency
-    
-    **Optimize:** Consider increasing cache sizes for frequently accessed data
-  </Accordion>
-  
-  <Accordion title="TypeScript Import Issues">
-    **Symptoms:** Cannot import utilities in TypeScript code
-    
-    **Solutions:**
-    - Ensure package is built: `pnpm build`
-    - Check import paths match package.json exports
-    - Use correct import syntax: `import { safeStringify } from '@repo/mcp-utils'`
-    - Verify TypeScript configuration includes package in paths
-  </Accordion>
-</AccordionGroup>
-
-### Debugging Commands
-
-```bash
-# Test server startup and initialization
-node packages/mcp-utils/bin/mcp-server.mjs
-
-# List all available tools
-echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' \
-  | node packages/mcp-utils/bin/mcp-server.mjs
-
-# Test safe_stringify tool
-echo '{"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "safe_stringify", "arguments": {"obj": {"test": true, "nested": {"value": 42}}}}}' \
-  | node packages/mcp-utils/bin/mcp-server.mjs
-
-# Test cache operations
-echo '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "create_bounded_cache", "arguments": {"name": "test-cache", "maxSize": 10}}}' \
-  | node packages/mcp-utils/bin/mcp-server.mjs
-
-# Check observability logs (if enabled)
-tail -f logs/mcp-utils-*.log
-
-# Monitor system resources
-top -p $(pgrep -f mcp-server.mjs)
-```
-
-This package is essential for Claude Code agent development, providing robust,
-tested utilities that eliminate code duplication while improving performance and
-maintainability.
+- `packages/mcp-server/README.md` – full package overview.
+- `packages/core-utils/README.md` – in-depth documentation for reusable
+  utilities.
+- [Model Context Protocol](https://modelcontextprotocol.io) – official protocol
+  specification and SDK guides.

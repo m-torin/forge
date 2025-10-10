@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-export function setupNodeModuleMocks(): void {
+function setupNodeModuleMocks(): void {
   // Mock global Buffer if not available
   if (typeof globalThis.Buffer === 'undefined') {
     globalThis.Buffer = {
@@ -16,5 +16,3 @@ export function setupNodeModuleMocks(): void {
     process.nextTick = (callback: Function) => setTimeout(callback, 0);
   }
 }
-
-export default setupNodeModuleMocks;

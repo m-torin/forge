@@ -5,7 +5,7 @@
  * Reduces test duplication and ensures consistent testing patterns.
  */
 
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 /**
  * Configuration for email template test suites
@@ -67,63 +67,67 @@ export function createEmailTemplateTestSuite<TProps = any>(
       vi.clearAllMocks();
     });
 
-    test('should render template component without errors', () => {
+    test("should render template component without errors", () => {
       expect(() => config.templateComponent(config.validProps)).not.toThrow();
     });
 
-    test('should accept valid props', () => {
+    test("should accept valid props", () => {
       const result = config.templateComponent(config.validProps);
       expect(result).toBeDefined();
     });
 
     if (config.invalidProps) {
-      test('should handle invalid props gracefully', () => {
-        expect(() => config.templateComponent(config.invalidProps)).not.toThrow();
+      test("should handle invalid props gracefully", () => {
+        expect(() =>
+          config.templateComponent(config.invalidProps),
+        ).not.toThrow();
       });
     }
 
-    test('should be a React component', () => {
-      expect(typeof config.templateComponent).toBe('function');
+    test("should be a React component", () => {
+      expect(typeof config.templateComponent).toBe("function");
     });
 
     if (config.renderAsHtml !== false) {
-      test('should render as HTML', async () => {
-        const { render } = await import('@react-email/render');
+      test("should render as HTML", async () => {
+        const { render } = await import("@react-email/render");
         const html = render(config.templateComponent(config.validProps));
-        expect(typeof html).toBe('string');
-        expect(html).toContain('<html');
-        expect(html).toContain('</html>');
+        expect(typeof html).toBe("string");
+        expect(html).toContain("<html");
+        expect(html).toContain("</html>");
       });
 
-      test('should produce valid HTML structure', async () => {
-        const { render } = await import('@react-email/render');
+      test("should produce valid HTML structure", async () => {
+        const { render } = await import("@react-email/render");
         const html = render(config.templateComponent(config.validProps));
 
         // Check for essential HTML elements
-        expect(html).toContain('<body');
-        expect(html).toContain('</body>');
-        expect(html).toContain('<head');
-        expect(html).toContain('</head>');
+        expect(html).toContain("<body");
+        expect(html).toContain("</body>");
+        expect(html).toContain("<head");
+        expect(html).toContain("</head>");
       });
     }
 
     if (config.renderAsText !== false) {
-      test('should render as plain text', async () => {
-        const { render } = await import('@react-email/render');
-        const text = await render(config.templateComponent(config.validProps), { plainText: true });
-        expect(typeof text).toBe('string');
+      test("should render as plain text", async () => {
+        const { render } = await import("@react-email/render");
+        const text = await render(config.templateComponent(config.validProps), {
+          plainText: true,
+        });
+        expect(typeof text).toBe("string");
         expect(text.length).toBeGreaterThan(0);
         // Should not contain HTML tags
         expect(text).not.toMatch(/<[^>]+>/);
       });
     }
 
-    test('should handle missing props gracefully', () => {
+    test("should handle missing props gracefully", () => {
       expect(() => config.templateComponent({})).not.toThrow();
     });
 
-    test('should be serializable for email transmission', async () => {
-      const { render } = await import('@react-email/render');
+    test("should be serializable for email transmission", async () => {
+      const { render } = await import("@react-email/render");
       const html = render(config.templateComponent(config.validProps));
 
       // Should be able to JSON stringify without circular references
@@ -152,7 +156,7 @@ export function createEmailServiceTestSuite<TPayload = any>(
       vi.clearAllMocks();
     });
 
-    test('should execute successfully with valid payload', async () => {
+    test("should execute successfully with valid payload", async () => {
       const result = await config.serviceFunction(config.validPayload);
 
       if (config.expectedResult) {
@@ -163,22 +167,24 @@ export function createEmailServiceTestSuite<TPayload = any>(
     });
 
     if (config.invalidPayload) {
-      test('should handle invalid payload appropriately', async () => {
-        await expect(config.serviceFunction(config.invalidPayload)).rejects.toThrow();
+      test("should handle invalid payload appropriately", async () => {
+        await expect(
+          config.serviceFunction(config.invalidPayload),
+        ).rejects.toThrow();
       });
     }
 
-    test('should validate input payload', async () => {
+    test("should validate input payload", async () => {
       // Test with undefined/null payload
       await expect(config.serviceFunction(undefined)).rejects.toThrow();
       await expect(config.serviceFunction(null)).rejects.toThrow();
     });
 
-    test('should be a function', () => {
-      expect(typeof config.serviceFunction).toBe('function');
+    test("should be a function", () => {
+      expect(typeof config.serviceFunction).toBe("function");
     });
 
-    test('should return a promise', () => {
+    test("should return a promise", () => {
       const result = config.serviceFunction(config.validPayload);
       expect(result).toBeInstanceOf(Promise);
     });
@@ -205,7 +211,7 @@ export function createEmailActionTestSuite<TPayload = any>(
       vi.clearAllMocks();
     });
 
-    test('should execute successfully with valid payload', async () => {
+    test("should execute successfully with valid payload", async () => {
       const result = await config.actionFunction(config.validPayload);
 
       if (config.expectedResult) {
@@ -216,24 +222,26 @@ export function createEmailActionTestSuite<TPayload = any>(
     });
 
     if (config.invalidPayload) {
-      test('should handle invalid payload appropriately', async () => {
-        await expect(config.actionFunction(config.invalidPayload)).rejects.toThrow();
+      test("should handle invalid payload appropriately", async () => {
+        await expect(
+          config.actionFunction(config.invalidPayload),
+        ).rejects.toThrow();
       });
     }
 
-    test('should validate input payload', async () => {
+    test("should validate input payload", async () => {
       // Test with undefined/null payload
       await expect(config.actionFunction(undefined)).rejects.toThrow();
       await expect(config.actionFunction(null)).rejects.toThrow();
     });
 
-    test('should be a server action', () => {
+    test("should be a server action", () => {
       // Check if function has server action properties
-      expect(typeof config.actionFunction).toBe('function');
+      expect(typeof config.actionFunction).toBe("function");
     });
 
-    test('should handle form data input', async () => {
-      if (typeof FormData !== 'undefined') {
+    test("should handle form data input", async () => {
+      if (typeof FormData !== "undefined") {
         const formData = new FormData();
 
         // Convert payload to form data entries
@@ -281,40 +289,50 @@ export function createEmailProviderTestSuite(config: {
       vi.clearAllMocks();
     });
 
-    test('should initialize provider correctly', () => {
+    test("should initialize provider correctly", () => {
       expect(provider).toBeDefined();
-      expect(typeof provider).toBe('object');
+      expect(typeof provider).toBe("object");
     });
 
-    test('should send email successfully', async () => {
+    test("should send email successfully", async () => {
       if (provider.send) {
         const result = await provider.send(config.testEmail);
         expect(result).toBeDefined();
       }
     });
 
-    test('should validate email parameters', async () => {
+    test("should validate email parameters", async () => {
       if (provider.send) {
         // Test missing required fields
         await expect(provider.send({})).rejects.toThrow();
-        await expect(provider.send({ from: config.testEmail.from })).rejects.toThrow();
+        await expect(
+          provider.send({ from: config.testEmail.from }),
+        ).rejects.toThrow();
       }
     });
 
-    test('should handle provider configuration', () => {
-      expect(provider.config || provider.apiKey || provider.options).toBeDefined();
+    test("should handle provider configuration", () => {
+      expect(
+        provider.config || provider.apiKey || provider.options,
+      ).toBeDefined();
     });
 
-    test('should format email addresses correctly', () => {
+    test("should format email addresses correctly", () => {
       if (provider.formatAddress) {
-        const formatted = provider.formatAddress('test@example.com', 'Test User');
-        expect(typeof formatted).toBe('string');
+        const formatted = provider.formatAddress(
+          "test@example.com",
+          "Test User",
+        );
+        expect(typeof formatted).toBe("string");
       }
     });
 
-    test('should handle batch email sending', async () => {
+    test("should handle batch email sending", async () => {
       if (provider.sendBatch) {
-        const emails = [config.testEmail, { ...config.testEmail, to: ['another@example.com'] }];
+        const emails = [
+          config.testEmail,
+          { ...config.testEmail, to: ["another@example.com"] },
+        ];
         const result = await provider.sendBatch(emails);
         expect(Array.isArray(result)).toBeTruthy();
       }
@@ -332,28 +350,28 @@ export function createEmailValidationTestSuite(config: {
   invalidEmails: string[];
 }) {
   describe(`email Validation:`, () => {
-    config.validEmails.forEach(email => {
+    config.validEmails.forEach((email) => {
       test(`should validate valid email: ${email}`, () => {
         const result = config.validationFunction(email);
         expect(result).toBeTruthy();
       });
     });
 
-    config.invalidEmails.forEach(email => {
+    config.invalidEmails.forEach((email) => {
       test(`should reject invalid email: ${email}`, () => {
         const result = config.validationFunction(email);
         expect(result).toBeFalsy();
       });
     });
 
-    test('should handle edge cases', () => {
-      expect(config.validationFunction('')).toBeFalsy();
+    test("should handle edge cases", () => {
+      expect(config.validationFunction("")).toBeFalsy();
       expect(config.validationFunction(null)).toBeFalsy();
       expect(config.validationFunction(undefined)).toBeFalsy();
     });
 
-    test('should be a function', () => {
-      expect(typeof config.validationFunction).toBe('function');
+    test("should be a function", () => {
+      expect(typeof config.validationFunction).toBe("function");
     });
   });
 }
@@ -376,7 +394,7 @@ export function createEmailFormattingTestSuite(config: {
   }>;
 }) {
   describe(`email Formatting:`, () => {
-    config.testCases.forEach(testCase => {
+    config.testCases.forEach((testCase) => {
       test(testCase.description, () => {
         const result = config.formatterFunction(testCase.input);
         expect(result).toStrictEqual(testCase.expected);
@@ -384,15 +402,17 @@ export function createEmailFormattingTestSuite(config: {
     });
 
     if (config.errorCases) {
-      config.errorCases.forEach(errorCase => {
+      config.errorCases.forEach((errorCase) => {
         test(errorCase.description, () => {
-          expect(() => config.formatterFunction(errorCase.input)).toThrow(errorCase.expectedError);
+          expect(() => config.formatterFunction(errorCase.input)).toThrow(
+            errorCase.expectedError,
+          );
         });
       });
     }
 
-    test('should be a function', () => {
-      expect(typeof config.formatterFunction).toBe('function');
+    test("should be a function", () => {
+      expect(typeof config.formatterFunction).toBe("function");
     });
   });
 }
@@ -410,18 +430,20 @@ export function createEmailPerformanceTestSuite(config: {
   };
 }) {
   describe(`email Performance:`, () => {
-    test('should handle concurrent email sending', async () => {
+    test("should handle concurrent email sending", async () => {
       const concurrentLimit = config.testData.concurrentLimit || 5;
       const emails = config.testData.emails.slice(0, concurrentLimit);
 
-      const sendPromises = emails.map(email => config.emailFunction(email));
+      const sendPromises = emails.map((email) => config.emailFunction(email));
       const results = await Promise.allSettled(sendPromises);
 
-      const successful = results.filter(result => result.status === 'fulfilled');
+      const successful = results.filter(
+        (result) => result.status === "fulfilled",
+      );
       expect(successful.length).toBeGreaterThan(0);
     });
 
-    test('should complete within reasonable time', async () => {
+    test("should complete within reasonable time", async () => {
       const timeout = config.testData.timeoutMs || 5000;
       const testEmail = config.testData.emails[0];
 
@@ -433,7 +455,7 @@ export function createEmailPerformanceTestSuite(config: {
       expect(duration).toBeLessThan(timeout);
     });
 
-    test('should handle batch operations efficiently', async () => {
+    test("should handle batch operations efficiently", async () => {
       const batchSize = Math.min(config.testData.emails.length, 10);
       const batch = config.testData.emails.slice(0, batchSize);
 
@@ -451,8 +473,8 @@ export function createEmailPerformanceTestSuite(config: {
       expect(averageTime).toBeLessThan(1000);
     });
 
-    test('should handle large email content', async () => {
-      const largeContent = 'x'.repeat(100000); // 100KB content
+    test("should handle large email content", async () => {
+      const largeContent = "x".repeat(100000); // 100KB content
       const largeEmail = {
         ...config.testData.emails[0],
         html: largeContent,
@@ -474,42 +496,45 @@ export function createEmailConfigTestSuite(config: {
   requiredEnvVars: string[];
 }) {
   describe(`email Config:`, () => {
-    test('should create valid configuration from environment', () => {
+    test("should create valid configuration from environment", () => {
       const env = config.envFactory();
       const emailConfig = config.configFactory(env);
 
       expect(emailConfig).toBeDefined();
-      expect(typeof emailConfig).toBe('object');
+      expect(typeof emailConfig).toBe("object");
     });
 
-    test('should validate required environment variables', () => {
+    test("should validate required environment variables", () => {
       const env = config.envFactory();
 
-      config.requiredEnvVars.forEach(varName => {
+      config.requiredEnvVars.forEach((varName) => {
         expect(env[varName]).toBeDefined();
       });
     });
 
-    test('should handle missing environment variables gracefully', () => {
+    test("should handle missing environment variables gracefully", () => {
       const incompleteEnv = {};
 
       expect(() => config.configFactory(incompleteEnv)).not.toThrow();
     });
 
-    test('should provide default values when appropriate', () => {
+    test("should provide default values when appropriate", () => {
       const minimalEnv = {};
       const emailConfig = config.configFactory(minimalEnv);
 
       expect(emailConfig).toBeDefined();
     });
 
-    test('should validate email service configuration', () => {
+    test("should validate email service configuration", () => {
       const env = config.envFactory();
       const emailConfig = config.configFactory(env);
 
       // Should have either API key or credentials
       expect(
-        emailConfig.apiKey || emailConfig.credentials || emailConfig.auth || emailConfig.token,
+        emailConfig.apiKey ||
+          emailConfig.credentials ||
+          emailConfig.auth ||
+          emailConfig.token,
       ).toBeDefined();
     });
   });

@@ -1,7 +1,7 @@
-import { describe, expect } from 'vitest';
+import { describe, expect } from "vitest";
 
-import { edgeCases, testPatterns } from '#/__tests__/scraping-test-data';
-import { createUtilityTestSuite } from '#/__tests__/scraping-test-factory';
+import { edgeCases, testPatterns } from "#/__tests__/scraping-test-data";
+import { createUtilityTestSuite } from "#/__tests__/scraping-test-factory";
 import {
   cleanText,
   extractEmails,
@@ -11,56 +11,58 @@ import {
   extractPhoneNumbers,
   extractStructuredData,
   extractText,
-} from '#/shared/utils/extraction';
+} from "#/shared/utils/extraction";
 
-describe('extraction Utilities', () => {
+describe("extraction Utilities", () => {
   // Test extractText utility using factory pattern
   createUtilityTestSuite({
-    utilityName: 'extractText',
+    utilityName: "extractText",
     utilityFunction: extractText,
     scenarios: [
       {
-        name: 'extract text from HTML',
-        args: ['<div><p>Hello <strong>World</strong></p><span>Test</span></div>'],
+        name: "extract text from HTML",
+        args: [
+          "<div><p>Hello <strong>World</strong></p><span>Test</span></div>",
+        ],
         assertion: (result: any) => {
-          expect(result).toBe('Hello World Test');
+          expect(result).toBe("Hello World Test");
         },
       },
       {
-        name: 'handle empty HTML',
-        args: [''],
+        name: "handle empty HTML",
+        args: [""],
         assertion: (result: any) => {
-          expect(result).toBe('');
+          expect(result).toBe("");
         },
       },
       {
-        name: 'remove script and style tags',
+        name: "remove script and style tags",
         args: [testPatterns.htmlFixtures.withScript],
         assertion: (result: any) => {
-          expect(result).toBe('Visible content');
+          expect(result).toBe("Visible content");
         },
       },
       {
-        name: 'handle nested elements',
-        args: ['<div><p>Outer <span>Inner <em>Deep</em></span> Text</p></div>'],
+        name: "handle nested elements",
+        args: ["<div><p>Outer <span>Inner <em>Deep</em></span> Text</p></div>"],
         assertion: (result: any) => {
-          expect(result).toBe('Outer Inner Deep Text');
+          expect(result).toBe("Outer Inner Deep Text");
         },
       },
       {
-        name: 'preserve spacing between elements',
-        args: ['<div>First</div><div>Second</div>'],
+        name: "preserve spacing between elements",
+        args: ["<div>First</div><div>Second</div>"],
         assertion: (result: any) => {
-          expect(result).toBe('First Second');
+          expect(result).toBe("First Second");
         },
       },
       {
-        name: 'handle complex HTML structure',
+        name: "handle complex HTML structure",
         args: [testPatterns.htmlFixtures.complex],
         assertion: (result: any) => {
-          expect(result).toContain('Main Title');
-          expect(result).toContain('Article Title');
-          expect(result).toContain('Article content');
+          expect(result).toContain("Main Title");
+          expect(result).toContain("Article Title");
+          expect(result).toContain("Article content");
         },
       },
     ],
@@ -68,61 +70,70 @@ describe('extraction Utilities', () => {
 
   // Test extractLinks utility using factory pattern
   createUtilityTestSuite({
-    utilityName: 'extractLinks',
+    utilityName: "extractLinks",
     utilityFunction: extractLinks,
     scenarios: [
       {
-        name: 'extract absolute links',
-        args: [`<a href="https://example.com">Example</a><a href="https://test.com">Test</a>`],
+        name: "extract absolute links",
+        args: [
+          `<a href="https://example.com">Example</a><a href="https://test.com">Test</a>`,
+        ],
         assertion: (result: any) => {
           expect(result).toStrictEqual([
-            { href: 'https://example.com', text: 'Example' },
-            { href: 'https://test.com', text: 'Test' },
+            { href: "https://example.com", text: "Example" },
+            { href: "https://test.com", text: "Test" },
           ]);
         },
       },
       {
-        name: 'resolve relative links with base URL',
-        args: [`<a href="/about">About</a><a href="contact">Contact</a>`, 'https://example.com'],
+        name: "resolve relative links with base URL",
+        args: [
+          `<a href="/about">About</a><a href="contact">Contact</a>`,
+          "https://example.com",
+        ],
         assertion: (result: any) => {
           expect(result).toStrictEqual([
-            { href: 'https://example.com/about', text: 'About' },
-            { href: 'https://example.com/contact', text: 'Contact' },
+            { href: "https://example.com/about", text: "About" },
+            { href: "https://example.com/contact", text: "Contact" },
           ]);
         },
       },
       {
-        name: 'handle links without href',
+        name: "handle links without href",
         args: ['<a>No href</a><a href="">Empty href</a>'],
         assertion: (result: any) => {
           expect(result).toStrictEqual([]);
         },
       },
       {
-        name: 'extract link text with nested elements',
+        name: "extract link text with nested elements",
         args: ['<a href="/test">Click <strong>here</strong> now</a>'],
         assertion: (result: any) => {
-          expect(result).toStrictEqual([{ href: '/test', text: 'Click here now' }]);
-        },
-      },
-      {
-        name: 'handle mailto and tel links',
-        args: [`<a href="mailto:test@example.com">Email</a><a href="tel:+1234567890">Phone</a>`],
-        assertion: (result: any) => {
           expect(result).toStrictEqual([
-            { href: 'mailto:test@example.com', text: 'Email' },
-            { href: 'tel:+1234567890', text: 'Phone' },
+            { href: "/test", text: "Click here now" },
           ]);
         },
       },
       {
-        name: 'extract from complex HTML',
+        name: "handle mailto and tel links",
+        args: [
+          `<a href="mailto:test@example.com">Email</a><a href="tel:+1234567890">Phone</a>`,
+        ],
+        assertion: (result: any) => {
+          expect(result).toStrictEqual([
+            { href: "mailto:test@example.com", text: "Email" },
+            { href: "tel:+1234567890", text: "Phone" },
+          ]);
+        },
+      },
+      {
+        name: "extract from complex HTML",
         args: [testPatterns.htmlFixtures.complex],
         assertion: (result: any) => {
           expect(result).toStrictEqual(
             expect.arrayContaining([
-              expect.objectContaining({ href: '/home', text: 'Home' }),
-              expect.objectContaining({ href: '/about', text: 'About' }),
+              expect.objectContaining({ href: "/home", text: "Home" }),
+              expect.objectContaining({ href: "/about", text: "About" }),
             ]),
           );
         },
@@ -132,58 +143,60 @@ describe('extraction Utilities', () => {
 
   // Test extractImages utility using factory pattern
   createUtilityTestSuite({
-    utilityName: 'extractImages',
+    utilityName: "extractImages",
     utilityFunction: extractImages,
     scenarios: [
       {
-        name: 'extract image sources',
+        name: "extract image sources",
         args: [
           `<img src="https://example.com/image1.jpg" alt="Image 1"><img src="/images/photo.png" alt="Photo">`,
         ],
         assertion: (result: any) => {
           expect(result).toStrictEqual([
-            { src: 'https://example.com/image1.jpg', alt: 'Image 1' },
-            { src: '/images/photo.png', alt: 'Photo' },
+            { src: "https://example.com/image1.jpg", alt: "Image 1" },
+            { src: "/images/photo.png", alt: "Photo" },
           ]);
         },
       },
       {
-        name: 'resolve relative image URLs',
-        args: ['<img src="logo.png" alt="Logo">', 'https://example.com'],
+        name: "resolve relative image URLs",
+        args: ['<img src="logo.png" alt="Logo">', "https://example.com"],
         assertion: (result: any) => {
-          expect(result).toStrictEqual([{ src: 'https://example.com/logo.png', alt: 'Logo' }]);
+          expect(result).toStrictEqual([
+            { src: "https://example.com/logo.png", alt: "Logo" },
+          ]);
         },
       },
       {
-        name: 'handle images without alt text',
+        name: "handle images without alt text",
         args: ['<img src="test.jpg">'],
         assertion: (result: any) => {
-          expect(result).toStrictEqual([{ src: 'test.jpg', alt: '' }]);
+          expect(result).toStrictEqual([{ src: "test.jpg", alt: "" }]);
         },
       },
       {
-        name: 'skip images without src',
+        name: "skip images without src",
         args: ['<img alt="No source">'],
         assertion: (result: any) => {
           expect(result).toStrictEqual([]);
         },
       },
       {
-        name: 'handle data URLs',
+        name: "handle data URLs",
         args: ['<img src="data:image/png;base64,iVBORw0KG..." alt="Data">'],
         assertion: (result: any) => {
           expect(result).toStrictEqual([
-            { src: 'data:image/png;base64,iVBORw0KG...', alt: 'Data' },
+            { src: "data:image/png;base64,iVBORw0KG...", alt: "Data" },
           ]);
         },
       },
       {
-        name: 'extract from complex HTML',
+        name: "extract from complex HTML",
         args: [testPatterns.htmlFixtures.complex],
         assertion: (result: any) => {
           expect(result).toStrictEqual(
             expect.arrayContaining([
-              expect.objectContaining({ src: '/image.jpg', alt: 'Test Image' }),
+              expect.objectContaining({ src: "/image.jpg", alt: "Test Image" }),
             ]),
           );
         },
@@ -193,50 +206,50 @@ describe('extraction Utilities', () => {
 
   // Test extractMetadata utility using factory pattern
   createUtilityTestSuite({
-    utilityName: 'extractMetadata',
+    utilityName: "extractMetadata",
     utilityFunction: extractMetadata,
     scenarios: [
       {
-        name: 'extract meta tags',
+        name: "extract meta tags",
         args: [
           `<html><head><title>Page Title</title><meta name="description" content="Page description"><meta name="keywords" content="test, example"><meta property="og:title" content="Open Graph Title"><meta property="og:image" content="https://example.com/og.jpg"></head></html>`,
         ],
         assertion: (result: any) => {
           expect(result).toStrictEqual({
-            title: 'Page Title',
-            description: 'Page description',
-            keywords: 'test, example',
-            'og:title': 'Open Graph Title',
-            'og:image': 'https://example.com/og.jpg',
+            title: "Page Title",
+            description: "Page description",
+            keywords: "test, example",
+            "og:title": "Open Graph Title",
+            "og:image": "https://example.com/og.jpg",
           });
         },
       },
       {
-        name: 'handle missing metadata',
-        args: ['<html><body>Content</body></html>'],
+        name: "handle missing metadata",
+        args: ["<html><body>Content</body></html>"],
         assertion: (result: any) => {
           expect(result).toStrictEqual({
-            title: '',
+            title: "",
           });
         },
       },
       {
-        name: 'prioritize property over name',
+        name: "prioritize property over name",
         args: [
           `<meta name="author" content="Name Author"><meta property="author" content="Property Author">`,
         ],
         assertion: (result: any) => {
-          expect(result.author).toBe('Property Author');
+          expect(result.author).toBe("Property Author");
         },
       },
       {
-        name: 'extract from complex HTML',
+        name: "extract from complex HTML",
         args: [testPatterns.htmlFixtures.complex],
         assertion: (result: any) => {
           expect(result).toMatchObject({
-            title: 'Complex Page',
-            description: 'Test description',
-            'og:title': 'OG Title',
+            title: "Complex Page",
+            description: "Test description",
+            "og:title": "OG Title",
           });
         },
       },
@@ -245,53 +258,53 @@ describe('extraction Utilities', () => {
 
   // Test extractStructuredData utility using factory pattern
   createUtilityTestSuite({
-    utilityName: 'extractStructuredData',
+    utilityName: "extractStructuredData",
     utilityFunction: extractStructuredData,
     scenarios: [
       {
-        name: 'extract JSON-LD structured data',
+        name: "extract JSON-LD structured data",
         args: [
           `<script type="application/ld+json">{"@context": "https://schema.org","@type": "Product","name": "Test Product","price": "19.99"}</script>`,
         ],
         assertion: (result: any) => {
           expect(result).toStrictEqual([
             {
-              '@context': 'https://schema.org',
-              '@type': 'Product',
-              name: 'Test Product',
-              price: '19.99',
+              "@context": "https://schema.org",
+              "@type": "Product",
+              name: "Test Product",
+              price: "19.99",
             },
           ]);
         },
       },
       {
-        name: 'handle multiple structured data blocks',
+        name: "handle multiple structured data blocks",
         args: [
           `<script type="application/ld+json">{"@type": "Organization", "name": "Company"}</script><script type="application/ld+json">{"@type": "Product", "name": "Product"}</script>`,
         ],
         assertion: (result: any) => {
           expect(result).toHaveLength(2);
-          expect(result[0]['@type']).toBe('Organization');
-          expect(result[1]['@type']).toBe('Product');
+          expect(result[0]["@type"]).toBe("Organization");
+          expect(result[1]["@type"]).toBe("Product");
         },
       },
       {
-        name: 'handle invalid JSON gracefully',
+        name: "handle invalid JSON gracefully",
         args: [`<script type="application/ld+json">{invalid json}</script>`],
         assertion: (result: any) => {
           expect(result).toStrictEqual([]);
         },
       },
       {
-        name: 'extract from test fixture',
+        name: "extract from test fixture",
         args: [testPatterns.htmlFixtures.withStructuredData],
         assertion: (result: any) => {
           expect(result).toStrictEqual(
             expect.arrayContaining([
               expect.objectContaining({
-                '@type': 'Product',
-                name: 'Test Product',
-                price: '19.99',
+                "@type": "Product",
+                name: "Test Product",
+                price: "19.99",
               }),
             ]),
           );
@@ -302,46 +315,52 @@ describe('extraction Utilities', () => {
 
   // Test extractEmails utility using factory pattern
   createUtilityTestSuite({
-    utilityName: 'extractEmails',
+    utilityName: "extractEmails",
     utilityFunction: extractEmails,
     scenarios: [
       {
-        name: 'extract email addresses',
-        args: ['Contact us at info@example.com or support@test.com'],
+        name: "extract email addresses",
+        args: ["Contact us at info@example.com or support@test.com"],
         assertion: (result: any) => {
-          expect(result).toStrictEqual(['info@example.com', 'support@test.com']);
+          expect(result).toStrictEqual([
+            "info@example.com",
+            "support@test.com",
+          ]);
         },
       },
       {
-        name: 'handle complex email formats',
-        args: ['Email: user.name+tag@example.co.uk'],
+        name: "handle complex email formats",
+        args: ["Email: user.name+tag@example.co.uk"],
         assertion: (result: any) => {
-          expect(result).toStrictEqual(['user.name+tag@example.co.uk']);
+          expect(result).toStrictEqual(["user.name+tag@example.co.uk"]);
         },
       },
       {
-        name: 'avoid false positives',
-        args: ['Price is $10.99 @ store'],
+        name: "avoid false positives",
+        args: ["Price is $10.99 @ store"],
         assertion: (result: any) => {
           expect(result).toStrictEqual([]);
         },
       },
       {
-        name: 'extract unique emails',
-        args: ['Email test@example.com or test@example.com for info'],
+        name: "extract unique emails",
+        args: ["Email test@example.com or test@example.com for info"],
         assertion: (result: any) => {
-          expect(result).toStrictEqual(['test@example.com']);
+          expect(result).toStrictEqual(["test@example.com"]);
         },
       },
       {
-        name: 'extract from test patterns',
-        args: [testPatterns.textPatterns.emails.join(' ')],
+        name: "extract from test patterns",
+        args: [testPatterns.textPatterns.emails.join(" ")],
         assertion: (result: any) => {
           // Should extract at least some of the valid emails
           expect(result.length).toBeGreaterThan(0);
           // Should contain standard email patterns
           expect(result).toStrictEqual(
-            expect.arrayContaining(['info@example.com', 'user.name@domain.co.uk']),
+            expect.arrayContaining([
+              "info@example.com",
+              "user.name@domain.co.uk",
+            ]),
           );
         },
       },
@@ -350,40 +369,40 @@ describe('extraction Utilities', () => {
 
   // Test extractPhoneNumbers utility using factory pattern
   createUtilityTestSuite({
-    utilityName: 'extractPhoneNumbers',
+    utilityName: "extractPhoneNumbers",
     utilityFunction: extractPhoneNumbers,
     scenarios: [
       {
-        name: 'extract US phone numbers',
-        args: ['Call us at (555) 123-4567 or 555-987-6543'],
+        name: "extract US phone numbers",
+        args: ["Call us at (555) 123-4567 or 555-987-6543"],
         assertion: (result: any) => {
-          expect(result).toStrictEqual(['(555) 123-4567', '555-987-6543']);
+          expect(result).toStrictEqual(["(555) 123-4567", "555-987-6543"]);
         },
       },
       {
-        name: 'extract international format',
-        args: ['International: +1-555-123-4567'],
+        name: "extract international format",
+        args: ["International: +1-555-123-4567"],
         assertion: (result: any) => {
-          expect(result).toStrictEqual(['+1-555-123-4567']);
+          expect(result).toStrictEqual(["+1-555-123-4567"]);
         },
       },
       {
-        name: 'handle different formats',
-        args: ['555.123.4567 or 5551234567'],
+        name: "handle different formats",
+        args: ["555.123.4567 or 5551234567"],
         assertion: (result: any) => {
-          expect(result).toStrictEqual(['555.123.4567', '5551234567']);
+          expect(result).toStrictEqual(["555.123.4567", "5551234567"]);
         },
       },
       {
-        name: 'avoid false positives',
-        args: ['Product code: 12345'],
+        name: "avoid false positives",
+        args: ["Product code: 12345"],
         assertion: (result: any) => {
           expect(result).toStrictEqual([]);
         },
       },
       {
-        name: 'extract from test patterns',
-        args: [testPatterns.textPatterns.phoneNumbers.join(' ')],
+        name: "extract from test patterns",
+        args: [testPatterns.textPatterns.phoneNumbers.join(" ")],
         assertion: (result: any) => {
           expect(result).toStrictEqual(
             expect.arrayContaining(testPatterns.textPatterns.phoneNumbers),
@@ -395,51 +414,51 @@ describe('extraction Utilities', () => {
 
   // Test cleanText utility using factory pattern
   createUtilityTestSuite({
-    utilityName: 'cleanText',
+    utilityName: "cleanText",
     utilityFunction: cleanText,
     scenarios: [
       {
-        name: 'clean whitespace',
-        args: ['  Hello   World\n\n  Test  '],
+        name: "clean whitespace",
+        args: ["  Hello   World\n\n  Test  "],
         assertion: (result: any) => {
-          expect(result).toBe('Hello World Test');
+          expect(result).toBe("Hello World Test");
         },
       },
       {
-        name: 'remove HTML entities',
-        args: ['Hello &amp; World &lt;test&gt;'],
+        name: "remove HTML entities",
+        args: ["Hello &amp; World &lt;test&gt;"],
         assertion: (result: any) => {
-          expect(result).toBe('Hello & World <test>');
+          expect(result).toBe("Hello & World <test>");
         },
       },
       {
-        name: 'handle special characters',
-        args: ['Price: $10.99 — Save 50%!'],
+        name: "handle special characters",
+        args: ["Price: $10.99 — Save 50%!"],
         assertion: (result: any) => {
-          expect(result).toBe('Price: $10.99 — Save 50%!');
+          expect(result).toBe("Price: $10.99 — Save 50%!");
         },
       },
       {
-        name: 'handle empty input',
-        args: [''],
+        name: "handle empty input",
+        args: [""],
         assertion: (result: any) => {
-          expect(result).toBe('');
+          expect(result).toBe("");
         },
       },
       {
-        name: 'handle whitespace-only input',
-        args: ['   '],
+        name: "handle whitespace-only input",
+        args: ["   "],
         assertion: (result: any) => {
-          expect(result).toBe('');
+          expect(result).toBe("");
         },
       },
       {
-        name: 'handle Unicode characters',
+        name: "handle Unicode characters",
         args: [edgeCases.unicode.content],
         assertion: (result: any) => {
-          expect(result).toContain('Tokyo');
-          expect(result).toContain('Moscow');
-          expect(result).toContain('Paris');
+          expect(result).toContain("Tokyo");
+          expect(result).toContain("Moscow");
+          expect(result).toContain("Paris");
         },
       },
     ],

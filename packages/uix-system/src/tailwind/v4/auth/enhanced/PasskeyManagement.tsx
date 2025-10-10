@@ -3,13 +3,13 @@
  * 100% React Server Component for managing WebAuthn passkeys
  */
 
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { cn } from '../utils/dark-mode';
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { cn } from "../utils/dark-mode";
 
 interface Passkey {
   id: string;
@@ -17,7 +17,7 @@ interface Passkey {
   credentialId: string;
   publicKey: string;
   counter: number;
-  deviceType: 'platform' | 'cross-platform' | 'unknown';
+  deviceType: "platform" | "cross-platform" | "unknown";
   isBackupEligible: boolean;
   isBackedUp: boolean;
   createdAt: string;
@@ -37,132 +37,151 @@ interface PasskeyManagementProps extends BaseProps {
 const _initialState: FormState = { success: false };
 
 // Server action for removing passkey
-async function removePasskeyAction(prevState: any, formData: FormData): Promise<FormState> {
-  'use server';
+async function removePasskeyAction(
+  prevState: any,
+  formData: FormData,
+): Promise<FormState> {
+  "use server";
 
   try {
-    const passkeyId = formData.get('passkeyId') as string;
+    const passkeyId = formData.get("passkeyId") as string;
 
     if (!passkeyId) {
       return {
         success: false,
-        errors: { passkeyId: ['Passkey ID is required'] },
+        errors: { passkeyId: ["Passkey ID is required"] },
       };
     }
 
     // Import Better Auth server action
-    const { removePasskeyAction: authRemovePasskey } = await import('@repo/auth/server-actions');
+    const { removePasskeyAction: authRemovePasskey } = await import(
+      "@repo/auth/server-actions"
+    );
 
     const result = await authRemovePasskey(prevState, formData);
 
     if (result.success) {
       return {
         success: true,
-        message: 'Passkey removed successfully.',
+        message: "Passkey removed successfully.",
       };
     } else {
       return {
         success: false,
-        error: result.error || 'Failed to remove passkey.',
+        error: result.error || "Failed to remove passkey.",
       };
     }
   } catch (error: any) {
     // console.error('Remove passkey error:', error);
 
-    if (error?.message?.includes('not found')) {
+    if (error?.message?.includes("not found")) {
       return {
         success: false,
-        error: 'Passkey not found.',
+        error: "Passkey not found.",
       };
     }
 
-    if (error?.message?.includes('last passkey')) {
+    if (error?.message?.includes("last passkey")) {
       return {
         success: false,
-        error: 'Cannot remove the last passkey. Add another authentication method first.',
+        error:
+          "Cannot remove the last passkey. Add another authentication method first.",
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred while removing the passkey.',
+      error: "An error occurred while removing the passkey.",
     };
   }
 }
 
 // Server action for renaming passkey
-async function renamePasskeyAction(prevState: any, formData: FormData): Promise<FormState> {
-  'use server';
+async function renamePasskeyAction(
+  prevState: any,
+  formData: FormData,
+): Promise<FormState> {
+  "use server";
 
   try {
-    const passkeyId = formData.get('passkeyId') as string;
-    const newName = formData.get('newName') as string;
+    const passkeyId = formData.get("passkeyId") as string;
+    const newName = formData.get("newName") as string;
 
     if (!passkeyId || !newName) {
       return {
         success: false,
-        errors: { newName: ['Passkey name is required'] },
+        errors: { newName: ["Passkey name is required"] },
       };
     }
 
     if (newName.length < 1 || newName.length > 50) {
       return {
         success: false,
-        errors: { newName: ['Passkey name must be between 1 and 50 characters'] },
+        errors: {
+          newName: ["Passkey name must be between 1 and 50 characters"],
+        },
       };
     }
 
     // Import Better Auth server action
-    const { renamePasskeyAction: authRenamePasskey } = await import('@repo/auth/server-actions');
+    const { renamePasskeyAction: authRenamePasskey } = await import(
+      "@repo/auth/server-actions"
+    );
 
     const result = await authRenamePasskey(prevState, formData);
 
     if (result.success) {
       return {
         success: true,
-        message: 'Passkey renamed successfully.',
+        message: "Passkey renamed successfully.",
       };
     } else {
       return {
         success: false,
-        error: result.error || 'Failed to rename passkey.',
+        error: result.error || "Failed to rename passkey.",
       };
     }
   } catch (error: any) {
     // console.error('Rename passkey error:', error);
 
-    if (error?.message?.includes('not found')) {
+    if (error?.message?.includes("not found")) {
       return {
         success: false,
-        error: 'Passkey not found.',
+        error: "Passkey not found.",
       };
     }
 
-    if (error?.message?.includes('duplicate name')) {
+    if (error?.message?.includes("duplicate name")) {
       return {
         success: false,
-        errors: { newName: ['A passkey with this name already exists'] },
+        errors: { newName: ["A passkey with this name already exists"] },
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred while renaming the passkey.',
+      error: "An error occurred while renaming the passkey.",
     };
   }
 }
 
 export function PasskeyManagement({
   passkeys,
-  title = 'Passkeys',
-  subtitle = 'Manage your passkeys for passwordless authentication',
+  title = "Passkeys",
+  subtitle = "Manage your passkeys for passwordless authentication",
   maxPasskeys = 10,
   onSuccess,
   onError,
-  className = '',
+  className = "",
 }: PasskeyManagementProps) {
-  const [removeState, removeAction] = useFormState(removePasskeyAction, createInitialActionState());
-  const [renameState, renameAction] = useFormState(renamePasskeyAction, createInitialActionState());
+  const [removeState, removeAction] = useFormState(
+    removePasskeyAction,
+    createInitialActionState(),
+  );
+  const [renameState, renameAction] = useFormState(
+    renamePasskeyAction,
+    createInitialActionState(),
+  );
 
   // Handle callbacks
   if (removeState?.success || renameState?.success) {
@@ -177,8 +196,11 @@ export function PasskeyManagement({
   }
 
   // Get device icon based on type
-  const getDeviceIcon = (deviceType: Passkey['deviceType'], _isBackupEligible: boolean) => {
-    if (deviceType === 'platform') {
+  const getDeviceIcon = (
+    deviceType: Passkey["deviceType"],
+    _isBackupEligible: boolean,
+  ) => {
+    if (deviceType === "platform") {
       return (
         <svg
           className="h-5 w-5 text-blue-600 dark:text-blue-400"
@@ -194,7 +216,7 @@ export function PasskeyManagement({
       );
     }
 
-    if (deviceType === 'cross-platform') {
+    if (deviceType === "cross-platform") {
       return (
         <svg
           className="h-5 w-5 text-green-600 dark:text-green-400"
@@ -226,25 +248,28 @@ export function PasskeyManagement({
   };
 
   // Get device type label
-  const getDeviceTypeLabel = (deviceType: Passkey['deviceType'], isBackupEligible: boolean) => {
+  const getDeviceTypeLabel = (
+    deviceType: Passkey["deviceType"],
+    isBackupEligible: boolean,
+  ) => {
     switch (deviceType) {
-      case 'platform':
-        return isBackupEligible ? 'Device (Synced)' : 'Device (Local)';
-      case 'cross-platform':
-        return 'Security Key';
+      case "platform":
+        return isBackupEligible ? "Device (Synced)" : "Device (Local)";
+      case "cross-platform":
+        return "Security Key";
       default:
-        return 'Unknown Device';
+        return "Unknown Device";
     }
   };
 
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -254,15 +279,27 @@ export function PasskeyManagement({
   };
 
   return (
-    <Card className={cn('mx-auto w-full max-w-4xl', className)}>
+    <Card className={cn("mx-auto w-full max-w-4xl", className)}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className={cn('text-2xl font-bold text-gray-900', 'dark:text-gray-100')}>
+            <h1
+              className={cn(
+                "text-2xl font-bold text-gray-900",
+                "dark:text-gray-100",
+              )}
+            >
               {title}
             </h1>
             {subtitle && (
-              <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>{subtitle}</p>
+              <p
+                className={cn(
+                  "mt-2 text-sm text-gray-600",
+                  "dark:text-gray-400",
+                )}
+              >
+                {subtitle}
+              </p>
             )}
           </div>
 
@@ -270,7 +307,7 @@ export function PasskeyManagement({
             <Button
               variant="primary"
               onClick={() => {
-                window.location.href = '/account/passkeys/register';
+                window.location.href = "/account/passkeys/register";
               }}
             >
               Add Passkey
@@ -306,8 +343,8 @@ export function PasskeyManagement({
 
         <div
           className={cn(
-            'mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4',
-            'dark:border-blue-800 dark:bg-blue-900/20',
+            "mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4",
+            "dark:border-blue-800 dark:bg-blue-900/20",
           )}
         >
           <div className="flex items-start">
@@ -322,32 +359,40 @@ export function PasskeyManagement({
                 clipRule="evenodd"
               />
             </svg>
-            <div className={cn('text-sm text-blue-800', 'dark:text-blue-200')}>
+            <div className={cn("text-sm text-blue-800", "dark:text-blue-200")}>
               <h4 className="mb-1 font-medium">About Passkeys</h4>
               <p className="mb-2">
-                Passkeys provide secure, passwordless authentication using your device's built-in
-                security.
+                Passkeys provide secure, passwordless authentication using your
+                device's built-in security.
               </p>
               <ul className="list-inside list-disc space-y-1 text-xs">
                 <li>
-                  <strong>Platform authenticators</strong> use your device's built-in security (Face
-                  ID, Touch ID, Windows Hello)
+                  <strong>Platform authenticators</strong> use your device's
+                  built-in security (Face ID, Touch ID, Windows Hello)
                 </li>
                 <li>
-                  <strong>Security keys</strong> are external devices that you plug in or tap
+                  <strong>Security keys</strong> are external devices that you
+                  plug in or tap
                 </li>
                 <li>
-                  <strong>Synced passkeys</strong> work across your devices when backed up to
-                  iCloud, Google, etc.
+                  <strong>Synced passkeys</strong> work across your devices when
+                  backed up to iCloud, Google, etc.
                 </li>
-                <li>Passkeys are more secure than passwords and cannot be phished</li>
+                <li>
+                  Passkeys are more secure than passwords and cannot be phished
+                </li>
               </ul>
             </div>
           </div>
         </div>
 
         {passkeys.length === 0 ? (
-          <div className={cn('rounded-lg bg-gray-50 py-8 text-center', 'dark:bg-gray-800')}>
+          <div
+            className={cn(
+              "rounded-lg bg-gray-50 py-8 text-center",
+              "dark:bg-gray-800",
+            )}
+          >
             <svg
               className="mx-auto mb-4 h-12 w-12 text-gray-400"
               fill="currentColor"
@@ -359,16 +404,23 @@ export function PasskeyManagement({
                 clipRule="evenodd"
               />
             </svg>
-            <h3 className={cn('mb-2 text-lg font-medium text-gray-900', 'dark:text-gray-100')}>
+            <h3
+              className={cn(
+                "mb-2 text-lg font-medium text-gray-900",
+                "dark:text-gray-100",
+              )}
+            >
               No passkeys registered
             </h3>
-            <p className={cn('mb-4 text-sm text-gray-600', 'dark:text-gray-400')}>
+            <p
+              className={cn("mb-4 text-sm text-gray-600", "dark:text-gray-400")}
+            >
               Add a passkey to enable secure, passwordless authentication
             </p>
             <Button
               variant="primary"
               onClick={() => {
-                window.location.href = '/account/passkeys/register';
+                window.location.href = "/account/passkeys/register";
               }}
             >
               Register Your First Passkey
@@ -376,36 +428,39 @@ export function PasskeyManagement({
           </div>
         ) : (
           <div className="space-y-4">
-            {passkeys.map(passkey => (
+            {passkeys.map((passkey) => (
               <div
                 key={passkey.id}
                 className={cn(
-                  'rounded-lg border border-gray-200 p-6',
-                  'dark:border-gray-700',
-                  'transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50',
+                  "rounded-lg border border-gray-200 p-6",
+                  "dark:border-gray-700",
+                  "transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50",
                 )}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex flex-1 items-start space-x-4">
                     <div
                       className={cn(
-                        'flex h-12 w-12 items-center justify-center rounded-full',
-                        passkey.deviceType === 'platform'
-                          ? 'bg-blue-100 dark:bg-blue-900/20'
-                          : passkey.deviceType === 'cross-platform'
-                            ? 'bg-green-100 dark:bg-green-900/20'
-                            : 'bg-gray-100 dark:bg-gray-800',
+                        "flex h-12 w-12 items-center justify-center rounded-full",
+                        passkey.deviceType === "platform"
+                          ? "bg-blue-100 dark:bg-blue-900/20"
+                          : passkey.deviceType === "cross-platform"
+                            ? "bg-green-100 dark:bg-green-900/20"
+                            : "bg-gray-100 dark:bg-gray-800",
                       )}
                     >
-                      {getDeviceIcon(passkey.deviceType, passkey.isBackupEligible)}
+                      {getDeviceIcon(
+                        passkey.deviceType,
+                        passkey.isBackupEligible,
+                      )}
                     </div>
 
                     <div className="min-w-0 flex-1">
                       <div className="mb-2 flex items-center space-x-3">
                         <h3
                           className={cn(
-                            'truncate text-lg font-medium text-gray-900',
-                            'dark:text-gray-100',
+                            "truncate text-lg font-medium text-gray-900",
+                            "dark:text-gray-100",
                           )}
                         >
                           {passkey.name}
@@ -414,22 +469,25 @@ export function PasskeyManagement({
                         <div className="flex items-center space-x-2">
                           <span
                             className={cn(
-                              'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
-                              passkey.deviceType === 'platform'
-                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
-                                : passkey.deviceType === 'cross-platform'
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200'
-                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200',
+                              "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+                              passkey.deviceType === "platform"
+                                ? "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
+                                : passkey.deviceType === "cross-platform"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200"
+                                  : "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200",
                             )}
                           >
-                            {getDeviceTypeLabel(passkey.deviceType, passkey.isBackupEligible)}
+                            {getDeviceTypeLabel(
+                              passkey.deviceType,
+                              passkey.isBackupEligible,
+                            )}
                           </span>
 
                           {passkey.isBackedUp && (
                             <span
                               className={cn(
-                                'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
-                                'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200',
+                                "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+                                "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200",
                               )}
                             >
                               Backed Up
@@ -438,21 +496,28 @@ export function PasskeyManagement({
                         </div>
                       </div>
 
-                      <div className={cn('space-y-2 text-sm text-gray-600', 'dark:text-gray-400')}>
+                      <div
+                        className={cn(
+                          "space-y-2 text-sm text-gray-600",
+                          "dark:text-gray-400",
+                        )}
+                      >
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           <div>
                             <p>
-                              <strong>Created:</strong> {formatDate(passkey.createdAt)}
+                              <strong>Created:</strong>{" "}
+                              {formatDate(passkey.createdAt)}
                             </p>
                             {passkey.lastUsed && (
                               <p>
-                                <strong>Last used:</strong> {formatDate(passkey.lastUsed)}
+                                <strong>Last used:</strong>{" "}
+                                {formatDate(passkey.lastUsed)}
                               </p>
                             )}
                           </div>
                           <div>
                             <p>
-                              <strong>Credential ID:</strong>{' '}
+                              <strong>Credential ID:</strong>{" "}
                               {truncateCredentialId(passkey.credentialId)}
                             </p>
                             <p>
@@ -464,8 +529,8 @@ export function PasskeyManagement({
                         {passkey.userAgent && (
                           <div
                             className={cn(
-                              'mt-2 rounded bg-gray-50 p-2 text-xs text-gray-500',
-                              'dark:bg-gray-800 dark:text-gray-500',
+                              "mt-2 rounded bg-gray-50 p-2 text-xs text-gray-500",
+                              "dark:bg-gray-800 dark:text-gray-500",
                             )}
                           >
                             <strong>User Agent:</strong> {passkey.userAgent}
@@ -480,22 +545,29 @@ export function PasskeyManagement({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        const newName = prompt('Enter new name for this passkey:', passkey.name);
+                        const newName = prompt(
+                          "Enter new name for this passkey:",
+                          passkey.name,
+                        );
                         if (newName && newName !== passkey.name) {
                           const form = new FormData();
-                          form.append('passkeyId', passkey.id);
-                          form.append('newName', newName);
+                          form.append("passkeyId", passkey.id);
+                          form.append("newName", newName);
                           renameAction(form);
                         }
                       }}
                       disabled={renameState === undefined}
                     >
-                      {renameState === undefined ? 'Renaming...' : 'Rename'}
+                      {renameState === undefined ? "Renaming..." : "Rename"}
                     </Button>
 
                     {passkeys.length > 1 && (
                       <form action={removeAction}>
-                        <input type="hidden" name="passkeyId" value={passkey.id} />
+                        <input
+                          type="hidden"
+                          name="passkeyId"
+                          value={passkey.id}
+                        />
                         <Button
                           type="submit"
                           variant="destructive"
@@ -507,7 +579,7 @@ export function PasskeyManagement({
                             );
                           }}
                         >
-                          {removeState === undefined ? 'Removing...' : 'Remove'}
+                          {removeState === undefined ? "Removing..." : "Remove"}
                         </Button>
                       </form>
                     )}
@@ -520,8 +592,8 @@ export function PasskeyManagement({
 
         <div
           className={cn(
-            'mt-6 rounded-lg border border-green-200 bg-green-50 p-4',
-            'dark:border-green-800 dark:bg-green-900/20',
+            "mt-6 rounded-lg border border-green-200 bg-green-50 p-4",
+            "dark:border-green-800 dark:bg-green-900/20",
           )}
         >
           <div className="flex items-start">
@@ -536,16 +608,25 @@ export function PasskeyManagement({
                 clipRule="evenodd"
               />
             </svg>
-            <div className={cn('text-sm text-green-800', 'dark:text-green-200')}>
+            <div
+              className={cn("text-sm text-green-800", "dark:text-green-200")}
+            >
               <h4 className="mb-1 font-medium">Passkey Security Benefits</h4>
               <ul className="list-inside list-disc space-y-1 text-xs">
-                <li>Passkeys are phishing-resistant and cannot be stolen in data breaches</li>
+                <li>
+                  Passkeys are phishing-resistant and cannot be stolen in data
+                  breaches
+                </li>
                 <li>Each passkey is unique to your account and this website</li>
                 <li>Your biometric data never leaves your device</li>
                 <li>
-                  Passkeys work offline and don't require an internet connection to authenticate
+                  Passkeys work offline and don't require an internet connection
+                  to authenticate
                 </li>
-                <li>You can have up to {maxPasskeys} passkeys for backup and convenience</li>
+                <li>
+                  You can have up to {maxPasskeys} passkeys for backup and
+                  convenience
+                </li>
               </ul>
             </div>
           </div>
@@ -555,8 +636,8 @@ export function PasskeyManagement({
           <a
             href="/account/settings"
             className={cn(
-              'text-sm text-gray-600 hover:text-gray-500',
-              'dark:text-gray-400 dark:hover:text-gray-300',
+              "text-sm text-gray-600 hover:text-gray-500",
+              "dark:text-gray-400 dark:hover:text-gray-300",
             )}
           >
             ← Back to Account Settings
@@ -566,7 +647,7 @@ export function PasskeyManagement({
             <Button
               variant="outline"
               onClick={() => {
-                window.location.href = '/account/passkeys/register';
+                window.location.href = "/account/passkeys/register";
               }}
             >
               Add Another Passkey

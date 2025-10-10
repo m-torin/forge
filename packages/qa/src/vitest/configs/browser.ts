@@ -11,7 +11,7 @@ const currentDir = dirname(filename);
 const setupDir = resolve(currentDir, '../setup');
 
 // Browser provider configurations
-export const browserProviders = {
+const browserProviders = {
   playwright: {
     name: 'playwright' as const,
     enabled: true,
@@ -81,7 +81,7 @@ export const browserEnvironments = {
 } as const;
 
 // Browser testing utilities
-export const browserCommands = {
+const browserCommands = {
   // Custom commands for browser testing
   screenshot: (({ testPath, provider }, name?: string) => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -306,7 +306,7 @@ export function createBrowserConfig(options: BrowserTestOptions = {}): UserConfi
 /**
  * Creates a browser configuration specifically for component testing
  */
-export function createComponentBrowserConfig(options: BrowserTestOptions = {}): UserConfig {
+function createComponentBrowserConfig(options: BrowserTestOptions = {}): UserConfig {
   return createBrowserConfig({
     ...options,
     setupFiles: [resolve(setupDir, 'browser-component.mjs'), ...(options.setupFiles || [])],
@@ -322,7 +322,7 @@ export function createComponentBrowserConfig(options: BrowserTestOptions = {}): 
 /**
  * Creates a browser configuration specifically for e2e testing
  */
-export function createE2EBrowserConfig(options: BrowserTestOptions = {}): UserConfig {
+function createE2EBrowserConfig(options: BrowserTestOptions = {}): UserConfig {
   return createBrowserConfig({
     ...options,
     setupFiles: [resolve(setupDir, 'browser-e2e.mjs'), ...(options.setupFiles || [])],
@@ -336,11 +336,3 @@ export function createE2EBrowserConfig(options: BrowserTestOptions = {}): UserCo
 }
 
 // Export all browser configurations
-export default {
-  createBrowserConfig,
-  createComponentBrowserConfig,
-  createE2EBrowserConfig,
-  browserProviders,
-  browserEnvironments,
-  browserCommands,
-};

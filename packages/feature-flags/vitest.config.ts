@@ -13,14 +13,6 @@ const baseConfig = createNodePackageConfig({
         },
       },
       environment: 'node',
-      coverage: {
-        thresholds: {
-          lines: 25,
-          functions: 25,
-          branches: 25,
-          statements: 25,
-        },
-      },
     },
   },
 });

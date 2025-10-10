@@ -28,7 +28,7 @@ export function createMockCollaborationEvent(
   };
 }
 
-export function createMockDocumentState(overrides: Partial<DocumentState> = {}): DocumentState {
+function createMockDocumentState(overrides: Partial<DocumentState> = {}): DocumentState {
   return {
     id: nanoid(),
     content: { text: 'Hello world' },
@@ -39,7 +39,7 @@ export function createMockDocumentState(overrides: Partial<DocumentState> = {}):
   };
 }
 
-export function createMockCollaboratorList(count: number): Collaborator[] {
+function createMockCollaboratorList(count: number): Collaborator[] {
   const names = [
     'Alice Johnson',
     'Bob Smith',
@@ -60,11 +60,7 @@ export function createMockCollaboratorList(count: number): Collaborator[] {
   );
 }
 
-export function createMockEditEvent(
-  userId: string,
-  content: string,
-  operation?: any,
-): CollaborationEvent {
+function createMockEditEvent(userId: string, content: string, operation?: any): CollaborationEvent {
   return createMockCollaborationEvent({
     type: 'edit',
     userId,
@@ -75,7 +71,7 @@ export function createMockEditEvent(
   });
 }
 
-export function createMockPresenceEvent(
+function createMockPresenceEvent(
   userId: string,
   action: 'join' | 'leave' | 'update',
   data?: any,
@@ -87,7 +83,7 @@ export function createMockPresenceEvent(
   });
 }
 
-export function createMockCursorEvent(userId: string, x: number, y: number): CollaborationEvent {
+function createMockCursorEvent(userId: string, x: number, y: number): CollaborationEvent {
   return createMockCollaborationEvent({
     type: 'cursor',
     userId,

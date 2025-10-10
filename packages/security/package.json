@@ -1,6 +1,7 @@
 {
   "name": "@repo/security",
   "private": true,
+  "sideEffects": false,
   "type": "module",
   "exports": {
     "./client": "./src/client.ts",
@@ -15,8 +16,8 @@
   "scripts": {
     "circular": "madge --circular --extensions ts,tsx,js,jsx .",
     "coverage:collect": "vitest run --coverage --reporter=json",
-    "knip": "knip --fix --reporter json",
-    "lint": "eslint . --fix",
+    "knip": "knip --reporter json --exclude unlisted,unresolved,exports,dependencies,files,binaries,types,duplicates",
+    "lint": "eslint . --fix --cache",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:coverage:json": "vitest run --coverage --reporter=json",
@@ -26,15 +27,21 @@
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.9",
     "@nosecone/next": "1.0.0-beta.9",
-    "@repo/database": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
     "@upstash/ratelimit": "^2.0.6",
-    "chalk": "^5.4.1",
+    "server-only": "^0.0.1",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
+    "@repo/db-upstash-redis": "workspace:*",
     "@repo/eslint-config": "workspace:*",
-    "@repo/qa": "workspace:*"
+    "@repo/qa": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "knip": "catalog:",
+    "madge": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

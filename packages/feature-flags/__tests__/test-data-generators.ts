@@ -6,7 +6,7 @@
  */
 
 // Common test data patterns
-export const testPatterns = {
+const testPatterns = {
   // Flag keys
   flagKeys: [
     'simple-flag',
@@ -279,7 +279,7 @@ export const featureFlagTestData = {
 /**
  * Generates edge case test data
  */
-export const edgeCaseTestData = {
+const edgeCaseTestData = {
   // Empty/null/undefined values
   empty: {
     string: '',
@@ -367,7 +367,7 @@ export const edgeCaseTestData = {
 /**
  * Creates test data with specific patterns
  */
-export const createTestData = {
+const createTestData = {
   /**
    * Creates a flag configuration with specific characteristics
    */
@@ -444,7 +444,7 @@ export const createTestData = {
 /**
  * Validation helpers for test data
  */
-export const validateTestData = {
+const validateTestData = {
   /**
    * Validates that a flag has all required properties
    */
@@ -515,7 +515,7 @@ export const validateTestData = {
 /**
  * Mock data generators for external services
  */
-export const mockServiceData = {
+const mockServiceData = {
   /**
    * Creates mock Edge Config client responses
    */

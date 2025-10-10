@@ -458,7 +458,7 @@ export async function listUsersAction(query?: {
   // Better Auth doesn't have a built-in listUsers method
   // We need to query the database directly
   try {
-    const { prisma } = await import('@repo/database/prisma');
+    const { prisma } = await import('./shared/prisma');
 
     const where = query?.search
       ? {
@@ -583,14 +583,26 @@ export async function listOrganizationsAction(options?: {
   search?: string;
 }) {
   'use server';
-  return auth.api.listOrganizations({
-    headers: await headers(),
-    body: {
-      limit: options?.limit || 100,
-      offset: options?.offset || 0,
-      ...(options?.search && { search: options.search }),
-    },
-  });
+  try {
+    const headerObj = await headers();
+    return auth.api.listOrganizations({
+      headers: headerObj,
+      body: {
+        limit: options?.limit || 100,
+        offset: options?.offset || 0,
+        ...(options?.search && { search: options.search }),
+      },
+    });
+  } catch (_error) {
+    // Fallback without headers if headers() fails
+    return auth.api.listOrganizations({
+      body: {
+        limit: options?.limit || 100,
+        offset: options?.offset || 0,
+        ...(options?.search && { search: options.search }),
+      },
+    });
+  }
 }
 
 export async function getOrganizationAction(organizationId: string) {

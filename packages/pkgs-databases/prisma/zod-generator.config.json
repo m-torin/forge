@@ -1,0 +1,115 @@
+{
+  "mode": "custom",
+  "useMultipleFiles": true,
+  "singleFileName": false,
+  "placeSingleFileAtRoot": false,
+  "formatGeneratedSchemas": true,
+  "pureModels": true,
+  "pureModelsLean": true,
+  "pureModelsExcludeCircularRelations": true,
+  "zodImportTarget": "v4",
+  "dateTimeSplitStrategy": true,
+  "optionalFieldBehavior": "nullish",
+  "strictCreateInputs": true,
+  "preserveRequiredScalarsOnCreate": true,
+  "createIndexFiles": true,
+  "createBarrelExports": false,
+  "generateEnums": true,
+  "variants": {
+    "pure": {
+      "enabled": true,
+      "suffix": ".model"
+    },
+    "input": {
+      "enabled": true,
+      "suffix": ".input",
+      "excludeFields": ["id", "createdAt", "updatedAt"]
+    },
+    "result": {
+      "enabled": true,
+      "suffix": ".result"
+    }
+  },
+  "models": {
+    "User": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"],
+      "variants": {
+        "input": {
+          "excludeFields": ["id", "createdAt", "updatedAt"]
+        },
+        "result": {
+          "excludeFields": ["password"]
+        }
+      }
+    },
+    "Session": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "Organization": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "Member": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "Invitation": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "Account": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "Verification": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "TwoFactor": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "Passkey": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "Post": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "Article": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "CompanyContent": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "CompanyMember": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "CompanyStatistic": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    },
+    "SystemSetting": {
+      "enabled": true,
+      "operations": ["findMany", "findUnique", "create", "update"]
+    }
+  },
+  "globalExclusions": {
+    "input": ["id", "createdAt", "updatedAt"],
+    "result": [],
+    "pure": []
+  },
+  "safety": {
+    "level": "standard",
+    "allowDangerousPaths": false,
+    "allowProjectRoots": true,
+    "allowUserFiles": true,
+    "maxUserFiles": 50
+  }
+}

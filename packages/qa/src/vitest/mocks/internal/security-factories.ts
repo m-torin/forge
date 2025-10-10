@@ -6,7 +6,7 @@
  * Now centralized for consistency across all packages
  */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 /**
  * Security test factory configuration
@@ -41,7 +41,9 @@ export interface SecurityTestScenario<TResult = any> {
 /**
  * Creates a complete test suite for a security function
  */
-export function createSecurityTestSuite<TResult = any>(config: SecurityTestConfig<TResult>) {
+export function createSecurityTestSuite<TResult = any>(
+  config: SecurityTestConfig<TResult>,
+) {
   const { functionName, securityFunction, scenarios } = config;
 
   return describe(`${functionName} security function`, () => {
@@ -53,15 +55,17 @@ export function createSecurityTestSuite<TResult = any>(config: SecurityTestConfi
 
     // Generate test scenarios
     scenarios
-      .filter(scenario => scenario.shouldThrow)
+      .filter((scenario) => scenario.shouldThrow)
       .forEach(({ name, description, args, expectedError }) => {
         test(`${name} - ${description} (should throw)`, async () => {
-          await expect(() => securityFunction(...args)).rejects.toThrow(expectedError || '');
+          await expect(() => securityFunction(...args)).rejects.toThrow(
+            expectedError || "",
+          );
         });
       });
 
     scenarios
-      .filter(scenario => !scenario.shouldThrow)
+      .filter((scenario) => !scenario.shouldThrow)
       .forEach(({ name, description, args, validate }) => {
         test(`${name} - ${description}`, async () => {
           const result = await securityFunction(...args);
@@ -75,12 +79,12 @@ export function createSecurityTestSuite<TResult = any>(config: SecurityTestConfi
       });
 
     // Standard validation tests
-    test('should return defined result', async () => {
+    test("should return defined result", async () => {
       const result = await securityFunction();
       expect(result).toBeDefined();
     });
 
-    test('should handle security validation', async () => {
+    test("should handle security validation", async () => {
       const result = await securityFunction();
       expect(result).toBeDefined();
     });
@@ -110,7 +114,7 @@ export interface RateLimitTestScenario<TResult = any> {
   /** Number of requests to make */
   requestCount: number;
   /** Expected behavior */
-  expectedBehavior: 'allow' | 'deny' | 'mixed';
+  expectedBehavior: "allow" | "deny" | "mixed";
   /** Custom assertion function */
   customAssertions?: (results: TResult[]) => void;
 }
@@ -118,7 +122,9 @@ export interface RateLimitTestScenario<TResult = any> {
 /**
  * Creates a complete test suite for rate limiting
  */
-export function createRateLimitTestSuite<TResult = any>(config: RateLimitTestConfig<TResult>) {
+export function createRateLimitTestSuite<TResult = any>(
+  config: RateLimitTestConfig<TResult>,
+) {
   const { limiterName, importPath, scenarios } = config;
 
   return describe(`${limiterName} rate limiting`, () => {
@@ -130,7 +136,13 @@ export function createRateLimitTestSuite<TResult = any>(config: RateLimitTestCon
 
     // Generate test scenarios
     scenarios.forEach(
-      ({ name, config: limiterConfig, requestCount, expectedBehavior, customAssertions }) => {
+      ({
+        name,
+        config: limiterConfig,
+        requestCount,
+        expectedBehavior,
+        customAssertions,
+      }) => {
         test(`should ${name}`, async () => {
           const module = await import(importPath);
           const limiter = module[limiterName] || module.default;
@@ -140,24 +152,30 @@ export function createRateLimitTestSuite<TResult = any>(config: RateLimitTestCon
 
           // Make multiple requests
           for (let i = 0; i < requestCount; i++) {
-            const result = await rateLimiter.check('test-key');
+            const result = await rateLimiter.check("test-key");
             results.push(result);
           }
 
           // Validate behavior based on expected behavior
           switch (expectedBehavior) {
-            case 'allow':
-              results.forEach(result => {
+            case "allow":
+              results.forEach((result) => {
                 expect((result as any).success).toBeTruthy();
               });
               break;
-            case 'deny':
-              expect(results.some(result => !(result as any).success)).toBeTruthy();
+            case "deny":
+              expect(
+                results.some((result) => !(result as any).success),
+              ).toBeTruthy();
               break;
-            case 'mixed':
+            case "mixed":
               // For mixed behavior, check that some pass and some fail
-              const successes = results.filter(result => (result as any).success);
-              const failures = results.filter(result => !(result as any).success);
+              const successes = results.filter(
+                (result) => (result as any).success,
+              );
+              const failures = results.filter(
+                (result) => !(result as any).success,
+              );
               expect(successes.length).toBeGreaterThan(0);
               expect(failures.length).toBeGreaterThan(0);
               break;
@@ -202,7 +220,9 @@ export interface MiddlewareTestScenario<TResult = any> {
 /**
  * Creates a complete test suite for security middleware
  */
-export function createMiddlewareTestSuite<TResult = any>(config: MiddlewareTestConfig<TResult>) {
+export function createMiddlewareTestSuite<TResult = any>(
+  config: MiddlewareTestConfig<TResult>,
+) {
   const { middlewareName, importPath, scenarios } = config;
 
   return describe(`${middlewareName} middleware`, () => {
@@ -213,34 +233,38 @@ export function createMiddlewareTestSuite<TResult = any>(config: MiddlewareTestC
     });
 
     // Generate test scenarios
-    scenarios.forEach(({ name, request, expectedResponse, customAssertions, shouldBlock }) => {
-      test(`should ${name}`, async () => {
-        const module = await import(importPath);
-        const middleware = module[middlewareName] || module.default;
+    scenarios.forEach(
+      ({ name, request, expectedResponse, customAssertions, shouldBlock }) => {
+        test(`should ${name}`, async () => {
+          const module = await import(importPath);
+          const middleware = module[middlewareName] || module.default;
 
-        const mockRequest = createMockRequest(request);
-        const mockResponse = createMockResponse();
-        const nextFn = vi.fn();
+          const mockRequest = createMockRequest(request);
+          const mockResponse = createMockResponse();
+          const nextFn = vi.fn();
 
-        await middleware(mockRequest, mockResponse, nextFn);
+          await middleware(mockRequest, mockResponse, nextFn);
 
-        // Validate blocking behavior
-        const shouldBlockValue = shouldBlock ?? false;
-        expect(nextFn).toHaveBeenCalledTimes(shouldBlockValue ? 0 : 1);
-        
-        const statusCallCount = shouldBlockValue ? 1 : 0;
-        expect(mockResponse.status).toHaveBeenCalledTimes(statusCallCount);
+          // Validate blocking behavior
+          const shouldBlockValue = shouldBlock ?? false;
+          expect(nextFn).toHaveBeenCalledTimes(shouldBlockValue ? 0 : 1);
 
-        // Check expected response
-        const responseEntries = expectedResponse ? Object.entries(expectedResponse) : [];
-        responseEntries.forEach(([key, value]) => {
-          expect((mockResponse as any)[key]).toHaveBeenCalledWith(value);
+          const statusCallCount = shouldBlockValue ? 1 : 0;
+          expect(mockResponse.status).toHaveBeenCalledTimes(statusCallCount);
+
+          // Check expected response
+          const responseEntries = expectedResponse
+            ? Object.entries(expectedResponse)
+            : [];
+          responseEntries.forEach(([key, value]) => {
+            expect((mockResponse as any)[key]).toHaveBeenCalledWith(value);
+          });
+
+          // Custom assertions
+          customAssertions?.(mockResponse as any);
         });
-
-        // Custom assertions
-        customAssertions?.(mockResponse as any);
-      });
-    });
+      },
+    );
   });
 }
 
@@ -273,7 +297,9 @@ export interface HeadersTestScenario<TResult = any> {
 /**
  * Creates a complete test suite for security headers
  */
-export function createHeadersTestSuite<TResult = any>(config: HeadersTestConfig<TResult>) {
+export function createHeadersTestSuite<TResult = any>(
+  config: HeadersTestConfig<TResult>,
+) {
   const { functionName, importPath, scenarios } = config;
 
   return describe(`${functionName} security headers`, () => {
@@ -284,42 +310,51 @@ export function createHeadersTestSuite<TResult = any>(config: HeadersTestConfig<
     });
 
     // Generate test scenarios
-    scenarios.forEach(({ name, config: headerConfig, expectedHeaders, customAssertions }) => {
-      test(`should ${name}`, async () => {
-        const module = await import(importPath);
-        const fn = module[functionName] || module.default;
+    scenarios.forEach(
+      ({ name, config: headerConfig, expectedHeaders, customAssertions }) => {
+        test(`should ${name}`, async () => {
+          const module = await import(importPath);
+          const fn = module[functionName] || module.default;
 
-        const result = fn(headerConfig);
+          const result = fn(headerConfig);
 
-        // Check expected headers
-        Object.entries(expectedHeaders)
-          .filter(([, expectedValue]) => expectedValue !== undefined && expectedValue !== null && expectedValue !== '')
-          .forEach(([headerName, expectedValue]) => {
-            expect(result).toHaveProperty(headerName);
-            expect(result[headerName]).toBe(expectedValue);
-          });
+          // Check expected headers
+          Object.entries(expectedHeaders)
+            .filter(
+              ([, expectedValue]) =>
+                expectedValue !== undefined &&
+                expectedValue !== null &&
+                expectedValue !== "",
+            )
+            .forEach(([headerName, expectedValue]) => {
+              expect(result).toHaveProperty(headerName);
+              expect(result[headerName]).toBe(expectedValue);
+            });
 
-        // Custom assertions
-        customAssertions?.(result);
-      });
-    });
+          // Custom assertions
+          customAssertions?.(result);
+        });
+      },
+    );
   });
 }
 
 /**
  * Sets up standard security test environment
  */
-export function setupSecurityEnvironment(overrides: Record<string, string> = {}) {
+export function setupSecurityEnvironment(
+  overrides: Record<string, string> = {},
+) {
   const defaultEnv = {
-    NODE_ENV: 'test',
-    UPSTASH_REDIS_REST_URL: 'https://test-redis.upstash.io',
-    UPSTASH_REDIS_REST_TOKEN: 'test-token',
-    RATE_LIMIT_REQUESTS: '100',
-    RATE_LIMIT_WINDOW: '3600',
+    NODE_ENV: "test",
+    UPSTASH_REDIS_REST_URL: "https://test-redis.upstash.io",
+    UPSTASH_REDIS_REST_TOKEN: "test-token",
+    RATE_LIMIT_REQUESTS: "100",
+    RATE_LIMIT_WINDOW: "3600",
     ...overrides,
   };
 
-  vi.stubGlobal('process', {
+  vi.stubGlobal("process", {
     ...process,
     env: {
       ...process.env,
@@ -333,16 +368,16 @@ export function setupSecurityEnvironment(overrides: Record<string, string> = {})
  */
 export function createMockRequest(overrides: any = {}) {
   return {
-    ip: '192.168.1.1',
+    ip: "192.168.1.1",
     headers: new Headers({
-      'user-agent': 'Test Browser',
-      'x-forwarded-for': '192.168.1.1',
+      "user-agent": "Test Browser",
+      "x-forwarded-for": "192.168.1.1",
       ...overrides.headers,
     }),
-    url: 'https://test.com/api/test',
-    method: 'GET',
+    url: "https://test.com/api/test",
+    method: "GET",
     nextUrl: {
-      pathname: '/api/test',
+      pathname: "/api/test",
       searchParams: new URLSearchParams(),
     },
     ...overrides,
@@ -382,20 +417,21 @@ export const createScenarios = {
     name: `handle ${requests} requests with limit of ${limit}`,
     config: { requests: limit, window: 60 },
     requestCount: requests,
-    expectedBehavior: requests > limit ? ('mixed' as const) : ('allow' as const),
+    expectedBehavior:
+      requests > limit ? ("mixed" as const) : ("allow" as const),
   }),
 
   /**
    * Creates security header scenarios
    */
   securityHeaders: () => ({
-    name: 'set security headers',
+    name: "set security headers",
     config: {},
     expectedHeaders: {
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY',
-      'X-XSS-Protection': '1; mode=block',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "X-XSS-Protection": "1; mode=block",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
     },
   }),
 
@@ -404,7 +440,7 @@ export const createScenarios = {
    */
   middlewareBlocking: (reason: string) => ({
     name: `block request due to ${reason}`,
-    request: { ip: '192.168.1.1' },
+    request: { ip: "192.168.1.1" },
     shouldBlock: true,
   }),
 };
@@ -417,8 +453,8 @@ export const validateSecurityResults = {
    * Validates that rate limiting response has required properties
    */
   hasValidRateLimitResult: (result: any) => {
-    const required = ['success', 'limit', 'remaining', 'reset'];
-    const missing = required.filter(prop => !(prop in result));
+    const required = ["success", "limit", "remaining", "reset"];
+    const missing = required.filter((prop) => !(prop in result));
     return missing.length === 0 ? null : missing;
   },
 
@@ -427,12 +463,12 @@ export const validateSecurityResults = {
    */
   hasValidSecurityHeaders: (headers: any) => {
     const requiredHeaders = [
-      'X-Content-Type-Options',
-      'X-Frame-Options',
-      'X-XSS-Protection',
-      'Referrer-Policy',
+      "X-Content-Type-Options",
+      "X-Frame-Options",
+      "X-XSS-Protection",
+      "Referrer-Policy",
     ];
-    const missing = requiredHeaders.filter(header => !headers[header]);
+    const missing = requiredHeaders.filter((header) => !headers[header]);
     return missing.length === 0 ? null : missing;
   },
 
@@ -441,14 +477,14 @@ export const validateSecurityResults = {
    */
   hasSecureMiddlewareResponse: (response: any) => {
     if (!response.headers) {
-      return ['No headers set'];
+      return ["No headers set"];
     }
 
     const errors: string[] = [];
 
     // Check for security headers
-    if (!response.headers.get('X-Content-Type-Options')) {
-      errors.push('Missing X-Content-Type-Options header');
+    if (!response.headers.get("X-Content-Type-Options")) {
+      errors.push("Missing X-Content-Type-Options header");
     }
 
     return errors.length === 0 ? null : errors;
@@ -473,8 +509,10 @@ export const securityTestScenarios = {
 
   // Middleware blocking scenarios
   blocking: {
-    maliciousIp: createScenarios.middlewareBlocking('malicious IP'),
-    suspiciousUserAgent: createScenarios.middlewareBlocking('suspicious user agent'),
-    invalidToken: createScenarios.middlewareBlocking('invalid token'),
+    maliciousIp: createScenarios.middlewareBlocking("malicious IP"),
+    suspiciousUserAgent: createScenarios.middlewareBlocking(
+      "suspicious user agent",
+    ),
+    invalidToken: createScenarios.middlewareBlocking("invalid token"),
   },
 };

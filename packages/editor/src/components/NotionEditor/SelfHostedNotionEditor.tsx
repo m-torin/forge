@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useLocalStorage } from '@mantine/hooks';
-import { logInfo } from '@repo/observability';
+import { useLocalStorage } from "@mantine/hooks";
+import { logInfo } from "@repo/observability";
 import {
   IconAlertCircle,
   IconCheck,
@@ -11,19 +11,19 @@ import {
   IconMenu2,
   IconSettings,
   IconX,
-} from '@tabler/icons-react';
-import { Editor } from '@tiptap/core';
-import { clsx } from 'clsx';
-import { useCallback, useMemo, useState } from 'react';
-import { useDocumentPersistence } from '../../hooks/use-document-persistence';
-import { useExportManager } from '../../hooks/use-export-manager';
-import { DocumentManager } from './DocumentManager';
-import { ExportTemplateManager } from './ExportTemplateManager';
-import { NotionEditor, type NotionEditorProps } from './NotionEditor';
-import { PrivacySettings } from './PrivacySettings';
+} from "@tabler/icons-react";
+import { Editor } from "@tiptap/core";
+import { clsx } from "clsx";
+import { useCallback, useMemo, useState } from "react";
+import { useDocumentPersistence } from "../../hooks/use-document-persistence";
+import { useExportManager } from "../../hooks/use-export-manager";
+import { DocumentManager } from "./DocumentManager";
+import { ExportTemplateManager } from "./ExportTemplateManager";
+import { NotionEditor, type NotionEditorProps } from "./NotionEditor";
+import { PrivacySettings } from "./PrivacySettings";
 
 export interface SelfHostedNotionEditorProps
-  extends Omit<NotionEditorProps, 'onChange' | 'onUpdate'> {
+  extends Omit<NotionEditorProps, "onChange" | "onUpdate"> {
   documentId?: string;
   documentTitle?: string;
   onDocumentChange?: (documentId: string, title: string) => void;
@@ -36,7 +36,7 @@ export interface SelfHostedNotionEditorProps
 
 export function SelfHostedNotionEditor({
   documentId: initialDocumentId,
-  documentTitle = 'Untitled Document',
+  documentTitle = "Untitled Document",
   onDocumentChange,
   showSidebar = true,
   enableDocumentManager = true,
@@ -52,8 +52,12 @@ export function SelfHostedNotionEditor({
   const [currentTitle, setCurrentTitle] = useState(documentTitle);
   const [editor, setEditor] = useState<Editor | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activePanel, setActivePanel] = useState<'documents' | 'export' | 'settings'>('documents');
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | null>(null);
+  const [activePanel, setActivePanel] = useState<
+    "documents" | "export" | "settings"
+  >("documents");
+  const [saveStatus, setSaveStatus] = useState<
+    "saved" | "saving" | "error" | null
+  >(null);
 
   // Document persistence with auto-save
   const {
@@ -74,7 +78,7 @@ export function SelfHostedNotionEditor({
       enabled: true,
       interval: autoSaveInterval,
       onAutoSave: () => {
-        setSaveStatus('saved');
+        setSaveStatus("saved");
         setTimeout(() => setSaveStatus(null), 2000);
       },
     },
@@ -98,7 +102,7 @@ export function SelfHostedNotionEditor({
   // UI preferences
   // eslint-disable-next-line unused-imports/no-unused-vars
   const [uiPreferences, setUiPreferences] = useLocalStorage({
-    key: 'notion-editor-ui-preferences',
+    key: "notion-editor-ui-preferences",
     defaultValue: {
       sidebarWidth: 320,
       showWordCount: true,
@@ -109,13 +113,13 @@ export function SelfHostedNotionEditor({
   // Create new document
   const handleCreateNew = useCallback(() => {
     const newDocId = `doc-${Date.now()}`;
-    const newTitle = 'Untitled Document';
+    const newTitle = "Untitled Document";
 
     setCurrentDocumentId(newDocId);
     setCurrentTitle(newTitle);
 
     if (editor) {
-      editor.commands.setContent('');
+      editor.commands.setContent("");
     }
 
     onDocumentChange?.(newDocId, newTitle);
@@ -138,18 +142,18 @@ export function SelfHostedNotionEditor({
 
   // Save current document
   const handleSaveDocument = useCallback(() => {
-    setSaveStatus('saving');
+    setSaveStatus("saving");
     try {
       const savedDoc = saveDocument(currentTitle);
       if (savedDoc) {
-        setSaveStatus('saved');
+        setSaveStatus("saved");
         setTimeout(() => setSaveStatus(null), 2000);
       } else {
-        setSaveStatus('error');
+        setSaveStatus("error");
         setTimeout(() => setSaveStatus(null), 3000);
       }
     } catch (_error) {
-      setSaveStatus('error');
+      setSaveStatus("error");
       setTimeout(() => setSaveStatus(null), 3000);
     }
   }, [saveDocument, currentTitle]);
@@ -202,7 +206,12 @@ export function SelfHostedNotionEditor({
   const documentStats = getDocumentStats();
 
   return (
-    <div className={clsx('self-hosted-notion-editor flex h-screen bg-gray-50', className)}>
+    <div
+      className={clsx(
+        "self-hosted-notion-editor flex h-screen bg-gray-50",
+        className,
+      )}
+    >
       {showSidebar && (
         <>
           {sidebarOpen && (
@@ -211,8 +220,8 @@ export function SelfHostedNotionEditor({
               onClick={() => setSidebarOpen(false)}
               role="button"
               tabIndex={0}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   setSidebarOpen(false);
                 }
@@ -223,20 +232,20 @@ export function SelfHostedNotionEditor({
 
           <div
             className={clsx(
-              'fixed inset-y-0 left-0 z-50 flex flex-col border-r border-gray-200 bg-white transition-transform lg:static lg:translate-x-0',
-              sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+              "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-gray-200 bg-white transition-transform lg:static lg:translate-x-0",
+              sidebarOpen ? "translate-x-0" : "-translate-x-full",
             )}
             style={{ width: uiPreferences.sidebarWidth }}
           >
             <div className="flex items-center justify-between border-b border-gray-200 p-4">
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setActivePanel('documents')}
+                  onClick={() => setActivePanel("documents")}
                   className={clsx(
-                    'rounded-lg p-2 transition-colors',
-                    activePanel === 'documents'
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'text-gray-600 hover:bg-gray-100',
+                    "rounded-lg p-2 transition-colors",
+                    activePanel === "documents"
+                      ? "bg-blue-100 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-100",
                   )}
                   title="Documents"
                 >
@@ -244,12 +253,12 @@ export function SelfHostedNotionEditor({
                 </button>
                 {enableExportTemplates && (
                   <button
-                    onClick={() => setActivePanel('export')}
+                    onClick={() => setActivePanel("export")}
                     className={clsx(
-                      'rounded-lg p-2 transition-colors',
-                      activePanel === 'export'
-                        ? 'bg-blue-100 text-blue-600'
-                        : 'text-gray-600 hover:bg-gray-100',
+                      "rounded-lg p-2 transition-colors",
+                      activePanel === "export"
+                        ? "bg-blue-100 text-blue-600"
+                        : "text-gray-600 hover:bg-gray-100",
                     )}
                     title="Export Templates"
                   >
@@ -257,12 +266,12 @@ export function SelfHostedNotionEditor({
                   </button>
                 )}
                 <button
-                  onClick={() => setActivePanel('settings')}
+                  onClick={() => setActivePanel("settings")}
                   className={clsx(
-                    'rounded-lg p-2 transition-colors',
-                    activePanel === 'settings'
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'text-gray-600 hover:bg-gray-100',
+                    "rounded-lg p-2 transition-colors",
+                    activePanel === "settings"
+                      ? "bg-blue-100 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-100",
                   )}
                   title="Settings"
                 >
@@ -278,7 +287,7 @@ export function SelfHostedNotionEditor({
             </div>
 
             <div className="flex-1 overflow-hidden">
-              {activePanel === 'documents' && enableDocumentManager && (
+              {activePanel === "documents" && enableDocumentManager && (
                 <DocumentManager
                   documents={savedDocuments}
                   recentDocuments={recentDocuments}
@@ -289,7 +298,7 @@ export function SelfHostedNotionEditor({
                 />
               )}
 
-              {activePanel === 'export' && enableExportTemplates && (
+              {activePanel === "export" && enableExportTemplates && (
                 <ExportTemplateManager
                   templates={getAllTemplates()}
                   defaultTemplates={defaultTemplates}
@@ -300,10 +309,12 @@ export function SelfHostedNotionEditor({
                   onUpdatePreferences={updatePreferences}
                   onExportWithTemplate={(templateId, title) => {
                     if (editor) {
-                      exportWithTemplate(templateId, { title: title || currentDocument?.title });
+                      exportWithTemplate(templateId, {
+                        title: title || currentDocument?.title,
+                      });
                     }
                   }}
-                  onQuickExport={title => {
+                  onQuickExport={(title) => {
                     if (editor) {
                       quickExport(title || currentDocument?.title);
                     }
@@ -311,19 +322,19 @@ export function SelfHostedNotionEditor({
                 />
               )}
 
-              {activePanel === 'settings' && enablePrivacySettings && (
+              {activePanel === "settings" && enablePrivacySettings && (
                 <PrivacySettings
                   storageInfo={storageInfo}
                   onClearAllData={() => {
                     // Implementation would clear all localStorage
-                    logInfo('Clear all data');
+                    logInfo("Clear all data");
                   }}
                   onExportAllData={() => {
                     // Implementation would export all data
-                    logInfo('Export all data');
+                    logInfo("Export all data");
                   }}
                   onClearHistory={() => {
-                    logInfo('Clear history');
+                    logInfo("Clear history");
                   }}
                 />
               )}
@@ -347,7 +358,7 @@ export function SelfHostedNotionEditor({
             <input
               type="text"
               value={currentTitle}
-              onChange={e => setCurrentTitle(e.target.value)}
+              onChange={(e) => setCurrentTitle(e.target.value)}
               className="rounded border-none bg-transparent px-2 py-1 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Document title..."
             />
@@ -355,23 +366,25 @@ export function SelfHostedNotionEditor({
 
           <div className="flex items-center gap-3">
             {documentStats && uiPreferences.showWordCount && (
-              <div className="text-sm text-gray-500">{documentStats.wordCount} words</div>
+              <div className="text-sm text-gray-500">
+                {documentStats.wordCount} words
+              </div>
             )}
 
             {saveStatus && (
               <div
                 className={clsx(
-                  'flex items-center gap-1 rounded px-2 py-1 text-sm',
-                  saveStatus === 'saved' && 'bg-green-50 text-green-600',
-                  saveStatus === 'saving' && 'bg-blue-50 text-blue-600',
-                  saveStatus === 'error' && 'bg-red-50 text-red-600',
+                  "flex items-center gap-1 rounded px-2 py-1 text-sm",
+                  saveStatus === "saved" && "bg-green-50 text-green-600",
+                  saveStatus === "saving" && "bg-blue-50 text-blue-600",
+                  saveStatus === "error" && "bg-red-50 text-red-600",
                 )}
               >
-                {saveStatus === 'saved' && <IconCheck size={14} />}
-                {saveStatus === 'error' && <IconAlertCircle size={14} />}
-                {saveStatus === 'saved' && 'Saved'}
-                {saveStatus === 'saving' && 'Saving...'}
-                {saveStatus === 'error' && 'Save failed'}
+                {saveStatus === "saved" && <IconCheck size={14} />}
+                {saveStatus === "error" && <IconAlertCircle size={14} />}
+                {saveStatus === "saved" && "Saved"}
+                {saveStatus === "saving" && "Saving..."}
+                {saveStatus === "error" && "Save failed"}
               </div>
             )}
 

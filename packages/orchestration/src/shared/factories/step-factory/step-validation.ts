@@ -146,7 +146,7 @@ export async function validateStepOutput<TOutput>(
 /**
  * Validate step execution result including both input and output validation
  */
-export async function validateStepExecution<TInput, TOutput>(
+async function validateStepExecution<TInput, TOutput>(
   input: TInput,
   output: TOutput,
   config?: StepValidationConfig<TInput>,
@@ -177,7 +177,7 @@ export async function validateStepExecution<TInput, TOutput>(
 /**
  * Create a step validator with custom rules
  */
-export function createStepValidator<TInput, TOutput>(
+function createStepValidator<TInput, TOutput>(
   config: StepValidationConfig<TInput>,
   outputSchema?: z.ZodSchema<TOutput>,
 ) {

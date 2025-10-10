@@ -2,15 +2,15 @@
  * Client authentication tests
  */
 
-import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, vi } from 'vitest';
+import "@testing-library/jest-dom";
+import { render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, vi } from "vitest";
 
-import { AuthProvider } from '../../src/client/auth-provider';
-import { useAuth } from '../../src/client/hooks';
+import { AuthProvider } from "../../src/client/auth-provider";
+import { useAuth } from "../../src/client/hooks";
 
 // Mock better-auth client
-vi.mock('better-auth/react', () => ({
+vi.mock("better-auth/react", () => ({
   createAuthClient: vi.fn(() => ({
     $fetch: vi.fn(),
     useSession: vi.fn(() => ({ data: null, isPending: false })),
@@ -18,7 +18,7 @@ vi.mock('better-auth/react', () => ({
 }));
 
 // Mock better-auth plugins
-vi.mock('better-auth/client/plugins', () => ({
+vi.mock("better-auth/client/plugins", () => ({
   organizationClient: vi.fn(() => ({})),
   adminClient: vi.fn(() => ({})),
   apiKeyClient: vi.fn(() => ({})),
@@ -40,14 +40,16 @@ function TestComponent() {
 
   return (
     <div>
-      <div data-testid="authenticated">{isAuthenticated ? 'true' : 'false'}</div>
-      <div data-testid="user">{user ? user.email : 'null'}</div>
+      <div data-testid="authenticated">
+        {isAuthenticated ? "true" : "false"}
+      </div>
+      <div data-testid="user">{user ? user.email : "null"}</div>
     </div>
   );
 }
 
-describe('client Authentication', () => {
-  test('should render loading state initially', () => {
+describe("client Authentication", () => {
+  test("should render loading state initially", () => {
     render(
       <AuthProvider>
         <TestComponent />
@@ -58,7 +60,7 @@ describe('client Authentication', () => {
     expect(document.body).toBeInTheDocument();
   });
 
-  test('should handle unauthenticated state', async () => {
+  test("should handle unauthenticated state", async () => {
     render(
       <AuthProvider>
         <TestComponent />
@@ -66,8 +68,8 @@ describe('client Authentication', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('authenticated')).toHaveTextContent('false');
+      expect(screen.getByTestId("authenticated")).toHaveTextContent("false");
     });
-    expect(screen.getByTestId('user')).toHaveTextContent('null');
+    expect(screen.getByTestId("user")).toHaveTextContent("null");
   });
 });

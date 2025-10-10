@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignore": ["examples/**", "__tests__/test-utils/**"],
+  "ignoreDependencies": [
+    "@types/*",
+    "@repo/config",
+    "@repo/eslint-config",
+    "@repo/observability",
+    "@repo/qa"
+  ]
+}

@@ -2,15 +2,22 @@
  * Sentry plugin implementation
  */
 
-import type { ObservabilityServerPlugin } from '../../core/plugin';
+import type { ObservabilityServerPlugin } from "../../core/plugin";
 import type {
   Breadcrumb,
   LogLevel,
   ObservabilityContext,
   ObservabilityUser,
-} from '../../core/types';
-import { safeEnv } from './env';
-import type { Hub, Scope, Span, SpanContext, Transaction, TransactionContext } from './types';
+} from "../../core/types";
+import { safeEnv } from "./env";
+import type {
+  Hub,
+  Scope,
+  Span,
+  SpanContext,
+  Transaction,
+  TransactionContext,
+} from "./types";
 
 /**
  * Minimal Sentry interface for common methods across all Sentry packages
@@ -24,7 +31,10 @@ interface SentryClient {
   withScope(callback: (scope: any) => void): void;
   getCurrentScope?(): any;
   getActiveTransaction?(): any;
-  startTransaction?(context: TransactionContext, customSamplingContext?: any): any;
+  startTransaction?(
+    context: TransactionContext,
+    customSamplingContext?: any,
+  ): any;
   startSpan?(context: SpanContext): any;
   configureScope?(callback: (scope: any) => void): void;
   getCurrentHub?(): any;
@@ -81,7 +91,7 @@ export interface SentryPluginConfig {
 export class SentryPlugin<T extends SentryClient = SentryClient>
   implements ObservabilityServerPlugin<T>
 {
-  name = 'sentry';
+  name = "sentry";
   enabled: boolean;
   protected client: T | undefined;
   protected initialized = false;
@@ -100,14 +110,14 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
   }
 
   private detectSentryPackage(): string {
-    if (typeof window !== 'undefined') {
-      return '@sentry/browser';
-    } else if (process.env.NEXT_RUNTIME === 'edge') {
-      return '@sentry/nextjs'; // Next.js edge uses same package
+    if (typeof window !== "undefined") {
+      return "@sentry/browser";
+    } else if (process.env.NEXT_RUNTIME === "edge") {
+      return "@sentry/nextjs"; // Next.js edge uses same package
     } else if (process.env.NEXT_RUNTIME) {
-      return '@sentry/nextjs';
+      return "@sentry/nextjs";
     } else {
-      return '@sentry/node';
+      return "@sentry/node";
     }
   }
 
@@ -126,16 +136,19 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
     const mergedConfig = { ...this.config, ...config };
 
     // Check for DSN
-    const dsn = mergedConfig.dsn || env.SENTRY_DSN || env.NEXT_PUBLIC_SENTRY_DSN;
+    const dsn =
+      mergedConfig.dsn || env.SENTRY_DSN || env.NEXT_PUBLIC_SENTRY_DSN;
     if (!dsn) {
-      console.warn('Sentry plugin: No DSN provided, skipping initialization');
+      console.warn("Sentry plugin: No DSN provided, skipping initialization");
       this.enabled = false;
       return;
     }
 
     try {
       // Dynamic import of the specified Sentry package
-      this.client = (await import(/* webpackIgnore: true */ this.sentryPackage)) as T;
+      this.client = (await import(
+        /* webpackIgnore: true */ this.sentryPackage
+      )) as T;
 
       if (this.client && this.enabled) {
         // Build integrations array if not provided
@@ -172,17 +185,24 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
 
         this.client.init({
           dsn,
-          environment: mergedConfig.environment || env.SENTRY_ENVIRONMENT || process.env.NODE_ENV,
+          environment:
+            mergedConfig.environment ||
+            env.SENTRY_ENVIRONMENT ||
+            process.env.NODE_ENV,
           release: mergedConfig.release || env.SENTRY_RELEASE,
           debug: mergedConfig.debug ?? env.SENTRY_DEBUG,
 
           // Sampling rates
-          tracesSampleRate: mergedConfig.tracesSampleRate ?? env.SENTRY_TRACES_SAMPLE_RATE,
-          profilesSampleRate: mergedConfig.profilesSampleRate ?? env.SENTRY_PROFILES_SAMPLE_RATE,
+          tracesSampleRate:
+            mergedConfig.tracesSampleRate ?? env.SENTRY_TRACES_SAMPLE_RATE,
+          profilesSampleRate:
+            mergedConfig.profilesSampleRate ?? env.SENTRY_PROFILES_SAMPLE_RATE,
           replaysSessionSampleRate:
-            mergedConfig.replaysSessionSampleRate ?? env.SENTRY_REPLAYS_SESSION_SAMPLE_RATE,
+            mergedConfig.replaysSessionSampleRate ??
+            env.SENTRY_REPLAYS_SESSION_SAMPLE_RATE,
           replaysOnErrorSampleRate:
-            mergedConfig.replaysOnErrorSampleRate ?? env.SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE,
+            mergedConfig.replaysOnErrorSampleRate ??
+            env.SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE,
 
           // Integrations and hooks
           integrations,
@@ -200,7 +220,10 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
         this.initialized = true;
       }
     } catch (error) {
-      console.error(`Failed to import Sentry package '${this.sentryPackage}':`, error);
+      console.error(
+        `Failed to import Sentry package '${this.sentryPackage}':`,
+        error,
+      );
       this.enabled = false;
     }
   }
@@ -224,26 +247,76 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
     await this.shutdown();
   }
 
-  captureException(error: Error | unknown, context?: ObservabilityContext): void {
+  captureException(
+    error: Error | unknown,
+    context?: ObservabilityContext,
+  ): void {
     if (!this.enabled || !this.client) return;
 
-    this.client.captureException(error, context);
+    // Additional build-time guard to prevent errors during static generation
+    if (typeof this.client.captureException !== "function") {
+      // During build/static generation, Sentry client may not be properly initialized
+      // Fall back to console logging in development
+      if (process.env.NODE_ENV === "development") {
+        console.error("[Sentry Fallback] Exception:", error);
+      }
+      return;
+    }
+
+    try {
+      this.client.captureException(error, context);
+    } catch (captureError) {
+      // Graceful fallback if Sentry fails during build
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          "[Sentry Plugin] Failed to capture exception:",
+          captureError,
+        );
+        console.error("[Sentry Fallback] Exception:", error);
+      }
+    }
   }
 
-  captureMessage(message: string, level: LogLevel = 'info', _context?: ObservabilityContext): void {
+  captureMessage(
+    message: string,
+    level: LogLevel = "info",
+    _context?: ObservabilityContext,
+  ): void {
     if (!this.enabled || !this.client) return;
+
+    // Additional build-time guard to prevent errors during static generation
+    if (typeof this.client.captureMessage !== "function") {
+      // During build/static generation, Sentry client may not be properly initialized
+      // Fall back to console logging in development
+      if (process.env.NODE_ENV === "development") {
+        console[
+          level === "error" ? "error" : level === "warning" ? "warn" : "log"
+        ](`[Sentry Fallback] ${message}`);
+      }
+      return;
+    }
 
     // Map our log levels to Sentry severity levels
     const sentryLevel =
-      level === 'warning'
-        ? 'warning'
-        : level === 'error'
-          ? 'error'
-          : level === 'debug'
-            ? 'debug'
-            : 'info';
+      level === "warning"
+        ? "warning"
+        : level === "error"
+          ? "error"
+          : level === "debug"
+            ? "debug"
+            : "info";
 
-    this.client.captureMessage(message, sentryLevel);
+    try {
+      this.client.captureMessage(message, sentryLevel);
+    } catch (error) {
+      // Graceful fallback if Sentry fails during build
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[Sentry Plugin] Failed to capture message:", error);
+        console[
+          level === "error" ? "error" : level === "warning" ? "warn" : "log"
+        ](`[Sentry Fallback] ${message}`);
+      }
+    }
   }
 
   setUser(user: ObservabilityUser | null): void {
@@ -278,7 +351,7 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
     }
 
     // Fallback for older versions
-    console.warn('startTransaction not available in this Sentry version');
+    console.warn("startTransaction not available in this Sentry version");
     return undefined;
   }
 
@@ -369,21 +442,23 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
 
     const transaction = this.getActiveTransaction();
 
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       // Add as breadcrumb for context
       this.addBreadcrumb({
-        category: 'performance',
+        category: "performance",
         message: `${entry.entryType}: ${entry.name}`,
         data: {
           name: entry.name,
           duration: entry.duration,
           startTime: entry.startTime,
-          ...(entry.entryType === 'navigation' && {
+          ...(entry.entryType === "navigation" && {
             transferSize: (entry as PerformanceNavigationTiming).transferSize,
-            encodedBodySize: (entry as PerformanceNavigationTiming).encodedBodySize,
-            decodedBodySize: (entry as PerformanceNavigationTiming).decodedBodySize,
+            encodedBodySize: (entry as PerformanceNavigationTiming)
+              .encodedBodySize,
+            decodedBodySize: (entry as PerformanceNavigationTiming)
+              .decodedBodySize,
           }),
-          ...(entry.entryType === 'resource' && {
+          ...(entry.entryType === "resource" && {
             initiatorType: (entry as PerformanceResourceTiming).initiatorType,
             transferSize: (entry as PerformanceResourceTiming).transferSize,
           }),
@@ -391,25 +466,29 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
       });
 
       // Add measurements for key metrics
-      if (transaction && entry.entryType === 'navigation') {
+      if (transaction && entry.entryType === "navigation") {
         const navEntry = entry as PerformanceNavigationTiming;
 
         // Core Web Vitals and other metrics
-        this.setMeasurement('fcp', navEntry.responseStart - navEntry.fetchStart, 'millisecond');
         this.setMeasurement(
-          'dom_interactive',
+          "fcp",
+          navEntry.responseStart - navEntry.fetchStart,
+          "millisecond",
+        );
+        this.setMeasurement(
+          "dom_interactive",
           navEntry.domInteractive - navEntry.fetchStart,
-          'millisecond',
+          "millisecond",
         );
         this.setMeasurement(
-          'dom_complete',
+          "dom_complete",
           navEntry.domComplete - navEntry.fetchStart,
-          'millisecond',
+          "millisecond",
         );
         this.setMeasurement(
-          'load_event_end',
+          "load_event_end",
           navEntry.loadEventEnd - navEntry.fetchStart,
-          'millisecond',
+          "millisecond",
         );
       }
     });
@@ -419,16 +498,16 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
    * Record a Web Vital measurement
    */
   recordWebVital(
-    name: 'FCP' | 'LCP' | 'FID' | 'CLS' | 'TTFB' | 'INP' | string,
+    name: "FCP" | "LCP" | "FID" | "CLS" | "TTFB" | "INP" | string,
     value: number,
     options?: {
       unit?: string;
-      rating?: 'good' | 'needs-improvement' | 'poor';
+      rating?: "good" | "needs-improvement" | "poor";
     },
   ): void {
     if (!this.enabled || !this.client) return;
 
-    const { unit = 'millisecond', rating } = options || {};
+    const { unit = "millisecond", rating } = options || {};
     const transaction = this.getActiveTransaction();
 
     if (transaction) {
@@ -442,12 +521,12 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
 
       // Also send as a standalone event for monitoring
       this.client.captureMessage(`Web Vital: ${name}`, {
-        level: 'info',
+        level: "info",
         tags: {
-          'webvital.name': name,
-          'webvital.value': value,
-          'webvital.unit': unit,
-          ...(rating && { 'webvital.rating': rating }),
+          "webvital.name": name,
+          "webvital.value": value,
+          "webvital.unit": unit,
+          ...(rating && { "webvital.rating": rating }),
         },
         contexts: {
           trace: {
@@ -466,13 +545,13 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
     if (!this.enabled) return;
 
     // Use Performance API if available
-    if (typeof performance !== 'undefined' && performance.mark) {
+    if (typeof performance !== "undefined" && performance.mark) {
       performance.mark(name, options);
     }
 
     // Also add as breadcrumb
     this.addBreadcrumb({
-      category: 'performance.mark',
+      category: "performance.mark",
       message: name,
       data: options?.detail,
       timestamp: Date.now() / 1000,
@@ -490,22 +569,22 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
     if (!this.enabled) return;
 
     // Use Performance API if available
-    if (typeof performance !== 'undefined' && performance.measure) {
-      if (typeof startMarkOrOptions === 'string') {
+    if (typeof performance !== "undefined" && performance.measure) {
+      if (typeof startMarkOrOptions === "string") {
         performance.measure(name, startMarkOrOptions, endMark);
       } else {
         performance.measure(name, startMarkOrOptions);
       }
 
       // Get the measure to record its duration
-      const measures = performance.getEntriesByName(name, 'measure');
+      const measures = performance.getEntriesByName(name, "measure");
       const measure = measures[measures.length - 1];
 
       if (measure) {
-        this.setMeasurement(name, measure.duration, 'millisecond');
+        this.setMeasurement(name, measure.duration, "millisecond");
 
         this.addBreadcrumb({
-          category: 'performance.measure',
+          category: "performance.measure",
           message: name,
           data: {
             duration: measure.duration,

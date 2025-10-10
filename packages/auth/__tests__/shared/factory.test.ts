@@ -2,29 +2,29 @@
  * Tests for shared factory functionality
  */
 
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from "vitest";
 
 // Mock observability
 const mockLogWarn = vi.fn();
-vi.mock('@repo/observability', () => ({
+vi.mock("@repo/observability", () => ({
   logWarn: mockLogWarn,
 }));
 
-describe('shared factory functionality', () => {
+describe("shared factory functionality", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('createTypedAuthConfig', () => {
-    test('should create config with default features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+  describe("createTypedAuthConfig", () => {
+    test("should create config with default features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const config = factoryModule.createTypedAuthConfig({
-        database: 'test-db' as any,
+        database: "test-db" as any,
       });
 
       expect(config).toStrictEqual({
-        database: 'test-db',
+        database: "test-db",
         features: {
           advancedMiddleware: true,
           admin: false,
@@ -42,11 +42,11 @@ describe('shared factory functionality', () => {
       });
     });
 
-    test('should merge custom features with defaults', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should merge custom features with defaults", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const config = factoryModule.createTypedAuthConfig({
-        database: 'test-db' as any,
+        database: "test-db" as any,
         features: {
           admin: true,
           twoFactor: true,
@@ -70,11 +70,11 @@ describe('shared factory functionality', () => {
       });
     });
 
-    test('should override default features completely', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should override default features completely", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const config = factoryModule.createTypedAuthConfig({
-        database: 'test-db' as any,
+        database: "test-db" as any,
         features: {
           advancedMiddleware: false,
           admin: false,
@@ -92,32 +92,32 @@ describe('shared factory functionality', () => {
       });
 
       // All features should be false due to override
-      Object.values(config.features).forEach(feature => {
+      Object.values(config.features).forEach((feature) => {
         expect(feature).toBeFalsy();
       });
     });
 
-    test('should preserve other config properties', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should preserve other config properties", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const config = factoryModule.createTypedAuthConfig({
-        database: 'test-db' as any,
+        database: "test-db" as any,
         rateLimit: {
           window: 60,
           max: 100,
         } as any,
-        customProperty: 'test-value' as any,
+        customProperty: "test-value" as any,
       });
 
-      expect(config.database).toBe('test-db');
+      expect(config.database).toBe("test-db");
       expect(config.rateLimit).toStrictEqual({ window: 60, max: 100 });
-      expect((config as any).customProperty).toBe('test-value');
+      expect((config as any).customProperty).toBe("test-value");
     });
   });
 
-  describe('typedAuthRegistry', () => {
+  describe("typedAuthRegistry", () => {
     const mockConfig = {
-      database: 'test-db' as any,
+      database: "test-db" as any,
       features: {
         advancedMiddleware: true,
         admin: false,
@@ -134,26 +134,26 @@ describe('shared factory functionality', () => {
       },
     };
 
-    test('should initialize with config', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should initialize with config", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const registry = new factoryModule.TypedAuthRegistry(mockConfig);
 
       expect(registry).toBeInstanceOf(factoryModule.TypedAuthRegistry);
     });
 
-    test('should provide methods based on enabled features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should provide methods based on enabled features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const registry = new factoryModule.TypedAuthRegistry(mockConfig);
       const methods = registry.getMethods();
 
       expect(methods).toBeDefined();
-      expect(typeof methods).toBe('object');
+      expect(typeof methods).toBe("object");
     });
 
-    test('should provide middleware based on configuration', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should provide middleware based on configuration", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const registry = new factoryModule.TypedAuthRegistry(mockConfig);
       const middleware = registry.getMiddleware();
@@ -162,8 +162,8 @@ describe('shared factory functionality', () => {
       expect(middleware.createAuthMiddleware).toBeDefined();
     });
 
-    test('should include advanced middleware when enabled', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should include advanced middleware when enabled", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const configWithAdvanced = {
         ...mockConfig,
@@ -182,8 +182,8 @@ describe('shared factory functionality', () => {
       expect(middleware.createWebMiddleware).toBeDefined();
     });
 
-    test('should not include advanced middleware when disabled', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should not include advanced middleware when disabled", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const configWithoutAdvanced = {
         ...mockConfig,
@@ -193,7 +193,9 @@ describe('shared factory functionality', () => {
         },
       };
 
-      const registry = new factoryModule.TypedAuthRegistry(configWithoutAdvanced);
+      const registry = new factoryModule.TypedAuthRegistry(
+        configWithoutAdvanced,
+      );
       const middleware = registry.getMiddleware();
 
       expect(middleware.createAdvancedMiddleware).toBeUndefined();
@@ -202,19 +204,19 @@ describe('shared factory functionality', () => {
       expect(middleware.createWebMiddleware).toBeUndefined();
     });
 
-    test('should check if features are enabled', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should check if features are enabled", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const registry = new factoryModule.TypedAuthRegistry(mockConfig);
 
-      expect(registry.isFeatureEnabled('apiKeys')).toBeTruthy();
-      expect(registry.isFeatureEnabled('teams')).toBeTruthy();
-      expect(registry.isFeatureEnabled('admin')).toBeFalsy();
-      expect(registry.isFeatureEnabled('twoFactor')).toBeFalsy();
+      expect(registry.isFeatureEnabled("apiKeys")).toBeTruthy();
+      expect(registry.isFeatureEnabled("teams")).toBeTruthy();
+      expect(registry.isFeatureEnabled("admin")).toBeFalsy();
+      expect(registry.isFeatureEnabled("twoFactor")).toBeFalsy();
     });
 
-    test('should provide plugin configuration', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should provide plugin configuration", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const registry = new factoryModule.TypedAuthRegistry(mockConfig);
       const pluginConfig = registry.getPluginConfig();
@@ -233,9 +235,9 @@ describe('shared factory functionality', () => {
     });
   });
 
-  describe('hasFeature', () => {
+  describe("hasFeature", () => {
     const testConfig = {
-      database: 'test' as any,
+      database: "test" as any,
       features: {
         apiKeys: true,
         teams: false,
@@ -244,90 +246,94 @@ describe('shared factory functionality', () => {
       } as any,
     };
 
-    test('should return true for enabled features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should return true for enabled features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      expect(factoryModule.hasFeature(testConfig, 'apiKeys')).toBeTruthy();
-      expect(factoryModule.hasFeature(testConfig, 'organizations')).toBeTruthy();
+      expect(factoryModule.hasFeature(testConfig, "apiKeys")).toBeTruthy();
+      expect(
+        factoryModule.hasFeature(testConfig, "organizations"),
+      ).toBeTruthy();
     });
 
-    test('should return false for disabled features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should return false for disabled features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      expect(factoryModule.hasFeature(testConfig, 'teams')).toBeFalsy();
-      expect(factoryModule.hasFeature(testConfig, 'admin')).toBeFalsy();
+      expect(factoryModule.hasFeature(testConfig, "teams")).toBeFalsy();
+      expect(factoryModule.hasFeature(testConfig, "admin")).toBeFalsy();
     });
 
-    test('should work as type guard', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should work as type guard", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       // Test the hasFeature function
-      const hasApiKeys = factoryModule.hasFeature(testConfig, 'apiKeys');
+      const hasApiKeys = factoryModule.hasFeature(testConfig, "apiKeys");
       expect(hasApiKeys).toBeDefined();
-      expect(typeof hasApiKeys).toBe('boolean');
+      expect(typeof hasApiKeys).toBe("boolean");
 
       // Test the actual feature check without conditional logic
-      expect(factoryModule.hasFeature(testConfig, 'apiKeys')).toBeTruthy();
+      expect(factoryModule.hasFeature(testConfig, "apiKeys")).toBeTruthy();
       expect(testConfig.features.apiKeys).toBeTruthy();
     });
   });
 
-  describe('withFeature', () => {
+  describe("withFeature", () => {
     const testConfig = {
-      database: 'test' as any,
+      database: "test" as any,
       features: {
         apiKeys: true,
         teams: false,
       } as any,
     };
 
-    test('should execute callback for enabled features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should execute callback for enabled features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const callback = vi.fn(() => 'result');
+      const callback = vi.fn(() => "result");
 
-      const result = factoryModule.withFeature(testConfig, 'apiKeys', callback);
+      const result = factoryModule.withFeature(testConfig, "apiKeys", callback);
 
       expect(callback).toHaveBeenCalledWith();
-      expect(result).toBe('result');
+      expect(result).toBe("result");
     });
 
-    test('should not execute callback for disabled features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should not execute callback for disabled features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const callback = vi.fn(() => 'result');
+      const callback = vi.fn(() => "result");
 
-      const result = factoryModule.withFeature(testConfig, 'teams', callback);
+      const result = factoryModule.withFeature(testConfig, "teams", callback);
 
       expect(callback).not.toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
 
-    test('should return callback result for enabled features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should return callback result for enabled features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const result = factoryModule.withFeature(testConfig, 'apiKeys', () => ({ data: 'test' }));
+      const result = factoryModule.withFeature(testConfig, "apiKeys", () => ({
+        data: "test",
+      }));
 
-      expect(result).toStrictEqual({ data: 'test' });
+      expect(result).toStrictEqual({ data: "test" });
     });
   });
 
-  describe('conditionalImport', () => {
-    test('should import when condition is true', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+  describe("conditionalImport", () => {
+    test("should import when condition is true", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const mockImport = vi.fn().mockResolvedValue({ exported: 'value' });
+      const mockImport = vi.fn().mockResolvedValue({ exported: "value" });
 
       const result = await factoryModule.conditionalImport(true, mockImport);
 
       expect(mockImport).toHaveBeenCalledWith();
-      expect(result).toStrictEqual({ exported: 'value' });
+      expect(result).toStrictEqual({ exported: "value" });
     });
 
-    test('should not import when condition is false', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should not import when condition is false", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const mockImport = vi.fn().mockResolvedValue({ exported: 'value' });
+      const mockImport = vi.fn().mockResolvedValue({ exported: "value" });
 
       const result = await factoryModule.conditionalImport(false, mockImport);
 
@@ -335,90 +341,116 @@ describe('shared factory functionality', () => {
       expect(result).toBeNull();
     });
 
-    test('should handle import errors gracefully', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should handle import errors gracefully", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const mockImport = vi.fn().mockRejectedValue(new Error('Import failed'));
+      const mockImport = vi.fn().mockRejectedValue(new Error("Import failed"));
 
       const result = await factoryModule.conditionalImport(true, mockImport);
 
       expect(mockImport).toHaveBeenCalledWith();
-      expect(mockLogWarn).toHaveBeenCalledWith('Failed to conditionally import module', {
-        error: 'Import failed',
-      });
+      expect(mockLogWarn).toHaveBeenCalledWith(
+        "Failed to conditionally import module",
+        {
+          error: "Import failed",
+        },
+      );
       expect(result).toBeNull();
     });
 
-    test('should handle non-Error exceptions', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should handle non-Error exceptions", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const mockImport = vi.fn().mockRejectedValue('string error');
+      const mockImport = vi.fn().mockRejectedValue("string error");
 
       const result = await factoryModule.conditionalImport(true, mockImport);
 
-      expect(mockLogWarn).toHaveBeenCalledWith('Failed to conditionally import module', {
-        error: 'string error',
-      });
+      expect(mockLogWarn).toHaveBeenCalledWith(
+        "Failed to conditionally import module",
+        {
+          error: "string error",
+        },
+      );
       expect(result).toBeNull();
     });
   });
 
-  describe('callIfEnabled', () => {
+  describe("callIfEnabled", () => {
     const testConfig = {
-      database: 'test' as any,
+      database: "test" as any,
       features: {
         apiKeys: true,
         teams: false,
       } as any,
     };
 
-    test('should call method for enabled features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should call method for enabled features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const mockMethod = vi.fn((a: string, b: number) => `${a}-${b}`);
 
-      const result = factoryModule.callIfEnabled(testConfig, 'apiKeys', mockMethod, 'test', 123);
+      const result = factoryModule.callIfEnabled(
+        testConfig,
+        "apiKeys",
+        mockMethod,
+        "test",
+        123,
+      );
 
-      expect(mockMethod).toHaveBeenCalledWith('test', 123);
-      expect(result).toBe('test-123');
+      expect(mockMethod).toHaveBeenCalledWith("test", 123);
+      expect(result).toBe("test-123");
     });
 
-    test('should not call method for disabled features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should not call method for disabled features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const mockMethod = vi.fn((a: string, b: number) => `${a}-${b}`);
 
-      const result = factoryModule.callIfEnabled(testConfig, 'teams', mockMethod, 'test', 123);
+      const result = factoryModule.callIfEnabled(
+        testConfig,
+        "teams",
+        mockMethod,
+        "test",
+        123,
+      );
 
       expect(mockMethod).not.toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
 
-    test('should handle methods with no arguments', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should handle methods with no arguments", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const mockMethod = vi.fn(() => 'no-args');
+      const mockMethod = vi.fn(() => "no-args");
 
-      const result = factoryModule.callIfEnabled(testConfig, 'apiKeys', mockMethod);
+      const result = factoryModule.callIfEnabled(
+        testConfig,
+        "apiKeys",
+        mockMethod,
+      );
 
       expect(mockMethod).toHaveBeenCalledWith();
-      expect(result).toBe('no-args');
+      expect(result).toBe("no-args");
     });
 
-    test('should handle methods with complex return types', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should handle methods with complex return types", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const mockMethod = vi.fn(() => ({ complex: { nested: 'object' } }));
+      const mockMethod = vi.fn(() => ({ complex: { nested: "object" } }));
 
-      const result = factoryModule.callIfEnabled(testConfig, 'apiKeys', mockMethod);
+      const result = factoryModule.callIfEnabled(
+        testConfig,
+        "apiKeys",
+        mockMethod,
+      );
 
-      expect(result).toStrictEqual({ complex: { nested: 'object' } });
+      expect(result).toStrictEqual({ complex: { nested: "object" } });
     });
   });
 
-  describe('createFeatureProxy', () => {
+  describe("createFeatureProxy", () => {
     const testConfig = {
-      database: 'test' as any,
+      database: "test" as any,
       features: {
         apiKeys: true,
         teams: true,
@@ -445,43 +477,56 @@ describe('shared factory functionality', () => {
       getImpersonationContext: vi.fn(),
     };
 
-    test('should return methods for enabled features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should return methods for enabled features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const proxy = factoryModule.createFeatureProxy(testConfig, mockImplementations);
+      const proxy = factoryModule.createFeatureProxy(
+        testConfig,
+        mockImplementations,
+      );
 
       expect(proxy.validateApiKey).toBe(mockImplementations.validateApiKey);
       expect(proxy.createApiKey).toBe(mockImplementations.createApiKey);
       expect(proxy.createTeam).toBe(mockImplementations.createTeam);
-      expect(proxy.getCurrentOrganization).toBe(mockImplementations.getCurrentOrganization);
+      expect(proxy.getCurrentOrganization).toBe(
+        mockImplementations.getCurrentOrganization,
+      );
     });
 
-    test('should return undefined for disabled features', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should return undefined for disabled features", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
-      const proxy = factoryModule.createFeatureProxy(testConfig, mockImplementations);
+      const proxy = factoryModule.createFeatureProxy(
+        testConfig,
+        mockImplementations,
+      );
 
       expect(proxy.startImpersonation).toBeUndefined();
       expect(proxy.stopImpersonation).toBeUndefined();
       expect(proxy.getImpersonationContext).toBeUndefined();
     });
 
-    test('should return methods for features without requirements', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should return methods for features without requirements", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const implementationsWithCustom = {
         ...mockImplementations,
         customMethod: vi.fn(),
       };
 
-      const proxy = factoryModule.createFeatureProxy(testConfig, implementationsWithCustom);
+      const proxy = factoryModule.createFeatureProxy(
+        testConfig,
+        implementationsWithCustom,
+      );
 
       // Methods not in the feature map should be available
-      expect((proxy as any).customMethod).toBe(implementationsWithCustom.customMethod);
+      expect((proxy as any).customMethod).toBe(
+        implementationsWithCustom.customMethod,
+      );
     });
 
-    test('should handle API key related methods correctly', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should handle API key related methods correctly", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const configWithoutApiKeys = {
         ...testConfig,
@@ -491,7 +536,10 @@ describe('shared factory functionality', () => {
         },
       };
 
-      const proxy = factoryModule.createFeatureProxy(configWithoutApiKeys, mockImplementations);
+      const proxy = factoryModule.createFeatureProxy(
+        configWithoutApiKeys,
+        mockImplementations,
+      );
 
       expect(proxy.validateApiKey).toBeUndefined();
       expect(proxy.createApiKey).toBeUndefined();
@@ -499,8 +547,8 @@ describe('shared factory functionality', () => {
       expect(proxy.revokeApiKey).toBeUndefined();
     });
 
-    test('should handle team related methods correctly', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should handle team related methods correctly", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const configWithoutTeams = {
         ...testConfig,
@@ -510,7 +558,10 @@ describe('shared factory functionality', () => {
         },
       };
 
-      const proxy = factoryModule.createFeatureProxy(configWithoutTeams, mockImplementations);
+      const proxy = factoryModule.createFeatureProxy(
+        configWithoutTeams,
+        mockImplementations,
+      );
 
       expect(proxy.createTeam).toBeUndefined();
       expect(proxy.inviteToTeam).toBeUndefined();
@@ -518,8 +569,8 @@ describe('shared factory functionality', () => {
       expect(proxy.updateTeamRole).toBeUndefined();
     });
 
-    test('should handle organization related methods correctly', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should handle organization related methods correctly", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const configWithoutOrgs = {
         ...testConfig,
@@ -529,7 +580,10 @@ describe('shared factory functionality', () => {
         },
       };
 
-      const proxy = factoryModule.createFeatureProxy(configWithoutOrgs, mockImplementations);
+      const proxy = factoryModule.createFeatureProxy(
+        configWithoutOrgs,
+        mockImplementations,
+      );
 
       expect(proxy.getCurrentOrganization).toBeUndefined();
       expect(proxy.getOrganizationBySlug).toBeUndefined();
@@ -538,29 +592,29 @@ describe('shared factory functionality', () => {
     });
   });
 
-  describe('edge cases', () => {
-    test('should handle empty config', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+  describe("edge cases", () => {
+    test("should handle empty config", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const config = factoryModule.createTypedAuthConfig({});
 
       expect(config.features).toBeDefined();
-      expect(typeof config.features).toBe('object');
+      expect(typeof config.features).toBe("object");
     });
 
-    test('should handle undefined features in config', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should handle undefined features in config", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const config = factoryModule.createTypedAuthConfig({
-        database: 'test' as any,
+        database: "test" as any,
         features: undefined as any,
       });
 
       expect(config.features).toBeDefined();
     });
 
-    test('should handle partial feature configuration', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should handle partial feature configuration", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const config = factoryModule.createTypedAuthConfig({
         features: {
@@ -573,11 +627,11 @@ describe('shared factory functionality', () => {
       expect((config as any).features.teams).toBeTruthy(); // Should have default
     });
 
-    test('should handle registry with minimal config', async () => {
-      const factoryModule = await import('../../src/shared/factory');
+    test("should handle registry with minimal config", async () => {
+      const factoryModule = await import("../../src/shared/factory");
 
       const minimalConfig = {
-        database: 'test' as any,
+        database: "test" as any,
         features: {
           advancedMiddleware: false,
           admin: false,

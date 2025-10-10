@@ -15,7 +15,7 @@ describe('sentryMicroFrontendPlugin', () => {
     // Clean up global state before each test
     delete mockGlobalThis.Sentry;
     delete mockGlobalThis.__SENTRY_MICRO_FRONTEND_HOST__;
-    delete mockGlobalThis.__SENTRY_MICRO_FRONTEND_ZONE__;
+    delete mockGlobalThis.__SENTRY_MICRO_FRONTEND_APP__;
     delete mockGlobalThis.__SENTRY_INITIALIZED__;
     delete mockGlobalThis.__SENTRY_INIT_STATE__;
     resetInitFlag();
@@ -31,7 +31,7 @@ describe('sentryMicroFrontendPlugin', () => {
     test('should detect host mode when isHost is true', () => {
       const config: SentryMicroFrontendConfig = {
         isHost: true,
-        zones: [{ name: 'cms', dsn: 'https://test-cms@sentry.io/123' }],
+        backstageApps: [{ name: 'cms', dsn: 'https://test-cms@sentry.io/123' }],
       };
       const plugin = new SentryMicroFrontendPlugin(config);
       expect(plugin.getMode()).toBe('host');
@@ -52,22 +52,22 @@ describe('sentryMicroFrontendPlugin', () => {
     });
   });
 
-  describe('zone Detection', () => {
-    test('should detect zone from config', () => {
+  describe('backstage app detection', () => {
+    test('should detect Backstage app from config', () => {
       const config: SentryMicroFrontendConfig = {
-        zone: 'test-zone',
+        backstageApp: 'test-app',
       };
       const plugin = new SentryMicroFrontendPlugin(config);
-      expect(plugin.getZone()).toBe('test-zone');
+      expect(plugin.getBackstageApp()).toBe('test-app');
     });
 
-    test('should detect zone from global flag', () => {
+    test('should detect Backstage app from global flag', () => {
       // Mock location for browser environment
       mockGlobalThis.location = { pathname: '/test' };
-      mockGlobalThis.__SENTRY_MICRO_FRONTEND_ZONE__ = 'global-zone';
+      mockGlobalThis.__SENTRY_MICRO_FRONTEND_APP__ = 'global-app';
 
       const plugin = new SentryMicroFrontendPlugin();
-      expect(plugin.getZone()).toBe('global-zone');
+      expect(plugin.getBackstageApp()).toBe('global-app');
 
       // Clean up
       delete mockGlobalThis.location;
@@ -93,8 +93,8 @@ describe('sentryMicroFrontendPlugin', () => {
 
     test('should capture exceptions using parent Sentry in child mode', async () => {
       const config: SentryMicroFrontendConfig = {
-        zone: 'test-zone',
-        addZoneContext: true,
+        backstageApp: 'test-app',
+        addBackstageContext: true,
       };
       const plugin = new SentryMicroFrontendPlugin(config);
       await plugin.initialize();
@@ -107,8 +107,8 @@ describe('sentryMicroFrontendPlugin', () => {
 
     test('should capture messages using parent Sentry in child mode', async () => {
       const config: SentryMicroFrontendConfig = {
-        zone: 'test-zone',
-        addZoneContext: true,
+        backstageApp: 'test-app',
+        addBackstageContext: true,
       };
       const plugin = new SentryMicroFrontendPlugin(config);
       await plugin.initialize();
@@ -122,7 +122,7 @@ describe('sentryMicroFrontendPlugin', () => {
   describe('debug Information', () => {
     test('should provide debug information about plugin state', () => {
       const config: SentryMicroFrontendConfig = {
-        zone: 'test-zone',
+        backstageApp: 'test-app',
         isHost: true,
       };
       const plugin = new SentryMicroFrontendPlugin(config);
@@ -130,7 +130,7 @@ describe('sentryMicroFrontendPlugin', () => {
 
       expect(debugInfo).toStrictEqual({
         mode: 'host',
-        zone: 'test-zone',
+        backstageApp: 'test-app',
         enabled: false, // No DSN provided
         initialized: false,
         hasParentSentry: false,
@@ -162,7 +162,7 @@ describe('sentryMicroFrontendPlugin', () => {
 
     test('should handle malformed configuration gracefully', () => {
       const config: SentryMicroFrontendConfig = {
-        zones: [], // Empty zones
+        backstageApps: [], // Empty backstageApps
         isHost: true,
       };
 

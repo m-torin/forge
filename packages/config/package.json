@@ -10,6 +10,7 @@
     "./prettier": "./src/prettier/index.mjs",
     "./knip": "./src/knip/index.json",
     "./knip/*": "./src/knip/*",
+    "./env": "./env.ts",
     "./keys": {
       "types": "./keys.ts",
       "import": "./keys.ts"
@@ -17,29 +18,28 @@
   },
   "scripts": {
     "circular": "madge --circular --extensions ts,tsx,js,jsx .",
-    "knip": "knip --fix --reporter json",
+    "knip": "knip --reporter json --exclude unlisted,unresolved,exports,dependencies,files,binaries,types,duplicates",
     "prettier": "turbo run prettier:apps prettier:labs prettier:packages prettier:monorepo --filter=@repo/config --continue",
     "prettier:apps": "prettier --write --log-level error '../../apps/**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}' --config ./src/prettier/index.mjs --ignore-path ./.prettierignore",
     "prettier:labs": "prettier --write --log-level error '../../labs/**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}' --config ./src/prettier/index.mjs --ignore-path ./.prettierignore",
-    "prettier:monorepo": "prettier --write --log-level error '../../*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}' '../../scripts/**/*' --config ./src/prettier/index.mjs --ignore-path ./.prettierignore",
+    "prettier:monorepo": "prettier --write --log-level error '../../*.{ts,tsx,js,jsx,json,md,mdx,css,scss}' '../../scripts/**/*' --config ./src/prettier/index.mjs --ignore-path ./.prettierignore --ignore-pattern 'pnpm-lock.yaml'",
     "prettier:packages": "prettier --write --log-level error '../../packages/**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}' --config ./src/prettier/index.mjs --ignore-path ./.prettierignore",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@next/bundle-analyzer": "15.4.4",
-    "@prisma/nextjs-monorepo-workaround-plugin": "^6.12.0",
-    "@t3-oss/env-core": "^0.13.8",
+    "@next/bundle-analyzer": "^15.4.4",
     "@t3-oss/env-nextjs": "catalog:",
-    "chalk": "^5.4.1",
-    "prettier-plugin-organize-imports": "^4.2.0",
-    "prettier-plugin-packagejson": "^2.5.19",
-    "prettier-plugin-sh": "^0.18.0",
-    "prettier-plugin-tailwindcss": "^0.6.14",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "knip": "catalog:",
+    "madge": "catalog:",
     "next": "catalog:",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "prettier-plugin-packagejson": "^2.5.19",
+    "prettier-plugin-sh": "^0.18.0",
+    "prettier-plugin-tailwindcss": "^0.6.14"
   },
   "peerDependencies": {
     "next": "catalog:"

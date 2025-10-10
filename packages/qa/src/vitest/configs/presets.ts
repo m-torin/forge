@@ -140,4 +140,3 @@ export function createPreset(overrides: UserConfig = {}): UserConfig {
 }
 
 // Default export is the React preset (most common use case)
-export default reactPreset;

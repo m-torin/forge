@@ -55,7 +55,7 @@ export const createDatabaseTestConfig = (
       ],
 
       // Setup files
-      setupFiles: [resolve(import.meta.dirname, '../setup/database.ts')],
+      setupFiles: [resolve(import.meta.dirname, '../setup/db-prisma.ts')],
 
       // Global setup/teardown
       globalSetup:
@@ -107,7 +107,7 @@ export const createDatabaseTestConfig = (
     resolve: {
       alias: {
         '@': resolve(process.cwd(), 'src'),
-        '@repo/database': resolve(process.cwd(), '../database'),
+        '@repo/db-prisma': resolve(process.cwd(), '../db-prisma'),
         '@repo/qa': resolve(import.meta.dirname, '..'),
       },
     },
@@ -154,4 +154,3 @@ export const integrationTestConfig = () =>
   });
 
 // Default export
-export default createDatabaseTestConfig();

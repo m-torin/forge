@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 // Safe validation functions to replace unsafe regex
 const isValidMimeType = (value: string): boolean => {

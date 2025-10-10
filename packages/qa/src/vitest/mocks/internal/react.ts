@@ -1,13 +1,13 @@
 import { vi } from 'vitest';
 
 // Mock React hooks for testing
-export const mockUseEffect = vi.fn((fn, deps) => {
+const mockUseEffect = vi.fn((fn, deps) => {
   if (!deps || deps.some((dep: any, index: number) => dep !== deps[index])) {
     fn();
   }
 });
 
-export const mockUseState = vi.fn(initialState => {
+const mockUseState = vi.fn(initialState => {
   let state = initialState;
   const setState = vi.fn(newState => {
     state = typeof newState === 'function' ? newState(state) : newState;
@@ -15,19 +15,19 @@ export const mockUseState = vi.fn(initialState => {
   return [state, setState];
 });
 
-export const mockUseRef = vi.fn(initialValue => ({
+const mockUseRef = vi.fn(initialValue => ({
   current: initialValue,
 }));
 
-export const mockUseContext = vi.fn();
-export const mockUseReducer = vi.fn();
-export const mockUseCallback = vi.fn(fn => fn);
-export const mockUseMemo = vi.fn(fn => fn());
-export const mockUseLayoutEffect = vi.fn();
-export const mockUseImperativeHandle = vi.fn();
+const mockUseContext = vi.fn();
+const mockUseReducer = vi.fn();
+const mockUseCallback = vi.fn(fn => fn);
+const mockUseMemo = vi.fn(fn => fn());
+const mockUseLayoutEffect = vi.fn();
+const mockUseImperativeHandle = vi.fn();
 
 // Helper to reset all React mocks
-export const resetReactMocks = () => {
+const resetReactMocks = () => {
   mockUseEffect.mockClear();
   mockUseState.mockClear();
   mockUseRef.mockClear();
@@ -40,7 +40,7 @@ export const resetReactMocks = () => {
 };
 
 // Create React testing scenarios
-export const createReactScenarios = () => {
+const createReactScenarios = () => {
   return {
     // Standard React hooks for testing
     standard: {
@@ -68,7 +68,7 @@ export const createReactScenarios = () => {
 };
 
 // Setup function for automatic mocking
-export const setupReactMocks = () => {
+const setupReactMocks = () => {
   const scenarios = createReactScenarios();
 
   // Mock react with preserved actual behavior except for testing hooks

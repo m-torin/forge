@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Prisma client
 const mockPrisma = {
@@ -21,23 +21,25 @@ const mockPrisma = {
   },
 };
 
-vi.mock('#/prisma/clients/standard', () => ({
+vi.mock("#/prisma/clients/standard", () => ({
   prisma: mockPrisma,
 }));
 
-describe('User ORM - New Functions', () => {
+describe("User ORM - New Functions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('createManyUsersOrm', () => {
-    it('should forward arguments to prisma.user.createMany and return result', async () => {
-      const { createManyUsersOrm } = await import('#/src/prisma/src/orm/auth/userOrm');
+  describe("createManyUsersOrm", () => {
+    it("should forward arguments to prisma.user.createMany and return result", async () => {
+      const { createManyUsersOrm } = await import(
+        "#/src/prisma/src/orm/auth/userOrm"
+      );
 
       const args = {
         data: [
-          { email: 'user1@example.com', name: 'User 1' },
-          { email: 'user2@example.com', name: 'User 2' },
+          { email: "user1@example.com", name: "User 1" },
+          { email: "user2@example.com", name: "User 2" },
         ],
       };
 
@@ -51,19 +53,21 @@ describe('User ORM - New Functions', () => {
     });
   });
 
-  describe('findFirstUserOrmOrThrow', () => {
-    it('should forward arguments to prisma.user.findFirstOrThrow and return result', async () => {
-      const { findFirstUserOrmOrThrow } = await import('#/src/prisma/src/orm/auth/userOrm');
+  describe("findFirstUserOrmOrThrow", () => {
+    it("should forward arguments to prisma.user.findFirstOrThrow and return result", async () => {
+      const { findFirstUserOrmOrThrow } = await import(
+        "#/src/prisma/src/orm/auth/userOrm"
+      );
 
       const args = {
-        where: { email: 'test@example.com' },
+        where: { email: "test@example.com" },
         include: { accounts: true },
       };
 
       const expectedUser = {
-        id: 'user-1',
-        email: 'test@example.com',
-        name: 'Test User',
+        id: "user-1",
+        email: "test@example.com",
+        name: "Test User",
         accounts: [],
       };
       mockPrisma.user.findFirstOrThrow.mockResolvedValue(expectedUser);

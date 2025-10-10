@@ -1,0 +1,64 @@
+name: Agentic Quality Gates
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10.6.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate agent files
+        run: pnpm agents:validate
+
+      - name: Lint command specs
+        run: pnpm command-specs:lint
+
+      - name: Validate delegation discipline
+        run: pnpm validate:delegation
+
+      - name: Detect scope
+        id: scope
+        run: |
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref || 'HEAD^1' }} ${{ github.sha }} | tr '\n' ',')
+          echo "CHANGED_PATHS=$CHANGED" >> $GITHUB_ENV
+          echo "scope=$(node scripts/detect-scope.mjs "$CHANGED" || echo .)" >> $GITHUB_OUTPUT
+
+      - name: Preflight (lint/typecheck/tests)
+        run: pnpm repo:preflight
+
+      - name: Contamination checks
+        run: .claude/scripts/contamination-checks.sh
+
+      - name: Coverage gate (scoped)
+        run: .claude/scripts/coverage-gate.sh "${{ steps.scope.outputs.scope }}"
+
+      - name: Storybook smoke (UI changes)
+        if: contains(env.CHANGED_PATHS, 'apps/storybook') || contains(env.CHANGED_PATHS, 'packages/uix-system')
+        run: pnpm turbo run storybook:smoke --filter uix-system
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ github.sha }}
+          path: |
+            coverage/
+            **/coverage/
+

@@ -29,7 +29,7 @@ export function validateConfig(config: AnalyticsConfig): void {
 /**
  * Validates a single provider configuration
  */
-export function validateProviderConfig(providerName: string, config: ProviderConfig): void {
+function validateProviderConfig(providerName: string, config: ProviderConfig): void {
   const requiredFields = PROVIDER_REQUIREMENTS[providerName] || [];
 
   for (const field of requiredFields) {
@@ -137,7 +137,7 @@ export function getAnalyticsConfig(): AnalyticsConfig {
 /**
  * Conditional provider inclusion based on feature flags
  */
-export async function buildAnalyticsConfig(
+async function _buildAnalyticsConfig(
   getFeatureFlag: (flag: string) => Promise<boolean>,
 ): Promise<AnalyticsConfig> {
   const builder = createConfigBuilder();

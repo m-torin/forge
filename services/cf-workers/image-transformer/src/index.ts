@@ -18,6 +18,13 @@ interface ImageTransformOptions {
   background?: string;
 }
 
+// CORS headers to allow cross-origin requests
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
 export default {
   async fetch(
     request: Request,
@@ -47,13 +54,6 @@ export default {
       headers: corsHeaders,
     });
   },
-};
-
-// CORS headers to allow cross-origin requests
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 // Handle CORS preflight requests

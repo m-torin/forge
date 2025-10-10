@@ -1,0 +1,14 @@
+{
+  "extends": "../../packages/config/src/typescript/react-library.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "declarationMap": false,
+    "baseUrl": ".",
+    "paths": {
+      "#/*": ["./src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist", "build", "vitest.config.ts", "__tests__"]
+}

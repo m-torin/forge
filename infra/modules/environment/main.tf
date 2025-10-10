@@ -18,7 +18,7 @@ provider "doppler" {
 # Fetch secrets from Doppler
 data "doppler_secrets" "all" {
   count = var.enable_doppler ? 1 : 0
-  
+
   project = var.project_name
   config  = var.environment
 }
@@ -27,27 +27,27 @@ data "doppler_secrets" "all" {
 locals {
   # Parse Doppler secrets if enabled
   doppler_secrets = var.enable_doppler ? data.doppler_secrets.all[0].map : {}
-  
+
   # Cloudflare secrets
   cloudflare_secrets = {
     api_token  = var.enable_doppler ? lookup(local.doppler_secrets, "CLOUDFLARE_API_TOKEN", var.fallback_secrets.cloudflare_api_token) : var.fallback_secrets.cloudflare_api_token
     account_id = var.enable_doppler ? lookup(local.doppler_secrets, "CLOUDFLARE_ACCOUNT_ID", var.fallback_secrets.cloudflare_account_id) : var.fallback_secrets.cloudflare_account_id
   }
-  
+
   # Upstash secrets
   upstash_secrets = {
     email     = var.enable_doppler ? lookup(local.doppler_secrets, "UPSTASH_EMAIL", var.fallback_secrets.upstash_email) : var.fallback_secrets.upstash_email
     api_key   = var.enable_doppler ? lookup(local.doppler_secrets, "UPSTASH_API_KEY", var.fallback_secrets.upstash_api_key) : var.fallback_secrets.upstash_api_key
     team_name = var.enable_doppler ? lookup(local.doppler_secrets, "UPSTASH_TEAM_NAME", var.fallback_secrets.upstash_team_name) : var.fallback_secrets.upstash_team_name
   }
-  
+
   # Vercel secrets
   vercel_secrets = {
     api_token = var.enable_doppler ? lookup(local.doppler_secrets, "VERCEL_API_TOKEN", var.fallback_secrets.vercel_api_token) : var.fallback_secrets.vercel_api_token
     org_id    = var.enable_doppler ? lookup(local.doppler_secrets, "VERCEL_ORG_ID", var.fallback_secrets.vercel_org_id) : var.fallback_secrets.vercel_org_id
     team_id   = var.enable_doppler ? lookup(local.doppler_secrets, "VERCEL_TEAM_ID", var.fallback_secrets.vercel_team_id) : var.fallback_secrets.vercel_team_id
   }
-  
+
   # Monitoring secrets
   monitoring_secrets = {
     slack_webhook_url        = var.enable_doppler ? lookup(local.doppler_secrets, "SLACK_WEBHOOK_URL", var.fallback_secrets.slack_webhook_url) : var.fallback_secrets.slack_webhook_url
@@ -56,7 +56,7 @@ locals {
     datadog_api_key          = var.enable_doppler ? lookup(local.doppler_secrets, "DATADOG_API_KEY", var.fallback_secrets.datadog_api_key) : var.fallback_secrets.datadog_api_key
     sentry_dsn               = var.enable_doppler ? lookup(local.doppler_secrets, "SENTRY_DSN", var.fallback_secrets.sentry_dsn) : var.fallback_secrets.sentry_dsn
   }
-  
+
   # Integration secrets
   integration_secrets = {
     stripe_api_key        = var.enable_doppler ? lookup(local.doppler_secrets, "STRIPE_API_KEY", var.fallback_secrets.stripe_api_key) : var.fallback_secrets.stripe_api_key
@@ -65,8 +65,9 @@ locals {
     openai_api_key        = var.enable_doppler ? lookup(local.doppler_secrets, "OPENAI_API_KEY", var.fallback_secrets.openai_api_key) : var.fallback_secrets.openai_api_key
     resend_api_key        = var.enable_doppler ? lookup(local.doppler_secrets, "RESEND_API_KEY", var.fallback_secrets.resend_api_key) : var.fallback_secrets.resend_api_key
     knock_api_key         = var.enable_doppler ? lookup(local.doppler_secrets, "KNOCK_API_KEY", var.fallback_secrets.knock_api_key) : var.fallback_secrets.knock_api_key
+    image_signing_key     = var.enable_doppler ? lookup(local.doppler_secrets, "IMAGE_SIGNING_KEY", var.fallback_secrets.image_signing_key) : var.fallback_secrets.image_signing_key
   }
-  
+
   # All secrets combined for easy access
   all_secrets = merge(
     local.cloudflare_secrets,
@@ -75,7 +76,7 @@ locals {
     local.monitoring_secrets,
     local.integration_secrets
   )
-  
+
   # Environment-specific feature flags
   feature_flags = merge({
     debug_mode = var.environment == "development"
@@ -89,7 +90,7 @@ locals {
 # Secret rotation check (creates output warnings)
 locals {
   current_time = timestamp()
-  
+
   # This is a placeholder - in real implementation, you'd track last rotation dates
   rotation_warnings = var.enable_secret_rotation ? [
     for secret, days in var.secret_rotation_days : {

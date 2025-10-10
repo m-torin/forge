@@ -1,0 +1,720 @@
+---
+title: Server Actions Data Access Patterns
+description:
+  Comprehensive guide for implementing proper server action data access patterns
+  with Prisma ORM, authentication, and error handling
+icon: "server"
+---
+
+# Server Actions Data Access Patterns
+
+This guide covers the server action data access patterns implemented during the
+database integration audit, providing a blueprint for consistent, secure, and
+performant data operations.
+
+## 🎯 Core Principles
+
+1. **Server Actions Only** - All data access must use `'use server'` directive
+2. **Authentication First** - Always verify user context before data operations
+3. **ORM Layer Pattern** - Use dedicated ORM functions for database operations
+4. **Error Boundaries** - Implement consistent error handling and user feedback
+5. **Type Safety** - Full TypeScript integration with Prisma-generated types
+
+## 📋 Implementation Pattern
+
+### 1. Server Action File Structure
+
+```typescript
+"use server";
+
+import { auth } from "@repo/auth/server/next";
+import type { User } from "@repo/auth/server/next";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+
+// Import ORM functions (never import Prisma client directly)
+import {
+  findUserRegistriesOrm,
+  createRegistryOrm,
+  updateRegistryOrm
+} from "@repo/database/orm/registry";
+
+import { logger } from "@repo/observability/server/next";
+
+//==============================================================================
+// AUTHENTICATION HELPERS
+//==============================================================================
+
+async function requireAuth(): Promise<User> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/signin");
+  }
+  return session.user as User;
+}
+
+//==============================================================================
+// PUBLIC SERVER ACTIONS
+//==============================================================================
+
+export async function getUserRegistriesAction() {
+  const user = await requireAuth();
+
+  try {
+    const registries = await findUserRegistriesOrm(user.id);
+    return {
+      success: true,
+      data: registries,
+      error: null
+    };
+  } catch (error) {
+    logger.error("Failed to fetch user registries", {
+      userId: user.id,
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+
+    return {
+      success: false,
+      data: null,
+      error: "Failed to load registries. Please try again."
+    };
+  }
+}
+
+export async function createRegistryAction(formData: FormData) {
+  const user = await requireAuth();
+
+  // Validate input data
+  const title = formData.get("title") as string;
+  const type = formData.get("type") as string;
+
+  if (!title || !type) {
+    return {
+      success: false,
+      data: null,
+      error: "Title and type are required"
+    };
+  }
+
+  try {
+    const registry = await createRegistryOrm({
+      data: {
+        title,
+        type,
+        userId: user.id,
+        isPublic: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+
+    // Revalidate relevant pages
+    revalidatePath("/account/registries");
+    revalidatePath("/registry");
+
+    return {
+      success: true,
+      data: registry,
+      error: null
+    };
+  } catch (error) {
+    logger.error("Failed to create registry", {
+      userId: user.id,
+      title,
+      type,
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+
+    return {
+      success: false,
+      data: null,
+      error: "Failed to create registry. Please try again."
+    };
+  }
+}
+```
+
+### 2. Server Component Integration
+
+```typescript
+// app/registries/page.tsx
+import { getUserRegistriesAction } from '../actions/registry';
+import { redirect } from 'next/navigation';
+
+export default async function RegistriesPage() {
+  const result = await getUserRegistriesAction();
+
+  if (!result.success) {
+    // Handle error state in production
+    return (
+      <div className="p-4">
+        <h1>Error Loading Registries</h1>
+        <p>{result.error}</p>
+      </div>
+    );
+  }
+
+  const registries = result.data;
+
+  return (
+    <div>
+      <h1>My Registries</h1>
+      {registries.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <RegistryList registries={registries} />
+      )}
+    </div>
+  );
+}
+```
+
+### 3. Client Component Form Handling
+
+```typescript
+'use client';
+
+import { useState, useTransition } from 'react';
+import { createRegistryAction } from '../actions/registry';
+
+export function CreateRegistryForm() {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(formData: FormData) {
+    setError(null);
+
+    startTransition(async () => {
+      const result = await createRegistryAction(formData);
+
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      // Success - form will reset due to revalidation
+      setError(null);
+    });
+  }
+
+  return (
+    <form action={handleSubmit}>
+      <input
+        name="title"
+        placeholder="Registry title"
+        required
+        disabled={isPending}
+      />
+      <select name="type" required disabled={isPending}>
+        <option value="">Select type</option>
+        <option value="WEDDING">Wedding</option>
+        <option value="BABY">Baby</option>
+        <option value="BIRTHDAY">Birthday</option>
+      </select>
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+
+      <button type="submit" disabled={isPending}>
+        {isPending ? 'Creating...' : 'Create Registry'}
+      </button>
+    </form>
+  );
+}
+```
+
+## 🔐 Authentication Patterns
+
+### User-Scoped Data Access
+
+```typescript
+// Always verify user ownership before data operations
+export async function getUserOrdersAction() {
+  const user = await requireAuth();
+
+  try {
+    // Only fetch orders belonging to the authenticated user
+    const orders = await findOrdersByUserOrm(user.id, {
+      include: {
+        items: {
+          include: {
+            product: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+
+    return {
+      success: true,
+      data: orders,
+      error: null
+    };
+  } catch (error) {
+    logger.error("Failed to fetch user orders", {
+      userId: user.id,
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+
+    return {
+      success: false,
+      data: null,
+      error: "Failed to load orders. Please try again."
+    };
+  }
+}
+
+// Cart operations with session context
+export async function getOrCreateCartAction() {
+  const user = await requireAuth();
+
+  try {
+    // Try to find existing cart first
+    let cart = await findActiveCartByUserOrm(user.id);
+
+    if (!cart) {
+      // Create new cart if none exists
+      cart = await createCartOrm({
+        data: {
+          userId: user.id,
+          status: "ACTIVE",
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      });
+    }
+
+    return {
+      success: true,
+      data: cart,
+      error: null
+    };
+  } catch (error) {
+    logger.error("Failed to get or create cart", {
+      userId: user.id,
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+
+    return {
+      success: false,
+      data: null,
+      error: "Failed to load cart. Please try again."
+    };
+  }
+}
+```
+
+### Public Data Access (No Auth Required)
+
+```typescript
+// Public data operations don't require authentication
+export async function searchRegistriesAction(
+  query?: string,
+  type?: string,
+  email?: string
+) {
+  try {
+    const registries = await findPublicRegistriesOrm({
+      where: {
+        isPublic: true,
+        ...(query && {
+          OR: [
+            { title: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } }
+          ]
+        }),
+        ...(type && { type }),
+        ...(email && {
+          user: {
+            email: { contains: email, mode: "insensitive" }
+          }
+        })
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        },
+        _count: {
+          select: {
+            items: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: "desc"
+      },
+      take: 50 // Limit results for performance
+    });
+
+    return {
+      success: true,
+      data: registries,
+      error: null
+    };
+  } catch (error) {
+    logger.error("Failed to search registries", {
+      query,
+      type,
+      email,
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+
+    return {
+      success: false,
+      data: [],
+      error: "Search failed. Please try again."
+    };
+  }
+}
+```
+
+## 🚨 Error Handling Patterns
+
+### Consistent Error Response Format
+
+```typescript
+// Standard response interface for all server actions
+interface ServerActionResponse<T> {
+  success: boolean;
+  data: T | null;
+  error: string | null;
+}
+
+// Error handling wrapper
+async function withErrorHandling<T>(
+  operation: () => Promise<T>,
+  context: Record<string, any>,
+  userMessage: string
+): Promise<ServerActionResponse<T>> {
+  try {
+    const result = await operation();
+    return {
+      success: true,
+      data: result,
+      error: null
+    };
+  } catch (error) {
+    logger.error(`Operation failed: ${userMessage}`, {
+      ...context,
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+
+    return {
+      success: false,
+      data: null,
+      error: userMessage
+    };
+  }
+}
+
+// Usage example
+export async function updateRegistryAction(id: string, formData: FormData) {
+  const user = await requireAuth();
+
+  return await withErrorHandling(
+    async () => {
+      const updates = {
+        title: formData.get("title") as string,
+        description: formData.get("description") as string,
+        updatedAt: new Date()
+      };
+
+      return await updateRegistryOrm({
+        where: {
+          id,
+          userId: user.id // Ensure user owns the registry
+        },
+        data: updates
+      });
+    },
+    { userId: user.id, registryId: id },
+    "Failed to update registry. Please try again."
+  );
+}
+```
+
+## 🔄 Cache Management
+
+### Strategic Revalidation
+
+```typescript
+export async function createRegistryItemAction(
+  registryId: string,
+  formData: FormData
+) {
+  const user = await requireAuth();
+
+  try {
+    // Verify user owns the registry
+    const registry = await findRegistryByIdOrm(registryId);
+    if (!registry || registry.userId !== user.id) {
+      return {
+        success: false,
+        data: null,
+        error: "Registry not found or access denied"
+      };
+    }
+
+    const item = await createRegistryItemOrm({
+      data: {
+        title: formData.get("title") as string,
+        price: parseFloat(formData.get("price") as string),
+        registryId,
+        createdAt: new Date()
+      }
+    });
+
+    // Revalidate all pages that might show this registry
+    revalidatePath(`/registry/${registryId}`);
+    revalidatePath("/account/registries");
+    revalidatePath("/registry/find"); // If this shows registry items
+
+    return {
+      success: true,
+      data: item,
+      error: null
+    };
+  } catch (error) {
+    logger.error("Failed to create registry item", {
+      userId: user.id,
+      registryId,
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+
+    return {
+      success: false,
+      data: null,
+      error: "Failed to add item. Please try again."
+    };
+  }
+}
+```
+
+## 🔍 Search and Filtering Patterns
+
+### Advanced Search Implementation
+
+```typescript
+export async function searchProductsAction(
+  searchQuery: string,
+  filters: {
+    category?: string;
+    priceMin?: number;
+    priceMax?: number;
+    availability?: "IN_STOCK" | "OUT_OF_STOCK";
+  } = {}
+) {
+  try {
+    const products = await findProductsOrm({
+      where: {
+        // Text search across multiple fields
+        OR: [
+          { title: { contains: searchQuery, mode: "insensitive" } },
+          { description: { contains: searchQuery, mode: "insensitive" } },
+          { brand: { name: { contains: searchQuery, mode: "insensitive" } } }
+        ],
+
+        // Apply filters
+        ...(filters.category && {
+          categories: {
+            some: {
+              category: {
+                slug: filters.category
+              }
+            }
+          }
+        }),
+
+        ...(filters.priceMin !== undefined && {
+          price: {
+            gte: filters.priceMin
+          }
+        }),
+
+        ...(filters.priceMax !== undefined && {
+          price: {
+            lte: filters.priceMax
+          }
+        }),
+
+        ...(filters.availability && {
+          availability: filters.availability
+        }),
+
+        // Always filter out deleted items
+        deletedAt: null
+      },
+
+      include: {
+        brand: {
+          select: {
+            name: true,
+            slug: true
+          }
+        },
+        categories: {
+          include: {
+            category: {
+              select: {
+                name: true,
+                slug: true
+              }
+            }
+          }
+        },
+        media: {
+          where: {
+            isPrimary: true
+          },
+          take: 1
+        }
+      },
+
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+
+      take: 24 // Pagination limit
+    });
+
+    return {
+      success: true,
+      data: products,
+      error: null
+    };
+  } catch (error) {
+    logger.error("Product search failed", {
+      searchQuery,
+      filters,
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+
+    return {
+      success: false,
+      data: [],
+      error: "Search failed. Please try again."
+    };
+  }
+}
+```
+
+## 📊 Performance Optimization
+
+### Efficient Data Loading
+
+```typescript
+// Optimize queries with strategic includes and selects
+export async function getRegistryWithItemsAction(registryId: string) {
+  try {
+    const registry = await findRegistryWithItemsOrm(registryId, {
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true // Only include necessary user fields
+          }
+        },
+        items: {
+          where: {
+            deletedAt: null // Filter out deleted items
+          },
+          include: {
+            product: {
+              select: {
+                title: true,
+                price: true,
+                image: true,
+                availability: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: "desc"
+          }
+        },
+        _count: {
+          select: {
+            items: true
+          }
+        }
+      }
+    });
+
+    if (!registry) {
+      return {
+        success: false,
+        data: null,
+        error: "Registry not found"
+      };
+    }
+
+    return {
+      success: true,
+      data: registry,
+      error: null
+    };
+  } catch (error) {
+    logger.error("Failed to load registry with items", {
+      registryId,
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+
+    return {
+      success: false,
+      data: null,
+      error: "Failed to load registry. Please try again."
+    };
+  }
+}
+```
+
+## ✅ Implementation Checklist
+
+### Server Action Requirements
+
+- [ ] **'use server' directive** at top of file
+- [ ] **Authentication check** for user-scoped operations
+- [ ] **ORM layer usage** - never import Prisma client directly
+- [ ] **Consistent error handling** with user-friendly messages
+- [ ] **Structured response format** (success/data/error)
+- [ ] **Input validation** before database operations
+- [ ] **Logging integration** with @repo/observability
+- [ ] **Cache revalidation** for affected pages
+- [ ] **TypeScript types** for all parameters and returns
+
+### Security Requirements
+
+- [ ] **User ownership verification** for protected resources
+- [ ] **Input sanitization** and validation
+- [ ] **Rate limiting** considerations for public actions
+- [ ] **Error message sanitization** (no sensitive data exposure)
+- [ ] **Authentication bypass protection** for public endpoints
+
+### Performance Requirements
+
+- [ ] **Strategic includes/selects** to minimize data transfer
+- [ ] **Query optimization** using database indexes
+- [ ] **Result limiting** with pagination for large datasets
+- [ ] **Cache-friendly patterns** with proper revalidation
+- [ ] **Concurrent request handling** considerations
+
+## 🎯 Success Criteria
+
+A properly implemented server action should:
+
+- ✅ **Authenticate users** before accessing user-scoped data
+- ✅ **Use ORM functions** instead of direct Prisma client access
+- ✅ **Return consistent format** with success/data/error structure
+- ✅ **Handle errors gracefully** with user-friendly messages
+- ✅ **Log errors properly** for debugging and monitoring
+- ✅ **Revalidate cache** when data changes affect multiple pages
+- ✅ **Validate input data** before database operations
+- ✅ **Optimize queries** for performance and minimal data transfer
+- ✅ **Follow TypeScript patterns** with proper type safety
+- ✅ **Pass security review** for authentication and authorization

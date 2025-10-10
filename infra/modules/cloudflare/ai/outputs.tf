@@ -1,62 +1,4 @@
-# AI Module Outputs
-
-# AI Gateway Outputs
-output "ai_gateway_enabled" {
-  description = "Whether AI Gateway is enabled"
-  value       = var.enable_ai_gateway
-}
-
-output "ai_gateway_id" {
-  description = "AI Gateway ID"
-  value       = var.enable_ai_gateway ? cloudflare_ai_gateway.this[0].id : null
-}
-
-output "ai_gateway_endpoint" {
-  description = "AI Gateway endpoint URL"
-  value       = var.enable_ai_gateway ? "https://gateway.ai.cloudflare.com/v1/${var.account_id}/${cloudflare_ai_gateway.this[0].id}" : null
-}
-
-output "ai_gateway_routes" {
-  description = "AI Gateway routes configured"
-  value = var.enable_ai_gateway ? {
-    for k, v in cloudflare_ai_gateway_route.this : k => {
-      pattern  = v.pattern
-      target   = v.target
-      provider = v.provider
-      model    = v.model
-    }
-  } : {}
-}
-
-# Workers AI Outputs
-output "workers_ai_enabled" {
-  description = "Whether Workers AI is enabled"
-  value       = var.enable_workers_ai
-}
-
-output "workers_ai_models" {
-  description = "Workers AI models configured"
-  value       = var.workers_ai_models
-}
-
-# Vectorize Outputs
-output "vectorize_enabled" {
-  description = "Whether Vectorize is enabled"
-  value       = var.enable_vectorize
-}
-
-output "vectorize_indexes" {
-  description = "Vectorize indexes created"
-  value = var.enable_vectorize ? {
-    for k, v in cloudflare_vectorize_index.this : k => {
-      id         = v.id
-      name       = v.name
-      dimensions = v.dimensions
-      metric     = v.metric
-      endpoint   = "https://api.cloudflare.com/client/v4/accounts/${var.account_id}/vectorize/indexes/${v.id}"
-    }
-  } : {}
-}
+# AI Module Outputs - Simplified (AI Gateway and Vectorize not available in Terraform provider)
 
 # AI Workers Outputs
 output "ai_workers" {
@@ -64,7 +6,7 @@ output "ai_workers" {
   value = {
     for k, v in cloudflare_worker_script.ai : k => {
       id     = v.id
-      name   = v.name
+      name   = v.script_name
       routes = [for r in cloudflare_worker_route.ai : r.pattern if strcontains(r.id, k)]
     }
   }
@@ -121,20 +63,6 @@ output "ai_compliance_settings" {
 output "ai_summary" {
   description = "Summary of AI configuration"
   value = {
-    gateway = {
-      enabled         = var.enable_ai_gateway
-      caching_enabled = var.enable_ai_gateway ? var.ai_gateway_config.enable_caching : false
-      rate_limited    = var.enable_ai_gateway && var.ai_gateway_config.rate_limiting != null
-      routes          = var.enable_ai_gateway ? length(var.ai_gateway_routes) : 0
-    }
-    workers_ai = {
-      enabled = var.enable_workers_ai
-      models  = length(var.workers_ai_models)
-    }
-    vectorize = {
-      enabled = var.enable_vectorize
-      indexes = var.enable_vectorize ? length(var.vectorize_indexes) : 0
-    }
     workers = {
       count = length(var.ai_workers)
       names = keys(var.ai_workers)
@@ -152,65 +80,30 @@ output "ai_summary" {
 }
 
 # Integration Helpers
-output "ai_gateway_curl_example" {
-  description = "Example curl command for AI Gateway"
-  value = var.enable_ai_gateway ? <<-EOT
-    curl -X POST ${var.enable_ai_gateway ? "https://gateway.ai.cloudflare.com/v1/${var.account_id}/${cloudflare_ai_gateway.this[0].id}/openai/chat/completions" : ""} \
-      -H "Authorization: Bearer YOUR_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Hello!"}]
-      }'
-  EOT : null
-}
-
 output "workers_ai_example" {
   description = "Example Workers AI code"
-  value = var.enable_workers_ai ? <<-JS
+  value = length(var.ai_workers) > 0 ? <<-JS
     export default {
       async fetch(request, env, ctx) {
-        const response = await env.AI.run('@cf/meta/llama-2-7b-chat-int8', {
-          messages: [
-            { role: 'system', content: 'You are a helpful assistant.' },
-            { role: 'user', content: 'What is Cloudflare?' }
-          ]
+        // Example AI worker code
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + env.OPENAI_API_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'system', content: 'You are a helpful assistant.' },
+              { role: 'user', content: 'What is Cloudflare?' }
+            ]
+          })
         });
-        
-        return new Response(JSON.stringify(response), {
+
+        return new Response(JSON.stringify(await response.json()), {
           headers: { 'Content-Type': 'application/json' }
         });
-      }
-    };
-  JS : null
-}
-
-output "vectorize_example" {
-  description = "Example Vectorize usage"
-  value = var.enable_vectorize && length(var.vectorize_indexes) > 0 ? <<-JS
-    export default {
-      async fetch(request, env, ctx) {
-        const text = "Cloudflare Workers is a serverless platform";
-        
-        // Generate embedding
-        const embeddings = await env.AI.run('@cf/baai/bge-base-en-v1.5', {
-          text: [text]
-        });
-        
-        // Insert into Vectorize
-        await env.VECTORIZE.insert([{
-          id: "doc-1",
-          values: embeddings.data[0],
-          metadata: { text: text }
-        }]);
-        
-        // Query similar vectors
-        const results = await env.VECTORIZE.query(embeddings.data[0], {
-          topK: 5,
-          returnMetadata: true
-        });
-        
-        return new Response(JSON.stringify(results));
       }
     };
   JS : null

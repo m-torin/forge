@@ -148,7 +148,7 @@ export const mockGetRedirectUrl = vi.fn((response: any) => {
 });
 
 // Mock testing utilities
-export const mockTestingUtils = {
+const mockTestingUtils = {
   createMockMiddlewareConfig: (overrides: any = {}) => ({
     matcher: [
       {
@@ -197,7 +197,7 @@ export const mockTestingUtils = {
 };
 
 // Mock middleware execution testing
-export const mockMiddlewareExecution = {
+const mockMiddlewareExecution = {
   simulateRequest: vi.fn(async (middleware: Function, request: any) => {
     // Simulate middleware execution
     return await middleware(request);
@@ -220,7 +220,7 @@ export const mockMiddlewareExecution = {
 };
 
 // Mock performance testing
-export const mockPerformanceTesting = {
+const mockPerformanceTesting = {
   measureMiddlewarePerformance: vi.fn(async (middleware: Function, request: any) => {
     const start = performance.now();
     const result = await middleware(request);
@@ -254,7 +254,7 @@ export const mockPerformanceTesting = {
 };
 
 // Mock security testing
-export const mockSecurityTesting = {
+const mockSecurityTesting = {
   testCSRFProtection: vi.fn((middleware: Function, request: any) => {
     // Simulate CSRF token validation
     const token = request.headers['x-csrf-token'];
@@ -278,7 +278,7 @@ export const mockSecurityTesting = {
 };
 
 // Mock error testing
-export const mockErrorTesting = {
+const mockErrorTesting = {
   simulateMiddlewareError: vi.fn((error: Error) => {
     return {
       name: error.name,
@@ -305,7 +305,7 @@ export const mockErrorTesting = {
 };
 
 // Mock integration testing
-export const mockIntegrationTesting = {
+const mockIntegrationTesting = {
   testFullPipeline: vi.fn(async (config: any, request: any) => {
     // Test the full middleware → next.config → response pipeline
     const middlewareMatches = mockDoesMiddlewareMatch({

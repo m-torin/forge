@@ -297,7 +297,7 @@ locals {
     var.spf_record.redirect != null ? "redirect=${var.spf_record.redirect}" : "",
     var.spf_record.all
   ])
-  
+
   spf_record_value = join(" ", local.spf_parts)
 }
 
@@ -341,7 +341,7 @@ locals {
     "aspf=${var.dmarc_record.aspf}",
     var.dmarc_record.ri != 86400 ? "ri=${var.dmarc_record.ri}" : ""
   ])
-  
+
   dmarc_record_value = join("; ", local.dmarc_parts)
 }
 
@@ -373,14 +373,14 @@ resource "cloudflare_record" "bimi" {
 }
 
 # Email Workers
-resource "cloudflare_worker_script" "email" {
+resource "cloudflare_workers_script" "email" {
   for_each = var.email_workers
 
   account_id         = var.account_id
-  name               = each.value.script_name
+  script_name        = each.value.script_name
   content            = each.value.script_content != null ? each.value.script_content : file(each.value.script_path)
   compatibility_date = each.value.compatibility_date
-  
+
   # Plain text bindings for environment variables
   dynamic "plain_text_binding" {
     for_each = each.value.environment_variables
@@ -389,7 +389,7 @@ resource "cloudflare_worker_script" "email" {
       text = plain_text_binding.value
     }
   }
-  
+
   # Secret text bindings
   dynamic "secret_text_binding" {
     for_each = each.value.secrets
@@ -435,7 +435,7 @@ resource "cloudflare_record" "domain_verification" {
   content = "v=spf1 include:_spf.mx.cloudflare.net ~all"
   ttl     = 1
   proxied = false
-  
+
   lifecycle {
     ignore_changes = [content]
   }
@@ -468,140 +468,15 @@ resource "cloudflare_workers_kv" "templates" {
 # Advanced Email Security Policies (migrated from legacy)
 ###################################################
 
-# Email Security Settings foundation
-resource "cloudflare_email_security_settings" "security" {
-  count = var.enable_email_security ? 1 : 0
+# Email Security Settings - NOT AVAILABLE in Terraform Provider
+# Note: cloudflare_email_security_settings resource is not available in the current Cloudflare Terraform provider.
+# This feature would need to be configured manually through the Cloudflare dashboard or via API calls.
 
-  zone_id = var.zone_id
-  enabled = true
-  
-  # Basic security settings
-  detection_settings {
-    malicious_url_detection = var.email_security_settings.malicious_url_detection
-    malware_detection       = var.email_security_settings.malware_detection
-    spam_detection          = var.email_security_settings.spam_detection
-    phishing_detection      = var.email_security_settings.phishing_detection
-  }
-  
-  # Action settings
-  action_settings {
-    quarantine_malicious = var.email_security_settings.quarantine_malicious
-    mark_spam_headers    = var.email_security_settings.mark_spam_headers
-    reject_invalid_spf   = var.email_security_settings.reject_invalid_spf
-    reject_invalid_dkim  = var.email_security_settings.reject_invalid_dkim
-    reject_invalid_dmarc = var.email_security_settings.reject_invalid_dmarc
-  }
-}
+# Email Security Policies - NOT AVAILABLE in Terraform Provider
+# Note: cloudflare_email_security_policy resources are not available in the current Cloudflare Terraform provider.
+# These features would need to be configured manually through the Cloudflare dashboard or via API calls.
 
-# Custom email security policy for specific domains
-resource "cloudflare_email_security_policy" "custom_domain_policy" {
-  for_each = var.enable_email_security && var.enable_advanced_security_policies ? var.custom_domain_policies : {}
-
-  zone_id  = var.zone_id
-  name     = each.key
-  enabled  = lookup(each.value, "enabled", true)
-  priority = lookup(each.value, "priority", 5000)
-  
-  matcher {
-    type    = "domain"
-    domains = each.value.domains
-  }
-  
-  action {
-    type  = each.value.action_type
-    value = lookup(each.value, "action_value", "trusted")
-  }
-  
-  depends_on = [cloudflare_email_security_settings.security]
-}
-
-# Custom email security policy for specific IP ranges
-resource "cloudflare_email_security_policy" "custom_ip_policy" {
-  for_each = var.enable_email_security && var.enable_advanced_security_policies ? var.custom_ip_policies : {}
-
-  zone_id  = var.zone_id
-  name     = each.key
-  enabled  = lookup(each.value, "enabled", true)
-  priority = lookup(each.value, "priority", 6000)
-  
-  matcher {
-    type = "ip"
-    ip   = each.value.ip_ranges
-  }
-  
-  action {
-    type  = each.value.action_type
-    value = lookup(each.value, "action_value", "trusted")
-  }
-  
-  depends_on = [cloudflare_email_security_settings.security]
-}
-
-# Email message handling based on content scanning
-resource "cloudflare_email_security_policy" "content_scanning" {
-  count = var.enable_email_security && var.enable_content_scanning ? 1 : 0
-
-  zone_id  = var.zone_id
-  name     = "Content Security Scanning"
-  enabled  = true
-  priority = 8000
-  
-  matcher {
-    type   = "composite"
-    field  = "content"
-    filter = "contains_phishing_url OR contains_spam_content OR contains_suspicious_attachment"
-  }
-  
-  action {
-    type  = "quarantine"
-    value = "security_risk"
-  }
-  
-  depends_on = [cloudflare_email_security_settings.security]
-}
-
-# Bulk email handling policy
-resource "cloudflare_email_security_policy" "bulk_email" {
-  count = var.enable_email_security && var.enable_bulk_email_handling ? 1 : 0
-
-  zone_id  = var.zone_id
-  name     = "Bulk Email Handling"
-  enabled  = true
-  priority = 7000
-  
-  matcher {
-    type   = "composite"
-    field  = "content"
-    filter = "is_bulk_email"
-  }
-  
-  action {
-    type  = var.bulk_email_action
-    value = "bulk"
-  }
-  
-  depends_on = [cloudflare_email_security_settings.security]
-}
-
-# Spoof detection policy
-resource "cloudflare_email_security_policy" "spoof_detection" {
-  count = var.enable_email_security && var.enable_spoofing_protection ? 1 : 0
-
-  zone_id  = var.zone_id
-  name     = "Spoof Detection"
-  enabled  = true
-  priority = 9000
-  
-  matcher {
-    type   = "composite"
-    field  = "authentication"
-    filter = "dmarc_status:fail OR spf_status:fail OR dkim_status:fail"
-  }
-  
-  action {
-    type  = var.spoofing_action
-    value = "spoofed"
-  }
-  
-  depends_on = [cloudflare_email_security_settings.security]
-}
+# Available email security resources are limited to:
+# - cloudflare_email_security_impersonation_registry
+# - cloudflare_email_security_trusted_domains
+# - cloudflare_email_security_block_sender

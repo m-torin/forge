@@ -1,6 +1,6 @@
 import type { Dictionary } from '../index';
 
-export type ExtendedDictionary<T extends Record<string, any>> = Dictionary & T;
+type ExtendedDictionary<T extends Record<string, any>> = Dictionary & T;
 
 export function createDictionary<T extends Record<string, any>>(
   getDictionary: (locale: string) => Promise<Dictionary>,

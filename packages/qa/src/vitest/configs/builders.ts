@@ -451,16 +451,14 @@ export function createQStashPackageConfig(options: BuilderOptions = {}): UserCon
 /**
  * Creates a browser testing configuration with enhanced features
  */
-export function createBrowserTestConfig(options: BrowserTestOptions = {}): UserConfig {
+function createBrowserTestConfig(options: BrowserTestOptions = {}): UserConfig {
   return createBrowserConfig(options);
 }
 
 /**
  * Creates a Next.js app configuration with browser testing support
  */
-export function createNextAppBrowserConfig(
-  options: BuilderOptions & BrowserTestOptions = {},
-): UserConfig {
+function createNextAppBrowserConfig(options: BuilderOptions & BrowserTestOptions = {}): UserConfig {
   const nextConfig = createNextAppConfig(options);
   const browserConfig = createBrowserConfig(options);
 
@@ -470,7 +468,7 @@ export function createNextAppBrowserConfig(
 /**
  * Creates a React package configuration with browser testing support
  */
-export function createReactPackageBrowserConfig(
+function createReactPackageBrowserConfig(
   options: BuilderOptions & BrowserTestOptions = {},
 ): UserConfig {
   const reactConfig = createReactPackageConfig(options);
@@ -487,14 +485,3 @@ export function createCustomConfig(config: UserConfig): UserConfig {
 }
 
 // Export all builder functions
-export default {
-  createNextAppConfig,
-  createReactPackageConfig,
-  createNodePackageConfig,
-  createDatabasePackageConfig,
-  createQStashPackageConfig,
-  createBrowserTestConfig,
-  createNextAppBrowserConfig,
-  createReactPackageBrowserConfig,
-  createCustomConfig,
-};

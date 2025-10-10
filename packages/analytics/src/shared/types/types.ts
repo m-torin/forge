@@ -12,6 +12,9 @@ import type {
   EmitterTrackPayload,
 } from '../emitters/emitter-types';
 
+// Re-export emitter types for external consumption
+export type { EmitterPayload };
+
 export interface ProviderConfig {
   // Provider-specific required fields
   apiKey?: string;

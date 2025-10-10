@@ -3,21 +3,27 @@
  * Tests embedding functionality with proper usage tracking and vector operations
  */
 
-import { embed, embedMany } from 'ai';
-import { describe, expect, test } from 'vitest';
+import { embed, embedMany } from "ai";
+import { describe, expect, test } from "vitest";
 
-import { createCustomModel, createEmbeddingModel } from '../../test-utils/models';
-import { getMockEmbeddingModel } from '../../test-utils/providers';
-import { assertTelemetryPerformance, createTelemetryConfig } from '../../test-utils/telemetry';
+import {
+  createCustomModel,
+  createEmbeddingModel,
+} from "../../test-utils/models";
+import { getMockEmbeddingModel } from "../../test-utils/providers";
+import {
+  assertTelemetryPerformance,
+  createTelemetryConfig,
+} from "../../test-utils/telemetry";
 
-describe('embeddings', () => {
-  describe('single Embedding Generation', () => {
-    test('should generate embeddings for single text input', async () => {
+describe("embeddings", () => {
+  describe("single Embedding Generation", () => {
+    test("should generate embeddings for single text input", async () => {
       const model = createEmbeddingModel(1536);
 
       const result = await embed({
         model,
-        value: 'This is a test sentence for embedding generation.',
+        value: "This is a test sentence for embedding generation.",
       });
 
       expect(result.embedding).toHaveLength(1536);
@@ -27,7 +33,7 @@ describe('embeddings', () => {
       expect(result.usage.outputTokens).toBeUndefined(); // Embeddings don't have output tokens
     });
 
-    test('should handle different embedding dimensions', async () => {
+    test("should handle different embedding dimensions", async () => {
       const models = [
         { model: createEmbeddingModel(384), expectedDim: 384 },
         { model: createEmbeddingModel(768), expectedDim: 768 },
@@ -46,16 +52,16 @@ describe('embeddings', () => {
       }
     });
 
-    test('should track usage for single embedding', async () => {
+    test("should track usage for single embedding", async () => {
       const model = createEmbeddingModel();
       const telemetryConfig = createTelemetryConfig({
-        functionId: 'ai.embed',
-        metadata: { embeddingTest: 'single' },
+        functionId: "ai.embed",
+        metadata: { embeddingTest: "single" },
       });
 
       const result = await embed({
         model,
-        value: 'Track usage for this embedding',
+        value: "Track usage for this embedding",
         experimental_telemetry: telemetryConfig,
       });
 
@@ -67,14 +73,14 @@ describe('embeddings', () => {
     });
   });
 
-  describe('batch Embedding Generation', () => {
-    test('should generate embeddings for multiple texts', async () => {
+  describe("batch Embedding Generation", () => {
+    test("should generate embeddings for multiple texts", async () => {
       const model = createEmbeddingModel(768);
       const texts = [
-        'First text to embed',
-        'Second text for embedding',
-        'Third embedding text',
-        'Final text in the batch',
+        "First text to embed",
+        "Second text for embedding",
+        "Third embedding text",
+        "Final text in the batch",
       ];
 
       const result = await embedMany({
@@ -83,7 +89,7 @@ describe('embeddings', () => {
       });
 
       expect(result.embeddings).toHaveLength(4);
-      result.embeddings.forEach(embedding => {
+      result.embeddings.forEach((embedding) => {
         expect(embedding).toHaveLength(768);
         expect(embedding).toEqual([0.1, 0.2, 0.3]);
       });
@@ -92,7 +98,7 @@ describe('embeddings', () => {
       expect(result.usage.totalTokens).toBe(40);
     });
 
-    test('should handle large batch embedding', async () => {
+    test("should handle large batch embedding", async () => {
       const model = createEmbeddingModel(512);
       const largeTexts = Array.from(
         { length: 100 },
@@ -113,16 +119,16 @@ describe('embeddings', () => {
       });
     });
 
-    test('should track usage for batch embeddings', async () => {
+    test("should track usage for batch embeddings", async () => {
       const model = createEmbeddingModel(256);
       const batchTexts = [
-        'Batch embedding text one',
-        'Batch embedding text two',
-        'Batch embedding text three',
+        "Batch embedding text one",
+        "Batch embedding text two",
+        "Batch embedding text three",
       ];
 
       const telemetryConfig = createTelemetryConfig({
-        functionId: 'ai.embedMany',
+        functionId: "ai.embedMany",
         metadata: {
           batchSize: batchTexts.length,
           embeddingDimensions: 256,
@@ -143,7 +149,7 @@ describe('embeddings', () => {
       expect(tokensPerText).toBe(10);
     });
 
-    test('should handle empty batch gracefully', async () => {
+    test("should handle empty batch gracefully", async () => {
       const model = createEmbeddingModel();
 
       const result = await embedMany({
@@ -157,36 +163,47 @@ describe('embeddings', () => {
     });
   });
 
-  describe('provider-Specific Embeddings', () => {
-    test('should work with OpenAI embedding models', async () => {
-      const openaiModel = getMockEmbeddingModel('openai', 'text-embedding-3-small');
+  describe("provider-Specific Embeddings", () => {
+    test("should work with OpenAI embedding models", async () => {
+      const openaiModel = getMockEmbeddingModel(
+        "openai",
+        "text-embedding-3-small",
+      );
 
       const result = await embed({
         model: openaiModel,
-        value: 'OpenAI embedding test',
+        value: "OpenAI embedding test",
       });
 
       expect(result.embedding).toHaveLength(1536);
       expect(result.usage).toBeDefined();
     });
 
-    test('should work with Google embedding models', async () => {
-      const googleModel = getMockEmbeddingModel('google', 'text-embedding-004');
+    test("should work with Google embedding models", async () => {
+      const googleModel = getMockEmbeddingModel("google", "text-embedding-004");
 
       const result = await embed({
         model: googleModel,
-        value: 'Google embedding test',
+        value: "Google embedding test",
       });
 
       expect(result.embedding).toHaveLength(768);
       expect(result.usage).toBeDefined();
     });
 
-    test('should handle provider differences in embedding dimensions', async () => {
+    test("should handle provider differences in embedding dimensions", async () => {
       const providers = [
-        { provider: 'openai', model: 'text-embedding-3-small', expectedDim: 1536 },
-        { provider: 'openai', model: 'text-embedding-3-large', expectedDim: 3072 },
-        { provider: 'google', model: 'text-embedding-004', expectedDim: 768 },
+        {
+          provider: "openai",
+          model: "text-embedding-3-small",
+          expectedDim: 1536,
+        },
+        {
+          provider: "openai",
+          model: "text-embedding-3-large",
+          expectedDim: 3072,
+        },
+        { provider: "google", model: "text-embedding-004", expectedDim: 768 },
       ] as const;
 
       for (const { provider, model: modelName, expectedDim } of providers) {
@@ -202,18 +219,18 @@ describe('embeddings', () => {
     });
   });
 
-  describe('embedding Similarity and Vector Operations', () => {
-    test('should compute cosine similarity between embeddings', async () => {
+  describe("embedding Similarity and Vector Operations", () => {
+    test("should compute cosine similarity between embeddings", async () => {
       const model = createEmbeddingModel(3);
 
       const result1 = await embed({
         model,
-        value: 'artificial intelligence machine learning',
+        value: "artificial intelligence machine learning",
       });
 
       const result2 = await embed({
         model,
-        value: 'AI ML deep learning neural networks',
+        value: "AI ML deep learning neural networks",
       });
 
       // Mock vectors for similarity calculation
@@ -231,43 +248,47 @@ describe('embeddings', () => {
       expect(cosineSimilarity).toBeCloseTo(0.99, 1); // Similar semantic content
     });
 
-    test('should handle vector normalization', async () => {
+    test("should handle vector normalization", async () => {
       const model = createEmbeddingModel(4);
 
       const result = await embed({
         model,
-        value: 'Vector normalization test',
+        value: "Vector normalization test",
       });
 
       const embedding = result.embedding;
 
       // Calculate L2 norm
-      const l2Norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+      const l2Norm = Math.sqrt(
+        embedding.reduce((sum, val) => sum + val * val, 0),
+      );
       expect(l2Norm).toBeGreaterThan(0);
 
       // Normalize vector
-      const normalizedVector = embedding.map(val => val / l2Norm);
-      const normalizedNorm = Math.sqrt(normalizedVector.reduce((sum, val) => sum + val * val, 0));
+      const normalizedVector = embedding.map((val) => val / l2Norm);
+      const normalizedNorm = Math.sqrt(
+        normalizedVector.reduce((sum, val) => sum + val * val, 0),
+      );
 
       expect(normalizedNorm).toBeCloseTo(1.0, 5); // Should be unit vector
     });
 
-    test('should support embedding search and ranking', async () => {
+    test("should support embedding search and ranking", async () => {
       const model = createEmbeddingModel(256);
 
       // Query embedding
       const queryResult = await embed({
         model,
-        value: 'machine learning algorithms',
+        value: "machine learning algorithms",
       });
 
       // Document embeddings
       const documents = [
-        'supervised learning classification regression',
-        'unsupervised learning clustering dimensionality reduction',
-        'deep learning neural networks backpropagation',
-        'natural language processing text analysis',
-        'computer vision image recognition',
+        "supervised learning classification regression",
+        "unsupervised learning clustering dimensionality reduction",
+        "deep learning neural networks backpropagation",
+        "natural language processing text analysis",
+        "computer vision image recognition",
       ];
 
       const docEmbeddings = await embedMany({
@@ -287,43 +308,46 @@ describe('embeddings', () => {
       ];
 
       // Sort by similarity
-      const rankedDocs = similarities.sort((a, b) => b.score - a.score).slice(0, 3);
+      const rankedDocs = similarities
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
 
       expect(rankedDocs[0].score).toBe(0.95);
-      expect(rankedDocs[0].doc).toContain('supervised learning');
+      expect(rankedDocs[0].doc).toContain("supervised learning");
       expect(rankedDocs).toHaveLength(3);
     });
   });
 
-  describe('embedding Error Handling', () => {
-    test('should handle embedding model errors', async () => {
+  describe("embedding Error Handling", () => {
+    test("should handle embedding model errors", async () => {
       const errorModel = createCustomModel(async () => {
-        throw new Error('Embedding model is unavailable');
-      }, 'error-embedding-model');
+        throw new Error("Embedding model is unavailable");
+      }, "error-embedding-model");
 
       await expect(
         embed({
           model: errorModel,
-          value: 'This should fail',
+          value: "This should fail",
         }),
-      ).rejects.toThrow('Embedding model is unavailable');
+      ).rejects.toThrow("Embedding model is unavailable");
     });
 
-    test('should handle invalid input text', async () => {
+    test("should handle invalid input text", async () => {
       const model = createEmbeddingModel();
 
       // Test with very long text (mock token limit)
-      const veryLongText = 'word '.repeat(10000);
+      const veryLongText = "word ".repeat(10000);
 
       const customModel = createCustomModel(async ({ prompt }) => {
-        const text = typeof prompt === 'string' ? prompt : prompt[0].content[0].text;
+        const text =
+          typeof prompt === "string" ? prompt : prompt[0].content[0].text;
         if (text.length > 8000) {
-          throw new Error('Input text exceeds token limit');
+          throw new Error("Input text exceeds token limit");
         }
         return {
-          finishReason: 'stop' as const,
+          finishReason: "stop" as const,
           usage: { inputTokens: 10, outputTokens: 0, totalTokens: 10 },
-          content: [{ type: 'text', text: 'Processed' }],
+          content: [{ type: "text", text: "Processed" }],
           warnings: [],
         };
       });
@@ -333,54 +357,60 @@ describe('embeddings', () => {
           model: customModel,
           value: veryLongText,
         }),
-      ).rejects.toThrow('Input text exceeds token limit');
+      ).rejects.toThrow("Input text exceeds token limit");
     });
 
-    test('should handle batch embedding partial failures', async () => {
+    test("should handle batch embedding partial failures", async () => {
       const model = createEmbeddingModel();
 
       // Mock model that fails on specific inputs
       const selectiveErrorModel = createCustomModel(async ({ prompt }) => {
         const messages = Array.isArray(prompt)
           ? prompt
-          : [{ content: [{ type: 'text', text: prompt }] }];
+          : [{ content: [{ type: "text", text: prompt }] }];
         const hasError = messages.some((msg: any) =>
-          msg.content?.some?.((content: any) => content.text?.includes('ERROR')),
+          msg.content?.some?.((content: any) =>
+            content.text?.includes("ERROR"),
+          ),
         );
 
         if (hasError) {
-          throw new Error('Batch item contains ERROR');
+          throw new Error("Batch item contains ERROR");
         }
 
         return {
-          finishReason: 'stop' as const,
+          finishReason: "stop" as const,
           usage: { inputTokens: 10, outputTokens: 0, totalTokens: 10 },
-          content: [{ type: 'text', text: 'Success' }],
+          content: [{ type: "text", text: "Success" }],
           warnings: [],
         };
       });
 
-      const textsWithError = ['Normal text', 'ERROR: This should fail', 'Another normal text'];
+      const textsWithError = [
+        "Normal text",
+        "ERROR: This should fail",
+        "Another normal text",
+      ];
 
       await expect(
         embedMany({
           model: selectiveErrorModel,
           values: textsWithError,
         }),
-      ).rejects.toThrow('Batch item contains ERROR');
+      ).rejects.toThrow("Batch item contains ERROR");
     });
   });
 
-  describe('advanced Embedding Use Cases', () => {
-    test('should support multilingual embedding', async () => {
+  describe("advanced Embedding Use Cases", () => {
+    test("should support multilingual embedding", async () => {
       const model = createEmbeddingModel(768);
 
       const multilingualTexts = [
-        'Hello world in English',
-        'Hola mundo en español',
-        'Bonjour le monde en français',
-        '世界你好用中文',
-        'مرحبا بالعالم بالعربية',
+        "Hello world in English",
+        "Hola mundo en español",
+        "Bonjour le monde en français",
+        "世界你好用中文",
+        "مرحبا بالعالم بالعربية",
       ];
 
       const result = await embedMany({
@@ -389,7 +419,7 @@ describe('embeddings', () => {
       });
 
       expect(result.embeddings).toHaveLength(5);
-      result.embeddings.forEach(embedding => {
+      result.embeddings.forEach((embedding) => {
         expect(embedding).toHaveLength(768);
       });
 
@@ -397,7 +427,7 @@ describe('embeddings', () => {
       expect(result.usage.inputTokens).toBeGreaterThan(0);
     });
 
-    test('should handle code embedding', async () => {
+    test("should handle code embedding", async () => {
       const model = createEmbeddingModel(1024);
 
       const codeSnippets = [
@@ -413,28 +443,28 @@ describe('embeddings', () => {
       });
 
       expect(result.embeddings).toHaveLength(4);
-      result.embeddings.forEach(embedding => {
+      result.embeddings.forEach((embedding) => {
         expect(embedding).toHaveLength(1024);
       });
 
       expect(result.usage.inputTokens).toBeGreaterThan(0);
     });
 
-    test('should support domain-specific embedding', async () => {
+    test("should support domain-specific embedding", async () => {
       const model = createEmbeddingModel(512);
 
       const medicalTexts = [
-        'Patient presents with acute myocardial infarction',
-        'Diagnosis of type 2 diabetes mellitus confirmed',
-        'Hypertension management with ACE inhibitors',
-        'Radiological findings show pneumonia',
+        "Patient presents with acute myocardial infarction",
+        "Diagnosis of type 2 diabetes mellitus confirmed",
+        "Hypertension management with ACE inhibitors",
+        "Radiological findings show pneumonia",
       ];
 
       const legalTexts = [
-        'Plaintiff filed motion for summary judgment',
-        'Contract terms stipulate binding arbitration',
-        'Intellectual property rights infringement claim',
-        'Corporate liability under securities law',
+        "Plaintiff filed motion for summary judgment",
+        "Contract terms stipulate binding arbitration",
+        "Intellectual property rights infringement claim",
+        "Corporate liability under securities law",
       ];
 
       const [medicalEmbeddings, legalEmbeddings] = await Promise.all([
@@ -450,32 +480,43 @@ describe('embeddings', () => {
       expect(legalEmbeddings.usage.totalTokens).toBeGreaterThan(0);
     });
 
-    test('should handle embedding with metadata', async () => {
+    test("should handle embedding with metadata", async () => {
       const model = createEmbeddingModel(256);
 
       const documentsWithMetadata = [
-        { text: 'AI research paper abstract', metadata: { type: 'academic', year: 2024 } },
-        { text: 'Product review content', metadata: { type: 'review', rating: 5 } },
-        { text: 'News article excerpt', metadata: { type: 'news', category: 'technology' } },
+        {
+          text: "AI research paper abstract",
+          metadata: { type: "academic", year: 2024 },
+        },
+        {
+          text: "Product review content",
+          metadata: { type: "review", rating: 5 },
+        },
+        {
+          text: "News article excerpt",
+          metadata: { type: "news", category: "technology" },
+        },
       ];
 
-      const texts = documentsWithMetadata.map(doc => doc.text);
+      const texts = documentsWithMetadata.map((doc) => doc.text);
       const result = await embedMany({
         model,
         values: texts,
       });
 
       // Combine embeddings with metadata
-      const embeddingsWithMetadata = result.embeddings.map((embedding, index) => ({
-        embedding,
-        metadata: documentsWithMetadata[index].metadata,
-        text: texts[index],
-      }));
+      const embeddingsWithMetadata = result.embeddings.map(
+        (embedding, index) => ({
+          embedding,
+          metadata: documentsWithMetadata[index].metadata,
+          text: texts[index],
+        }),
+      );
 
       expect(embeddingsWithMetadata).toHaveLength(3);
-      expect(embeddingsWithMetadata[0].metadata.type).toBe('academic');
+      expect(embeddingsWithMetadata[0].metadata.type).toBe("academic");
       expect(embeddingsWithMetadata[1].metadata.rating).toBe(5);
-      expect(embeddingsWithMetadata[2].metadata.category).toBe('technology');
+      expect(embeddingsWithMetadata[2].metadata.category).toBe("technology");
     });
   });
 });

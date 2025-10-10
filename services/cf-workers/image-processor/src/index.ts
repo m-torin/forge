@@ -7,8 +7,17 @@ interface Env {
   IMAGES: R2Bucket;
   SIGNING_KEY: string;
   IMAGE_METADATA?: KVNamespace;
-  AI?: any; // Cloudflare AI binding
+  AI?: {
+    run: (model: string, input: Blob) => Promise<any>;
+  };
 }
+
+// CORS headers to allow cross-origin requests
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
 
 export default {
   async fetch(
@@ -45,13 +54,6 @@ export default {
       },
     );
   },
-};
-
-// CORS headers to allow cross-origin requests
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 // Handle CORS preflight requests
@@ -110,7 +112,6 @@ async function handleImageUpload(
     });
 
     // AI classification if available
-    let classification = null;
     if (env.AI && env.IMAGE_METADATA) {
       ctx.waitUntil(classifyImageWithAI(file, imageId, env));
     }
@@ -148,13 +149,25 @@ async function handleMetadata(
   const url = new URL(request.url);
   const imageId = url.pathname.split("/").pop();
 
-  if (!imageId || !env.IMAGE_METADATA) {
+  if (!imageId) {
     return new Response(
       JSON.stringify({
-        error: "Invalid request or metadata storage not configured",
+        error: "Image ID required",
       }),
       {
         status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  if (!env.IMAGE_METADATA) {
+    return new Response(
+      JSON.stringify({
+        error: "IMAGE_METADATA binding not configured",
+      }),
+      {
+        status: 503,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
     );
@@ -206,6 +219,18 @@ async function classifyImageWithAI(
   imageId: string,
   env: Env,
 ): Promise<void> {
+  // Check if AI binding is available
+  if (!env.AI) {
+    console.warn("AI binding not available, skipping classification");
+    return;
+  }
+
+  // Check if IMAGE_METADATA binding is available
+  if (!env.IMAGE_METADATA) {
+    console.warn("IMAGE_METADATA binding not available, skipping classification storage");
+    return;
+  }
+
   try {
     // Convert image to blob for AI processing
     const imageBlob = new Blob([await file.arrayBuffer()], { type: file.type });
@@ -217,7 +242,7 @@ async function classifyImageWithAI(
     );
 
     // Store classification results in KV
-    if (classification && env.IMAGE_METADATA) {
+    if (classification) {
       await env.IMAGE_METADATA.put(
         imageId,
         JSON.stringify({
@@ -230,16 +255,14 @@ async function classifyImageWithAI(
   } catch (error) {
     console.error("AI classification error:", error);
     // Store error info but don't fail the upload
-    if (env.IMAGE_METADATA) {
-      await env.IMAGE_METADATA.put(
-        imageId,
-        JSON.stringify({
-          classification: null,
-          error: "Classification failed",
-          timestamp: Date.now(),
-        }),
-      );
-    }
+    await env.IMAGE_METADATA.put(
+      imageId,
+      JSON.stringify({
+        classification: null,
+        error: "Classification failed",
+        timestamp: Date.now(),
+      }),
+    );
   }
 }
 

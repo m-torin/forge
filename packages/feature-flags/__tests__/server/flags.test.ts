@@ -140,6 +140,7 @@ describe('evaluateFlags', () => {
   });
 
   test('should handle flags that reject', async () => {
+    expect.hasAssertions();
     const flags = {
       successFlag: vi.fn(() => Promise.resolve(true)),
       errorFlag: vi.fn(() => Promise.reject(new Error('Flag error'))),

@@ -11,11 +11,7 @@ import { ProgressState, StepPerformanceData } from './step-types';
 /**
  * Add a custom metric to performance data
  */
-export function addCustomMetric(
-  performance: StepPerformanceData,
-  name: string,
-  value: number,
-): void {
+function addCustomMetric(performance: StepPerformanceData, name: string, value: number): void {
   if (performance.customMetrics instanceof Map) {
     (performance.customMetrics as Map<string, number>).set(name, value);
   }
@@ -24,7 +20,7 @@ export function addCustomMetric(
 /**
  * Calculate performance statistics from performance data
  */
-export function calculatePerformanceStats(performance: StepPerformanceData): {
+function calculatePerformanceStats(performance: StepPerformanceData): {
   cpuSystemDelta?: number;
   cpuUserDelta?: number;
   duration: number;
@@ -84,10 +80,7 @@ export function createProgressReporter(
 /**
  * Format performance data for logging
  */
-export function formatPerformanceData(
-  performance: StepPerformanceData,
-  includeDetails = false,
-): string {
+function formatPerformanceData(performance: StepPerformanceData, includeDetails = false): string {
   const stats = calculatePerformanceStats(performance);
   let result = `Duration: ${stats.duration}ms`;
 
@@ -167,7 +160,7 @@ export function updatePerformanceData(
 /**
  * Create a performance monitor instance
  */
-export function createPerformanceMonitor() {
+function createPerformanceMonitor() {
   return {
     startTime: Date.now(),
     metrics: new Map<string, number>(),
@@ -190,7 +183,7 @@ export function createPerformanceMonitor() {
 /**
  * Measure step execution with performance tracking
  */
-export function measureStepExecution<T = any>(
+function measureStepExecution<T = any>(
   stepFn: () => Promise<T> | T,
   options?: { enableMonitoring?: boolean; stepId?: string },
 ): Promise<{ result: T; performance: StepPerformanceData }> {
@@ -211,7 +204,7 @@ export function measureStepExecution<T = any>(
 /**
  * Get performance metrics for a step
  */
-export function getPerformanceMetrics(performance: StepPerformanceData) {
+function getPerformanceMetrics(performance: StepPerformanceData) {
   return {
     duration: performance.duration || 0,
     memoryDelta:

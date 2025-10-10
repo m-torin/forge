@@ -24,7 +24,7 @@ vi.mock('@upstash/ratelimit', () => ({
   })),
 }));
 
-vi.mock('@repo/database/redis/server', () => ({
+vi.mock('@repo/db-prisma/redis/server', () => ({
   redis: {
     ping: vi.fn().mockResolvedValue('PONG'),
     del: vi.fn().mockResolvedValue(1),
@@ -517,7 +517,7 @@ describe('rateLimitProvider', () => {
     });
 
     test('should reset rate limit', async () => {
-      const { redis } = await import('@repo/database/redis/server');
+      const { redis } = await import('@repo/db-prisma/redis/server');
 
       await provider.resetRateLimit('test-identifier', 'custom-key');
 
@@ -525,7 +525,7 @@ describe('rateLimitProvider', () => {
     });
 
     test('should reset rate limit with default key', async () => {
-      const { redis } = await import('@repo/database/redis/server');
+      const { redis } = await import('@repo/db-prisma/redis/server');
 
       await provider.resetRateLimit('test-identifier');
 
@@ -533,7 +533,7 @@ describe('rateLimitProvider', () => {
     });
 
     test('should handle reset rate limit errors', async () => {
-      const { redis } = await import('@repo/database/redis/server');
+      const { redis } = await import('@repo/db-prisma/redis/server');
       vi.mocked(redis.del).mockRejectedValueOnce(new Error('Redis error'));
 
       await expect(provider.resetRateLimit('test-identifier')).rejects.toThrow(
@@ -548,7 +548,7 @@ describe('rateLimitProvider', () => {
 
   describe('health check', () => {
     test('should return healthy status', async () => {
-      const { redis } = await import('@repo/database/redis/server');
+      const { redis } = await import('@repo/db-prisma/redis/server');
       vi.mocked(redis.ping).mockResolvedValueOnce('PONG');
 
       const health = await provider.healthCheck();
@@ -561,7 +561,7 @@ describe('rateLimitProvider', () => {
     });
 
     test('should return unhealthy status when Redis fails', async () => {
-      const { redis } = await import('@repo/database/redis/server');
+      const { redis } = await import('@repo/db-prisma/redis/server');
       vi.mocked(redis.ping).mockRejectedValueOnce(new Error('Redis connection failed'));
 
       const health = await provider.healthCheck();

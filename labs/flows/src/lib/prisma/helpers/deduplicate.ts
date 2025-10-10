@@ -1,6 +1,6 @@
 // deduplicate.ts
 
-import { Node, Edge, Tag, Secret, Flow } from '@prisma/client';
+import { Node, Edge, Tag, Secret, Flow } from "@prisma/client";
 
 /**
  * Define a type that includes relations needed for deduplication.
@@ -77,7 +77,7 @@ export const deduplicateSecrets = (secrets?: Secret[]): Secret[] => {
   const uniqueSecretsMap = new Map<string, Secret>();
 
   secrets.forEach((secret) => {
-    const instanceIdentifier = secret.flowId ?? secret.nodeId ?? 'default';
+    const instanceIdentifier = secret.flowId ?? secret.nodeId ?? "default";
     const key = `${secret.id}-${instanceIdentifier}`;
 
     if (!uniqueSecretsMap.has(key)) {

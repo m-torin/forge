@@ -3,7 +3,7 @@ import * as monaco from 'monaco-editor';
 import * as ts from 'typescript';
 
 // Language Configuration
-export const typescriptLanguageConfiguration: monaco.languages.LanguageConfiguration =
+const typescriptLanguageConfiguration: monaco.languages.LanguageConfiguration =
   {
     comments: {
       lineComment: '//',
@@ -39,7 +39,7 @@ export const typescriptLanguageConfiguration: monaco.languages.LanguageConfigura
   };
 
 // Monarch Language Configuration
-export const typescriptMonarchLanguage: monaco.languages.IMonarchLanguage = {
+const typescriptMonarchLanguage: monaco.languages.IMonarchLanguage = {
   tokenizer: {
     root: [
       // Keywords

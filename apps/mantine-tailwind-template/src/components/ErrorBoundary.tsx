@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Alert, Button, Card, Stack, Text } from '@mantine/core';
-import { IconAlertTriangle, IconRefresh } from '@tabler/icons-react';
-import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Alert, Button, Card, Stack, Text } from "@mantine/core";
+import { IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // eslint-disable-next-line no-console
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
   private handleReset = () => {
@@ -52,7 +52,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </Text>
               </div>
 
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+              {process.env.NODE_ENV === "development" && this.state.error && (
                 <Alert color="red" variant="light" className="w-full">
                   <Text size="xs" ff="monospace">
                     {this.state.error.message}
